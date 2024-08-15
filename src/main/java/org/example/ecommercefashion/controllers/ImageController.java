@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.controllers;
 
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ImageRequest;
 import org.example.ecommercefashion.dtos.response.ImageResponse;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/images")
 @RequiredArgsConstructor
+@Tag(name = "Images" , description = "Endpoints for image management")
 public class ImageController {
     private final ImageService imageService;
 

@@ -24,6 +24,7 @@ public class Role {
   private String name;
 
   @ManyToMany(mappedBy = "roles")
+  @JsonIgnore
   private Set<User> users;
 
   @ManyToMany

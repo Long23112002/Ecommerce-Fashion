@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.ecommercefashion.dtos.request.RoleRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.PermissionResponse;
@@ -15,6 +16,8 @@ import org.example.ecommercefashion.entities.Permission;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.services.RoleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
+  private static final Logger log = LoggerFactory.getLogger(RoleServiceImpl.class);
   private final EntityManager entityManager;
 
   @Override
@@ -62,7 +66,9 @@ public class RoleServiceImpl implements RoleService {
 
   @Override
   public RoleResponse getRoleById(Long id) {
+    log.info("Role: {}", id);
     Role role = entityManager.find(Role.class, id);
+
     if (role == null) {
       throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND);
     }

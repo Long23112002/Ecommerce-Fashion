@@ -29,6 +29,8 @@ minio:
 spring:
   application:
     name: ecommerce-fashion
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URL}
 
   server:
     port: ${PORT_SERVER}

@@ -5,6 +5,7 @@ import com.longnh.exceptions.ExceptionHandle;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.http.Method;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.services.StorageService;
@@ -111,7 +112,7 @@ public class StorageServiceImpl implements StorageService {
                             .method(Method.GET)
                             .bucket(bucketName)
                             .object(objectName)
-                            .expiry(100000, TimeUnit.DAYS)
+                            .expiry(30, TimeUnit.SECONDS)
                             .build()
             );
         } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |

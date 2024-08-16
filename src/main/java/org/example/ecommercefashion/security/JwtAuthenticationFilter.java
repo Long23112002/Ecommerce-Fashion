@@ -1,19 +1,27 @@
 package org.example.ecommercefashion.security;
 
 import com.longnh.utils.JsonParser;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.ecommercefashion.dtos.response.ErrorResponse;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -61,9 +69,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
       if (jwtService.isTokenValid(jwt, userDetails, jwtKey)) {
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+
+
+        Set<GrantedAuthority> modifiableAuthorities = new HashSet<>(authorities);
+
+        Set<SimpleGrantedAuthority> permissions = jwtService.extractAuthoritiesSystem(jwt, jwtKey);
+
+        modifiableAuthorities.addAll(permissions);
+
         UsernamePasswordAuthenticationToken authenticationToken =
             new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
+                userDetails, null, modifiableAuthorities);
 
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
@@ -86,4 +103,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     response.getWriter().write(JsonParser.toJson(errorResponse));
   }
+
+
 }

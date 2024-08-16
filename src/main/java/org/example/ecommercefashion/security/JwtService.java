@@ -9,6 +9,8 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.PermissionRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -140,5 +143,19 @@ public class JwtService {
     final Boolean isEmailVerified = claims.get(JwtEnum.IS_EMAIL_VERIFIED.val(), Boolean.class);
 
     return (isEmailVerified && !isTokenExpired(token, key));
+  }
+
+  public Set<SimpleGrantedAuthority> extractAuthoritiesSystem(String token, String key) {
+    Claims claims = extractAllClaims(token, getSigningKey(key));
+    List<String> authoritiesList = claims.get(JwtEnum.AUTHORITIES_SYSTEM.val(), List.class);
+
+    if (authoritiesList == null) {
+      return Set.of();
+    }
+
+    return authoritiesList.stream()
+            .map(String::toUpperCase)
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toSet());
   }
 }

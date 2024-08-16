@@ -11,6 +11,7 @@ import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.services.UserService;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,6 +39,7 @@ public class UserController {
   }
 
   @GetMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_STAFF') AND hasAuthority('CREATE_PRODUCT')")
   public UserResponse getUserById(@PathVariable Long id) {
     return userService.getUserById(id);
   }

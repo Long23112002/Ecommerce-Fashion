@@ -5,7 +5,7 @@ import com.longnh.exceptions.ExceptionHandle;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.http.Method;
-import jakarta.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.services.StorageService;

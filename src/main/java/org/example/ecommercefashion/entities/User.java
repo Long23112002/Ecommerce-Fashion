@@ -1,13 +1,10 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.example.ecommercefashion.enums.GenderEnum;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Where;
@@ -15,8 +12,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Entity
-@Table(name = "user")
+@Table(name = "user",schema = "users")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -33,7 +37,7 @@ public class User implements UserDetails, Serializable {
   @Column(nullable = false, unique = true, name = "email")
   private String email;
 
-  @Column(name = "password" , columnDefinition = "TEXT")
+  @Column(name = "password" )
   private String password;
 
   @Column(name = "full_name")

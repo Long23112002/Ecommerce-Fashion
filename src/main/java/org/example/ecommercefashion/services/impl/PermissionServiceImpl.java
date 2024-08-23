@@ -2,7 +2,7 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
-import jakarta.persistence.EntityManager;
+import javax.persistence.EntityManager;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.PermissionRequest;

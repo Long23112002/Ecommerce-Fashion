@@ -1,15 +1,16 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.*;
+import java.util.Set;
+
 @Entity
-@Table(name = "role")
+@Table(name = "role" , schema = "users")
 @Getter
 @Setter
 @AllArgsConstructor

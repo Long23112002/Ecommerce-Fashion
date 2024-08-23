@@ -1,6 +1,6 @@
 package org.example.ecommercefashion.dtos.request;
 
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.*;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,10 +1,19 @@
 package org.example.ecommercefashion.entities;
 
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.example.ecommercefashion.enums.TypeImage;
 import org.hibernate.annotations.Where;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Table;
 
 
 @Entity
@@ -14,7 +23,7 @@ import org.hibernate.annotations.Where;
 @AllArgsConstructor
 @NoArgsConstructor
 @Where(clause = "deleted = false")
-@Table(name = "images")
+@Table(name = "images" , schema = "images")
 public class Image extends BaseEntity {
 
     @Column(name = "url")

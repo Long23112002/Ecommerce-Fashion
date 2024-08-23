@@ -1,14 +1,18 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.sql.Timestamp;
-
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.Where;
+
+import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 @AllArgsConstructor
@@ -16,7 +20,7 @@ import org.hibernate.annotations.Where;
 @Getter
 @Setter
 @Builder
-@Table(name = "refresh_tokens")
+@Table(name = "refresh_tokens" , schema = "users")
 @Where(clause = "is_revoked = false")
 @SuppressWarnings("unused")
 public class RefreshToken {

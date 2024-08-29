@@ -12,6 +12,8 @@ import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.services.UserService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,17 +36,18 @@ public class UserController {
   }
 
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
   public void deleteUser(@PathVariable Long id) {
     userService.deleteUser(id);
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole('ROLE_STAFF') AND hasAuthority('CREATE_PRODUCT')")
   public UserResponse getUserById(@PathVariable Long id) {
     return userService.getUserById(id);
   }
 
   @PatchMapping("/assign-role-admin")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
   public void assignRoleAdmin(@Valid @RequestBody String email) {
     userService.assignRoleAdmin(email);
   }
@@ -62,5 +65,12 @@ public class UserController {
   @PatchMapping("/assign-user-role")
   public void assignUserRole(@Valid @RequestBody UserRoleAssignRequest userRoleAssignRequest) {
     userService.assignUserRole(userRoleAssignRequest);
+  }
+
+  public static void main(String[] args){
+     String password = "12345678";
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    String encodedPassword = passwordEncoder.encode(password);
+    System.out.printf(encodedPassword);
   }
 }

@@ -7,6 +7,7 @@ import org.example.ecommercefashion.dtos.request.ImageRequest;
 import org.example.ecommercefashion.dtos.response.ImageResponse;
 import org.example.ecommercefashion.services.ImageService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class ImageController {
     private final ImageService imageService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_STAFF')")
     public ResponseEntity<List<ImageResponse>> uploadImages(@ModelAttribute ImageRequest files) {
         List<ImageResponse> response = imageService.uploadImages(files);
         return ResponseEntity.ok(response);

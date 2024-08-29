@@ -11,13 +11,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.ecommercefashion.dtos.request.RoleRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.PermissionResponse;
+import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.RoleResponse;
 import org.example.ecommercefashion.entities.Permission;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.RoleRepository;
 import org.example.ecommercefashion.services.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +30,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
-  private static final Logger log = LoggerFactory.getLogger(RoleServiceImpl.class);
   private final EntityManager entityManager;
+  private final RoleRepository roleRepository;
+
+  @Override
+  public ResponsePage<Role, RoleResponse> filterRoles(String keyword,Pageable pageable) {
+    Page<Role> pageRole = roleRepository.filterRoles(keyword,pageable);
+    return new ResponsePage<>(pageRole, RoleResponse.class);
+  }
 
   @Override
   @Transactional
@@ -66,7 +76,6 @@ public class RoleServiceImpl implements RoleService {
 
   @Override
   public RoleResponse getRoleById(Long id) {
-    log.info("Role: {}", id);
     Role role = entityManager.find(Role.class, id);
 
     if (role == null) {
@@ -88,7 +97,6 @@ public class RoleServiceImpl implements RoleService {
   private RoleResponse mapRoleToRoleResponse(Role role) {
     RoleResponse roleResponse = new RoleResponse();
     FnCommon.coppyNonNullProperties(roleResponse, role);
-    roleResponse.setPermissions(mapPermissionToPermissionResponse(role.getPermissions()));
     return roleResponse;
   }
 

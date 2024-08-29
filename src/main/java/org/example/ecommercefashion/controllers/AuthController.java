@@ -58,12 +58,12 @@ public class AuthController {
   }
 
   @PostMapping("/facebook-login")
-  public AuthResponse facebookLogin(@RequestBody FacebookLoginRequest facebookLoginRequest) {
+  public LoginResponse facebookLogin(@RequestBody FacebookLoginRequest facebookLoginRequest) {
     return oauth2Service.authenticateFacebookUser(facebookLoginRequest.getCode());
   }
 
   @PostMapping("/google-login")
-  public AuthResponse googleLogin(@RequestParam("code") String code) {
+  public LoginResponse googleLogin(@RequestParam("code") String code) {
     return oauth2Service.authenticateGoogleUser(code);
   }
 }

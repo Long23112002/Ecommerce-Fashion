@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.controllers;
 
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/permission")
 @RequiredArgsConstructor
-@Tag(name = "Permission", description = "Endpoints for permission management")
+@Api(tags = "Permission" , value = "Endpoints for permission management")
 public class PermissionController {
 
   private final PermissionService permissionService;

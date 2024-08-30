@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.controllers;
 
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/role")
 @RequiredArgsConstructor
-@Tag(name = "Role", description = "Endpoints for role management")
+@Api(tags = "Role" , value = "Endpoints for role management")
 public class RoleController {
 
   private final RoleService roleService;

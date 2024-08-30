@@ -2,14 +2,19 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
-import javax.persistence.EntityManager;
+
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.request.AssignPermissionRequest;
 import org.example.ecommercefashion.dtos.request.PermissionRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.PermissionResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Permission;
+import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.PermissionRepository;
 import org.example.ecommercefashion.services.PermissionService;
@@ -51,6 +56,27 @@ public class PermissionServiceImpl implements PermissionService {
   public ResponsePage<Permission, PermissionResponse> getAllPermissions(Pageable pageable) {
     Page<Permission> permissionPage = permissionRepository.findAll(pageable);
     return new ResponsePage<>(permissionPage, PermissionResponse.class);
+  }
+
+  @Override
+  @Transactional
+  public MessageResponse assignPermissionToRole(AssignPermissionRequest assignPermissionRequest) {
+    Role role =
+        Optional.ofNullable(entityManager.find(Role.class, assignPermissionRequest.getRoleId()))
+            .orElseThrow(
+                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND));
+    Set<Permission> permissions = new HashSet<>();
+    for (Long permissionId : assignPermissionRequest.getPermissionIds()) {
+      Permission permission =
+          Optional.ofNullable(entityManager.find(Permission.class, permissionId))
+              .orElseThrow(
+                  () ->
+                      new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PERMISSION_NOT_FOUND));
+      permissions.add(permission);
+    }
+    role.setPermissions(permissions);
+    entityManager.merge(role);
+    return MessageResponse.builder().message("Assign permission to role successfully").build();
   }
 
   @Override

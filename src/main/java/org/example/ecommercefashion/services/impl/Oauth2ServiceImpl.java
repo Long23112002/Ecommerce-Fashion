@@ -1,12 +1,16 @@
 package org.example.ecommercefashion.services.impl;
 
+import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.example.ecommercefashion.dtos.request.FacebookLoginRequest;
 import org.example.ecommercefashion.dtos.request.GoogleLoginRequest;
 import org.example.ecommercefashion.dtos.response.AuthResponse;
+import org.example.ecommercefashion.dtos.response.LoginResponse;
+import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.GenderEnum;
 import org.example.ecommercefashion.httpclient.FacebookIdentityClient;
 import org.example.ecommercefashion.httpclient.FacebookUserClient;
 import org.example.ecommercefashion.httpclient.GoogleIdentityClient;
@@ -61,7 +65,7 @@ public class Oauth2ServiceImpl implements Oauth2Service {
   @NonFinal protected final String TYPE = "authorization_code";
 
   @Override
-  public AuthResponse authenticateFacebookUser(String code) {
+  public LoginResponse authenticateFacebookUser(String code) {
     var response =
         facebookIdentityClient.exchangeToken(
             FacebookLoginRequest.builder()
@@ -81,13 +85,18 @@ public class Oauth2ServiceImpl implements Oauth2Service {
     if (existingUser == null) {
       User user = new User();
       user.setEmail(userInfo.getEmail());
+      user.setGender(GenderEnum.OTHER);
       user.setFullName(userInfo.getName());
       user.setAvatar(userInfo.getPicture().getData().getUrl());
       userRepository.save(user);
       jwtService.generateToken(user);
-      return AuthResponse.builder()
-          .accessToken(jwtService.generateToken(user))
-          .refreshToken(jwtService.generateRefreshToken(user))
+      return LoginResponse.builder()
+          .authResponse(
+              AuthResponse.builder()
+                  .accessToken(jwtService.generateToken(user))
+                  .refreshToken(jwtService.generateRefreshToken(user))
+                  .build())
+          .userResponse(mapToUserResponse(user))
           .build();
 
     } else {
@@ -95,22 +104,26 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       existingUser.setFacebookAccountId(userInfo.getId());
       existingUser.setAvatar(userInfo.getPicture().getData().getUrl());
       userRepository.save(existingUser);
-      return AuthResponse.builder()
-          .accessToken(jwtService.generateToken(existingUser))
-          .refreshToken(jwtService.generateRefreshToken(existingUser))
+      return LoginResponse.builder()
+          .authResponse(
+              AuthResponse.builder()
+                  .accessToken(jwtService.generateToken(existingUser))
+                  .refreshToken(jwtService.generateRefreshToken(existingUser))
+                  .build())
+          .userResponse(mapToUserResponse(existingUser))
           .build();
     }
   }
 
   @Override
-  public AuthResponse authenticateGoogleUser(String code) {
+  public LoginResponse authenticateGoogleUser(String code) {
     var response =
         googleIdentityClient.exchangeToken(
             GoogleLoginRequest.builder()
                 .code(code)
-                .clientId(CLIENT_ID)
-                .clientSecret(CLIENT_SECRET)
-                .redirectUri(REDIRECT_URI)
+                .clientId(CLIENT_GOOGLE_ID)
+                .clientSecret(CLIENT_GOOGLE_SECRET)
+                .redirectUri(REDIRECT_GOOGLE_URI)
                 .grantType(TYPE)
                 .build());
 
@@ -121,26 +134,41 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       User user = new User();
       user.setEmail(userInfo.getEmail());
       user.setFullName(userInfo.getName());
+      user.setGender(GenderEnum.OTHER);
       user.setAvatar(userInfo.getPicture());
       userRepository.save(user);
-      jwtService.generateToken(user);
-      return AuthResponse.builder()
-          .accessToken(jwtService.generateToken(user))
-          .refreshToken(jwtService.generateRefreshToken(user))
-          .build();
+      return LoginResponse.builder()
+              .authResponse(
+                      AuthResponse.builder()
+                              .accessToken(jwtService.generateToken(user))
+                              .refreshToken(jwtService.generateRefreshToken(user))
+                              .build())
+              .userResponse(mapToUserResponse(user))
+              .build();
+
     } else {
       existingUser.setGoogleAccountId(userInfo.getId());
       existingUser.setAvatar(userInfo.getPicture());
       existingUser.setDeleted(false);
       userRepository.save(existingUser);
-      return AuthResponse.builder()
-          .accessToken(jwtService.generateToken(existingUser))
-          .refreshToken(jwtService.generateRefreshToken(existingUser))
-          .build();
+      return LoginResponse.builder()
+              .authResponse(
+                      AuthResponse.builder()
+                              .accessToken(jwtService.generateToken(existingUser))
+                              .refreshToken(jwtService.generateRefreshToken(existingUser))
+                              .build())
+              .userResponse(mapToUserResponse(existingUser))
+              .build();
     }
   }
 
   private User checkUserExist(String email) {
     return userRepository.findByEmail(email);
+  }
+
+  private UserResponse mapToUserResponse(User user) {
+    UserResponse userResponse = new UserResponse();
+    FnCommon.copyNonNullProperties(userResponse, user);
+    return userResponse;
   }
 }

@@ -24,8 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Api(tags = "Authentication")
-//@Tag(name = "Authentication", description = "Endpoints for authentication")
+@Api(tags = "Auth", value = "Endpoints for authentication")
 public class AuthController {
 
   private final AuthenticationService authenticationService;
@@ -58,12 +57,12 @@ public class AuthController {
   }
 
   @PostMapping("/facebook-login")
-  public AuthResponse facebookLogin(@RequestBody FacebookLoginRequest facebookLoginRequest) {
+  public LoginResponse facebookLogin(@RequestBody FacebookLoginRequest facebookLoginRequest) {
     return oauth2Service.authenticateFacebookUser(facebookLoginRequest.getCode());
   }
 
   @PostMapping("/google-login")
-  public AuthResponse googleLogin(@RequestParam("code") String code) {
+  public LoginResponse googleLogin(@RequestParam("code") String code) {
     return oauth2Service.authenticateGoogleUser(code);
   }
 }

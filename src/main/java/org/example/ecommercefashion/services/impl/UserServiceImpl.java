@@ -4,12 +4,16 @@ import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import javax.persistence.EntityManager;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
+import org.example.ecommercefashion.dtos.response.RoleResponse;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
@@ -133,6 +137,16 @@ public class UserServiceImpl implements UserService {
   private UserResponse mapEntityToResponse(User user) {
     UserResponse userResponse = new UserResponse();
     FnCommon.copyProperties(userResponse, user);
+    Set<RoleResponse> roleResponses = user.getRoles().stream()
+            .map(this::mapEntityToResponse)
+            .collect(Collectors.toSet());
+    userResponse.setRoles(roleResponses);
     return userResponse;
+  }
+
+  private RoleResponse mapEntityToResponse(Role role) {
+    RoleResponse roleResponse = new RoleResponse();
+    FnCommon.copyProperties(roleResponse, role);
+    return roleResponse;
   }
 }

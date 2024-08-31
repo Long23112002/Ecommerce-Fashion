@@ -33,4 +33,4 @@ jobs:
         run: |
           curl -s -X POST https://api.telegram.org/bot7002498142:AAEjxsMSEIRjomBxKOEDgCrlTWURA6H3nU8/sendMessage \
             -d chat_id=1828497602 \
-            -d text="New commit to repository: ${GITHUB_REPOSITORY}\nBranch: ${BRANCH_NAME}\nCommit message: ${COMMIT_MESSAGE}\nAuthor: ${COMMIT_AUTHOR_NAME} <${COMMIT_AUTHOR_EMAIL}>\nDate: ${COMMIT_DATE}"
+            -d text="New commit to repository: ${GITHUB_REPOSITORY}%0ABranch: ${BRANCH_NAME}%0ACommit message: ${COMMIT_MESSAGE}%0AAuthor: ${COMMIT_AUTHOR_NAME} <${COMMIT_AUTHOR_EMAIL}>%0ADate: ${COMMIT_DATE}"

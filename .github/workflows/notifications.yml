@@ -19,7 +19,7 @@ jobs:
           COMMIT_AUTHOR_NAME=$(git log -1 --pretty=%an)
           COMMIT_AUTHOR_EMAIL=$(git log -1 --pretty=%ae)
           BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
-          COMMIT_DATE=$(date --utc +'%Y-%m-%d %H:%M:%S UTC')
+          COMMIT_DATE=$(TZ='Asia/Ho_Chi_Minh' date +'%Y-%m-%d %H:%M:%S %Z')
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
           echo "COMMIT_AUTHOR_NAME=${COMMIT_AUTHOR_NAME}" >> $GITHUB_ENV
           echo "COMMIT_AUTHOR_EMAIL=${COMMIT_AUTHOR_EMAIL}" >> $GITHUB_ENV

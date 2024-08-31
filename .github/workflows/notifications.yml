@@ -1,0 +1,33 @@
+name: Notify Telegram on Commit
+
+on:
+  push:
+    branches:
+      - '**'  # Giám sát tất cả các nhánh
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get commit details
+        id: commit-info
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          COMMIT_AUTHOR_NAME=$(git log -1 --pretty=%an)
+          COMMIT_AUTHOR_EMAIL=$(git log -1 --pretty=%ae)
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+          COMMIT_DATE=$(date --utc +'%Y-%m-%d %H:%M:%S UTC')
+          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
+          echo "COMMIT_AUTHOR_NAME=${COMMIT_AUTHOR_NAME}" >> $GITHUB_ENV
+          echo "COMMIT_AUTHOR_EMAIL=${COMMIT_AUTHOR_EMAIL}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+          echo "COMMIT_DATE=${COMMIT_DATE}" >> $GITHUB_ENV
+
+      - name: Send notification to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+            -d chat_id=${TELEGRAM_CHAT_ID} \
+            -d text="New commit to repository: ${GITHUB_REPOSITORY}\nBranch: ${BRANCH_NAME}\nCommit message: ${COMMIT_MESSAGE}\nAuthor: ${COMMIT_AUTHOR_NAME} <${COMMIT_AUTHOR_EMAIL}>\nDate: ${COMMIT_DATE}"

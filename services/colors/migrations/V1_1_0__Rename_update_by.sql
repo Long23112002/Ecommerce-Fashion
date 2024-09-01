@@ -1,0 +1,1 @@
+ALTER TABLE colors.color RENAME COLUMN update_by TO updated_by;

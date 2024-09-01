@@ -213,14 +213,15 @@
                             <configFile>services/users/config/dev/flyway.conf</configFile>
                         </configuration>
                     </execution>
+
                     <execution>
-                        <id>products</id>
+                        <id>discounts</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>migrate</goal>
                         </goals>
                         <configuration>
-                            <configFile>services/products/config/dev/flyway.conf</configFile>
+                            <configFile>services/discounts/config/dev/flyway.conf</configFile>
                         </configuration>
                     </execution>
                 </executions>

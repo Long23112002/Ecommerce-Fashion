@@ -11,7 +11,9 @@ public interface SizeService {
 
     SizeResponse getSizeById(Long id);
 
-    SizeResponse createSize(SizeRequest sizeRequest);
+    SizeResponse createSize(SizeRequest sizeRequest,String token);
 
-    String deleteSize(Long id);
+    SizeResponse updateSize(SizeRequest sizeRequest,Long id,String token);
+
+    String deleteSize(Long id,String token);
 }

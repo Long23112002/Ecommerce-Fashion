@@ -23,9 +23,9 @@ public class ColorResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updatedAt;
 
-    private String createdBy;
+    private UserResponse createdBy;
 
-    private String updatedBy;
+    private UserResponse updatedBy;
 
     private Boolean deleted;
 }

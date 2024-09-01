@@ -4,6 +4,7 @@ import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.SizeRequest;
+import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.SizeResponse;
 import org.example.ecommercefashion.dtos.response.UserResponse;
@@ -15,11 +16,14 @@ import org.example.ecommercefashion.repositories.SizeRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.SizeService;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
 
 @Service
 @RequiredArgsConstructor
@@ -31,13 +35,18 @@ public class SizeServiceImpl implements SizeService {
 
     private final JwtService jwtService;
 
+    private ModelMapper modelMapper;
+
     private UserResponse getInforUser(Long id) {
+        if (id == null) {
+            return null;
+        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
 
         UserResponse userResponse = new UserResponse();
-        FnCommon.copyNonNullProperties(userResponse,user);
+        FnCommon.copyNonNullProperties(userResponse, user);
         return userResponse;
     }
 
@@ -56,31 +65,61 @@ public class SizeServiceImpl implements SizeService {
     }
 
     @Override
-    public SizeResponse createSize(SizeRequest sizeRequest,String token) {
-        if(token!=null){
-            JwtResponse response
+    public SizeResponse createSize(SizeRequest sizeRequest, String token) {
+        if (token != null) {
+            JwtResponse jwtResponse = jwtService.decodeToken(token);
+            Size size = new Size();
+            Size sizeCreate = mapSizeRequestToSize(size, sizeRequest);
+            sizeCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
+            sizeRepository.save(sizeCreate);
+            SizeResponse sizeResponse = mapSizeToSizeResponse(sizeCreate);
+            sizeResponse.setCreatedBy(getInforUser(jwtResponse.getUserId()));
+            return sizeResponse;
+        } else {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
-        Size size = new Size();
-        Size sizeCreate = mapSizeRequestToSize(size, sizeRequest);
-        return mapSizeToSizeResponse(sizeRepository.save(sizeCreate));
     }
 
     @Override
-    public String deleteSize(Long id) {
-        Size size = sizeRepository.findById(id).orElseThrow(() -> {
-            throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
-        });
-        size.setDeleted(true);
-        sizeRepository.save(size);
-        return "Size deleted successfully";
+    public SizeResponse updateSize(SizeRequest sizeRequest, Long id, String token) {
+        if (token != null) {
+            JwtResponse jwtResponse = jwtService.decodeToken(token);
+            Size size = sizeRepository.findById(id).orElseThrow(() -> {
+                throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
+            });
+            Size sizeUpdate = mapSizeRequestToSize(size, sizeRequest);
+            sizeUpdate.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
+            sizeUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            sizeRepository.save(sizeUpdate);
+            SizeResponse sizeResponse = mapSizeToSizeResponse(sizeUpdate);
+            sizeResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
+            sizeResponse.setCreatedBy(getInforUser(size.getCreatedBy()));
+            return sizeResponse;
+        } else {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
+        }
+    }
+
+    @Override
+    public String deleteSize(Long id, String token) {
+        if (token != null) {
+            JwtResponse jwtResponse = jwtService.decodeToken(token);
+            Size size = sizeRepository.findById(id).orElseThrow(() -> {
+                throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
+            });
+            size.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
+            size.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            size.setDeleted(true);
+            sizeRepository.save(size);
+            return "Size deleted successfully";
+        } else {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
+        }
+
     }
 
     private Size mapSizeRequestToSize(Size size, SizeRequest sizeRequest) {
         FnCommon.copyNonNullProperties(size, sizeRequest);
-//        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-//
-//        size.setCreatedBy(username);
-//        size.setUpdatedBy(username);
         return size;
     }
 

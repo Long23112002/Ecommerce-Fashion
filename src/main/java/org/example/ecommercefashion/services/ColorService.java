@@ -11,7 +11,9 @@ public interface ColorService {
 
     ColorResponse getColorById(Long id);
 
-    ColorResponse createColor(ColorRequest colorRequest);
+    ColorResponse createColor(ColorRequest colorRequest,String token);
 
-    String deleteColor(Long id);
+    ColorResponse updateColor(ColorRequest colorRequest, Long id, String token);
+
+    String deleteColor(Long id,String token);
 }

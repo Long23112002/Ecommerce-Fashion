@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.enums.JwtEnum;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
@@ -154,8 +155,18 @@ public class JwtService {
     }
 
     return authoritiesList.stream()
-            .map(String::toUpperCase)
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toSet());
+        .map(String::toUpperCase)
+        .map(SimpleGrantedAuthority::new)
+        .collect(Collectors.toSet());
+  }
+
+  public JwtResponse decodeToken(String token) {
+    Claims claims = extractAllClaims(token, getSigningKey(jwtKey));
+
+    JwtResponse jwtResponse = new JwtResponse();
+    jwtResponse.setAuthoritiesSystem(claims.get(JwtEnum.AUTHORITIES_SYSTEM.val(), List.class));
+    jwtResponse.setUserId(claims.get(JwtEnum.USER_ID.val(), Long.class));
+    jwtResponse.setSub(claims.getSubject());
+    return jwtResponse;
   }
 }

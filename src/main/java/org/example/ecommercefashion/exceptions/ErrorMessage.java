@@ -3,6 +3,8 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+    DISCOUNT_NOT_FOUND("Discount not found"),
+    VOUCHER_NOT_FOUND("Voucher not found"),
     SUCCESS("Success"),
     FALSE("False"),
     ROLE_NOT_FOUND("Role not found"),

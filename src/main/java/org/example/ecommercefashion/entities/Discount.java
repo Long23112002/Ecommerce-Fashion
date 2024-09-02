@@ -1,6 +1,8 @@
 package org.example.ecommercefashion.entities;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import com.vladmihalcea.hibernate.type.json.JsonBlobType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +37,10 @@ import java.util.UUID;
 @Builder
 @Table(name = "discount", schema = "discounts")
 @Where(clause = "deleted = false")
+@TypeDef(
+        name = "pgsql_enum",
+        typeClass = PostgreSQLEnumType.class
+)
 @TypeDef(name = "json", typeClass = JsonBinaryType.class)
 public class Discount {
     @Id
@@ -47,11 +53,12 @@ public class Discount {
     private UUID code;
 
     @Type(type = "json")
-    @Column(name = "condition",columnDefinition = "json")
+    @Column(name = "condition", columnDefinition = "json")
     private Condition condition;
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
     private TypeDiscount type;
 
     @Column(name = "value")
@@ -68,6 +75,7 @@ public class Discount {
 
     @Column(name = "discount_status")
     @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
     private StatusDiscount discountStatus;
 
     @Column(name = "create_at", updatable = false)
@@ -79,15 +87,15 @@ public class Discount {
     private Timestamp updateAt;
 
     @Column(name = "create_by", updatable = false)
-    private String createBy;
+    private Long createBy;
 
     @Column(name = "update_by")
-    private String updateBy;
+    private Long updateBy;
 
     @Column(name = "deleted")
     private Boolean deleted;
 
     @OneToMany(mappedBy = "discount")
+    @JsonIgnoreProperties("discount")
     private List<Voucher> voucher;
-
 }

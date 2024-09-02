@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,20 +44,20 @@ public class Voucher {
     private Timestamp usedAt;
 
     @Column(name = "create_by")
-    private String createBy;
+    private Long createBy;
 
     @Column(name = "update_by")
-    private String updateBy;
+    private Long updateBy;
 
     @Column(name = "used_by")
-    private String usedBy;
+    private Long usedBy;
 
     @Column(name = "deleted")
     private Boolean deleted ;
 
     @ManyToOne
     @JoinColumn(name = "id_discount")
+    @JsonBackReference
     private Discount discount;
-
 
 }

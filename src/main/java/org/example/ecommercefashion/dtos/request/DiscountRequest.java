@@ -3,18 +3,14 @@ package org.example.ecommercefashion.dtos.request;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.ecommercefashion.entities.Discount;
-import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.annotations.EnumPattern;
 import org.example.ecommercefashion.enums.StatusDiscount;
 import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.model.Condition;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -22,45 +18,45 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiscountRequest {
+    @NotNull(message = "Voucher code cannot be null")
+    private UUID code;
 
+    @Valid
+    @NotNull(message = "condition cannot be null")
     private Condition condition;
 
+    @NotNull(message = "type is required")
+    @EnumPattern(name = "type", regexp = "PERCENTAGE|FIXED_AMOUNT")
     private TypeDiscount type;
 
+    @NotNull(message = "Value cannot be null")
     private Double value;
 
+    @NotNull(message = "maxValue cannot be null")
     private Double maxValue;
 
+    @NotNull(message = "Start date cannot be null")
+    @PastOrPresent(message = "Start date must be in the past or present")
     private Timestamp startDate;
 
     private Timestamp endDate;
 
+    @NotNull(message = "Status is required")
+    @EnumPattern(name = "discountStatus", regexp = "ACTIVE|INACTIVE|EXPIRED")
     private StatusDiscount discountStatus;
 
+    @NotNull(message = "Creation date cannot be null")
+    @PastOrPresent(message = "Creation date must be in the past or present")
     private Timestamp createAt;
 
     private Timestamp updateAt;
 
-    private String createBy;
+    @NotNull(message = "Created by cannot be null")
+    private Long createBy;
 
-    private String updateBy;
+    private Long updateBy;
 
+    @NotNull(message = "Deleted status cannot be null")
     private Boolean deleted;
 
-    private User user;
-    public Discount toEntity(Discount discount){
-        discount.setCondition(this.condition);
-        discount.setType(this.getType());
-        discount.setValue(this.getValue());
-        discount.setMaxValue(this.getMaxValue());
-        discount.setStartDate(this.getStartDate());
-        discount.setEndDate(this.getEndDate());
-        discount.setDiscountStatus(this.getDiscountStatus());
-//        discount.setCreateAt(this.getCreateAt());
-//        discount.setUpdateAt(this.getUpdateAt());
-//        discount.setCreateBy();
-//        discount.setUpdateBy();
-        discount.setDeleted(this.getDeleted() != null ? this.getDeleted() : false);
-        return discount;
-    }
 }

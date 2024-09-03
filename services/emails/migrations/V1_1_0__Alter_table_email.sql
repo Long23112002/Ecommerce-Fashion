@@ -1,1 +1,0 @@
-ALTER TABLE emails.email ADD COLUMN is_deleted BOOLEAN

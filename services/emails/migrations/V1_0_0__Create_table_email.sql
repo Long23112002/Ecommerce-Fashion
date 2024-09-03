@@ -1,52 +1,62 @@
-
-CREATE TYPE email_status_enum AS ENUM ('PENDING', 'SENT');
-CREATE TYPE email_type_enum AS ENUM ('SCHEDULE', 'IMMEDIATE');
-CREATE TYPE email_send_log_status_enum AS ENUM ('FAILED', 'SUCCESSED');
+CREATE TYPE send_status_enum AS ENUM ('SUCCESS', 'FAILED');
+CREATE TYPE email_type_enum AS ENUM ('IMMEDIATE', 'SCHEDULED');
+CREATE TYPE email_api_enum AS ENUM ('MAIL_GUN');
 
 CREATE TABLE emails.template
 (
     id BIGSERIAL PRIMARY KEY,
     name       VARCHAR(255),
-    subject    VARCHAR(255),
-    body       VARCHAR(255),
+    subject    TEXT,
+    html       TEXT,
     variables  JSON,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     is_deleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE emails.process_send
-(
-    id BIGSERIAL PRIMARY KEY,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    count_mail_sent   BIGINT,
-    count_mail_unsent BIGINT,
-    size_process      BIGINT
 );
 
 CREATE TABLE emails.email
 (
     id BIGSERIAL PRIMARY KEY,
-    content         VARCHAR(255),
-    status email_status_enum NOT NULL,
-    type email_type_enum NOT NULL,
-    filter          JSON,
-    send_at TIMESTAMPTZ,
+    content         TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    id_template     BIGINT,
-    id_process_send BIGINT,
-    FOREIGN KEY (id_template) REFERENCES template (id),
-    FOREIGN KEY (id_process_send) REFERENCES process_send (id)
+    filter          JSON,
+    is_deleted      BOOLEAN DEFAULT FALSE,
+    is_personalized BOOLEAN DEFAULT FALSE,
+    send_at         JSON,
+    send_from       VARCHAR(255) NOT NULL,
+    type email_type_enum NOT NULL,
+    template_id     BIGINT,
+    CONSTRAINT fk_email_template FOREIGN KEY (template_id) REFERENCES emails.template (id)
 );
 
-CREATE TABLE emails.email_send_log
+CREATE TABLE emails.process_send
 (
     id BIGSERIAL PRIMARY KEY,
-    send_to         BIGINT,
-    status email_send_log_status_enum NOT NULL,
-    description     VARCHAR(255),
-    id_email        BIGINT,
-    id_process_send BIGINT,
-    FOREIGN KEY (id_email) REFERENCES email (id),
-    FOREIGN KEY (id_process_send) REFERENCES process_send (id)
+    count_mail_failed BIGINT,
+    count_mail_sent   BIGINT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    size_process      BIGINT,
+    email_id          BIGINT NOT NULL,
+    CONSTRAINT fk_process_send_email FOREIGN KEY (email_id) REFERENCES emails.email (id)
+
+);
+
+CREATE TABLE emails.mail_send_log
+(
+    id BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    description           TEXT,
+    mail_api_type_success email_api_enum,
+    mail_api_types_used   JSON,
+    send_to               BIGINT,
+    status send_status_enum NOT NULL,
+    email_id              BIGINT,
+    process_send_id       BIGINT,
+    CONSTRAINT fk_mail_send_log_process_send FOREIGN KEY (process_send_id) REFERENCES emails.process_send (id),
+    CONSTRAINT fk_mail_send_log_email FOREIGN KEY (email_id) REFERENCES emails.email (id)
+);
+
+CREATE TABLE emails.statistical
+(
+    email_id    BIGINT,
+    process_ids JSON,
+    CONSTRAINT fk_statistical_email FOREIGN KEY (email_id) REFERENCES emails.email (id)
 );

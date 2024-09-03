@@ -34,6 +34,9 @@ public class ColorServiceImpl implements ColorService {
     private final JwtService jwtService;
 
     private UserResponse getInforUser(Long id) {
+        if (id == null){
+            return null;
+        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
@@ -45,7 +48,8 @@ public class ColorServiceImpl implements ColorService {
     @Override
     public ResponsePage<Color, ColorResponse> getColorPage(String name, Pageable pageable) {
         Page<Color> colorPage = colorRepository.getColorPage(name, pageable);
-        return new ResponsePage<>(colorPage, ColorResponse.class);
+        Page<ColorResponse> colorResponsePage = colorPage.map(color -> mapColorToColorResponse(color));
+        return new ResponsePage<>(colorResponsePage);
     }
 
     @Override
@@ -119,6 +123,8 @@ public class ColorServiceImpl implements ColorService {
     private ColorResponse mapColorToColorResponse(Color color) {
         ColorResponse colorResponse = new ColorResponse();
         FnCommon.copyNonNullProperties(colorResponse, color);
+        colorResponse.setCreatedBy(getInforUser(color.getCreatedBy()));
+        colorResponse.setUpdatedBy(getInforUser(color.getUpdatedBy()));
         return colorResponse;
     }
 }

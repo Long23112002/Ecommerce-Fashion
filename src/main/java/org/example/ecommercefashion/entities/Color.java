@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "color",schema = "colors")
+@Table(name = "color",schema = "products")
 @Entity
 @Where(clause = "deleted = false")
 public class Color {

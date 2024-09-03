@@ -227,27 +227,19 @@
                 </execution>
 
 
+
                     <execution>
-                        <id>colors</id>
+                        <id>products</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>migrate</goal>
                         </goals>
                         <configuration>
-                            <configFile>services/colors/config/dev/flyway.conf</configFile>
+                            <configFile>services/products/config/dev/flyway.conf</configFile>
                         </configuration>
                     </execution>
 
-                    <execution>
-                    <id>sizes</id>
-                    <phase>compile</phase>
-                    <goals>
-                        <goal>migrate</goal>
-                    </goals>
-                    <configuration>
-                        <configFile>services/sizes/config/dev/flyway.conf</configFile>
-                    </configuration>
-                    </execution>
+
                 </executions>
             </plugin>
 

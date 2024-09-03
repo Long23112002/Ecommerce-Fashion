@@ -38,8 +38,8 @@ public class VoucherServiceImpl implements VoucherServise {
     private final JwtService JwtService;
 
     @Override
-    public ResponsePage<Voucher, VoucherResponse> filterVoucher(Long keyword, Pageable pageable) {
-        Page<Voucher> voucherResponsesPage = voucherRepository.getVoucherPage(keyword, pageable);
+    public ResponsePage<Voucher, VoucherResponse> filterVoucher(Long id,String createAt,Long createBy,Long discountId, Pageable pageable) {
+        Page<Voucher> voucherResponsesPage = voucherRepository.getFilterVoucherPage(id,createAt,createBy,discountId,pageable);
         return new ResponsePage<>(voucherResponsesPage, VoucherResponse.class);
     }
 

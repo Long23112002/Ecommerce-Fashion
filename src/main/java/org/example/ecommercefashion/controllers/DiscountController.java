@@ -32,8 +32,8 @@ public class DiscountController {
     private final DiscountService discountService;
 
     @GetMapping
-    public ResponsePage<Discount, DiscountResponse> FilerDiscount(Long keyword ,Pageable pageable){
-        return discountService.filterDiscount(keyword,pageable);
+    public ResponsePage<Discount, DiscountResponse> FilerDiscount(String type,String discountStatus,Long id ,Pageable pageable){
+        return discountService.filterDiscount(type,discountStatus,id,pageable);
     }
 
     @PostMapping

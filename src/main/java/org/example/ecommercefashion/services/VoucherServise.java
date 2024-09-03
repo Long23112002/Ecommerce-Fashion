@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface VoucherServise {
 
-    ResponsePage<Voucher, VoucherResponse> filterVoucher(Long keyword, Pageable pageable);
+    ResponsePage<Voucher, VoucherResponse> filterVoucher(Long id, String createAt, Long createBy, Long discountId, Pageable pageable);
 
     VoucherResponse add(VoucherRequest request, String token);
 

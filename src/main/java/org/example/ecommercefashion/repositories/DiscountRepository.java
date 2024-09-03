@@ -10,8 +10,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Long> {
-    @Query("select d from Discount d where (:id is NUll OR d.id = id)")
-    Page<Discount> getDiscountPage(@Param("id") Long id, Pageable pageable);
-
-
+    @Query("select d from Discount d where (:type is NULL OR CAST(d.type AS string) LIKE %:type%) " +
+            "and (:discountStatus is NULL OR CAST(d.discountStatus AS string) LIKE %:discountStatus%) " +
+            "and (:id is NULL OR d.id = :id)")
+    Page<Discount> getFilterDiscountPage(@Param("type") String type,
+                                         @Param("discountStatus") String discountStatus,
+                                         @Param("id") Long id,
+                                         Pageable pageable);
 }

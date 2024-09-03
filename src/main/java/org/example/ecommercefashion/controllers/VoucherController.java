@@ -30,8 +30,8 @@ public class VoucherController {
     private final VoucherServise voucherServise;
 
     @GetMapping
-    public ResponsePage<Voucher, VoucherResponse> getAll(Long keyword,Pageable pageable) {
-        return voucherServise.filterVoucher(keyword,pageable);
+    public ResponsePage<Voucher, VoucherResponse> getAll(Long id,String createAt,Long createBy,Long discountId,Pageable pageable) {
+        return voucherServise.filterVoucher(id,createAt,createBy,discountId,pageable);
     }
 
     @PostMapping

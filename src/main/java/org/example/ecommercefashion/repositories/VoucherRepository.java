@@ -8,8 +8,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+
 @Repository
 public interface VoucherRepository extends JpaRepository<Voucher, Long> {
-    @Query("SELECT s from  Voucher s where (:id is NULL OR s.id = :id)")
-    Page<Voucher> getVoucherPage(@Param("id") Long id, Pageable pageable);
+    @Query("SELECT s FROM Voucher s " +
+            "WHERE (:id IS NULL OR s.id = :id) " +
+            "AND (:createAt IS NULL OR CAST(s.createAt AS string) Like %:createAt%) " +
+            "AND (:createBy IS NULL OR s.createBy = :createBy) " +
+            "AND (:discountId IS NULL OR s.discount.id = :discountId)")
+    Page<Voucher> getFilterVoucherPage(@Param("id") Long id,
+                                       @Param("createAt") String createAt,
+                                       @Param("createBy") Long createBy,
+                                       @Param("discountId") Long discountId,
+                                       Pageable pageable);
+
 }

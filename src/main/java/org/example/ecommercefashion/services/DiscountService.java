@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface DiscountService {
 
-    ResponsePage<Discount, DiscountResponse> filterDiscount(Long keyword, Pageable pageable);
+    ResponsePage<Discount, DiscountResponse> filterDiscount(String type, String discountStatus, Long id, Pageable pageable);
 
     DiscountResponse add(DiscountRequest request, String token);
 

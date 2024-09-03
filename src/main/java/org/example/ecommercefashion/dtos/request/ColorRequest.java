@@ -22,10 +22,4 @@ public class ColorRequest {
     @Size(min = 2, max = 50, message = "Color name is between 2 and 50 characters")
     private String name;
 
-    private Long createdBy;
-
-    private Long updatedBy;
-
-    private Boolean deleted = false;
-
 }

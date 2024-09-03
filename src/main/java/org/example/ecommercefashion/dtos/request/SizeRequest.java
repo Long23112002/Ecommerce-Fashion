@@ -19,10 +19,4 @@ public class SizeRequest {
     @Size(max = 50, message = "Size name is between 1 and 50 characters")
     private String name;
 
-    private Long createdBy;
-
-    private Long updatedBy;
-
-    private Boolean deleted = false;
-
 }

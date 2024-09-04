@@ -5,6 +5,7 @@ Create TABLE discounts.discount
 (
     id BIGSERIAL PRIMARY KEY,
     code UUID NOT NULL DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
     condition JSON,
     type type_enum NOT NULL,
     value FLOAT,
@@ -14,7 +15,7 @@ Create TABLE discounts.discount
     discount_status discount_status_enum NOT NULL,
     create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    create_by VARCHAR(255),
-    update_by VARCHAR(255),
+    create_by BIGINT NOT NULL,
+    update_by BIGINT,
     deleted BOOLEAN
 )

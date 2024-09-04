@@ -8,8 +8,7 @@ import org.example.ecommercefashion.entities.Discount;
 import org.springframework.data.domain.Pageable;
 
 public interface DiscountService {
-
-    ResponsePage<Discount, DiscountResponse> filterDiscount(String type, String discountStatus, Long id, Pageable pageable);
+    ResponsePage<Discount, DiscountResponse> filterDiscount(String type, String discountStatus, String name, Pageable pageable);
 
     DiscountResponse add(DiscountRequest request, String token);
 

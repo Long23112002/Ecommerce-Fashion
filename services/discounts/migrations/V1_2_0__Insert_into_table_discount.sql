@@ -1,4 +1,5 @@
 INSERT INTO discounts.discount (code,
+                                name,
                                 condition,
                                 type,
                                 value,
@@ -12,6 +13,7 @@ INSERT INTO discounts.discount (code,
                                 update_by,
                                 deleted)
 VALUES (uuid_generate_v4(), -- Tạo UUID mới
+        'giam gia soc',
         '{"min_purchase": 1000, "category": "electronics"}',
         'PERCENTAGE',
         15.0,
@@ -21,11 +23,12 @@ VALUES (uuid_generate_v4(), -- Tạo UUID mới
         'ACTIVE',
         CURRENT_DATE,
         CURRENT_DATE,
-        'admin',
-        'admin',
+        1,
+        1,
         FALSE);
 
 INSERT INTO discounts.discount (code,
+                                name,
                                 condition,
                                 type,
                                 value,
@@ -39,6 +42,7 @@ INSERT INTO discounts.discount (code,
                                 update_by,
                                 deleted)
 VALUES (uuid_generate_v4(),
+        'giam gia soc',
         '{"min_purchase": 500, "category": "clothing"}',
         'FIXED_AMOUNT',
         50.0,
@@ -48,7 +52,7 @@ VALUES (uuid_generate_v4(),
         'ACTIVE',
         CURRENT_DATE,
         CURRENT_DATE,
-        'admin',
-        'admin',
+        1,
+        1,
         FALSE
        );

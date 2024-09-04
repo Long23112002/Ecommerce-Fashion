@@ -34,8 +34,8 @@ public class DiscountServiceImpl implements DiscountService {
     private final DiscountRepository discountRepository;
 
     @Override
-    public ResponsePage<Discount, DiscountResponse> filterDiscount(String type, String discountStatus,Long id,Pageable pageable) {
-        Page<Discount> discountResponsesPage = discountRepository.getFilterDiscountPage(type,discountStatus,id,pageable);
+    public ResponsePage<Discount, DiscountResponse> filterDiscount(String type, String discountStatus,String name,Pageable pageable) {
+        Page<Discount> discountResponsesPage = discountRepository.getFilterDiscountPage(type,discountStatus,name,pageable);
         return new ResponsePage<>(discountResponsesPage, DiscountResponse.class);
     }
 

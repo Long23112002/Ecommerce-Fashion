@@ -53,6 +53,9 @@ public class Discount {
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID code;
 
+    @Column(name = "name")
+    private String name;
+
     @Type(type = "json")
     @Column(name = "condition", columnDefinition = "json")
     private Condition condition;

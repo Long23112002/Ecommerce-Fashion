@@ -8,9 +8,9 @@ Create TABLE discounts.voucher
     create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    create_by VARCHAR(255),
-    update_by VARCHAR(255),
-    used_by VARCHAR(255),
+    create_by BIGINT NOT NULL,
+    update_by BIGINT,
+    used_by BIGINT,
     deleted BOOLEAN,
     FOREIGN KEY (id_discount) REFERENCES discounts.discount(id)
 );

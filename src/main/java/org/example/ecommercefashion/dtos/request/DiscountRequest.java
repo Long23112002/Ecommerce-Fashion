@@ -9,6 +9,7 @@ import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.model.Condition;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 import java.sql.Timestamp;
@@ -18,12 +19,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiscountRequest {
-    @NotNull(message = "Voucher code cannot be null")
     private UUID code;
 
     @Valid
     @NotNull(message = "condition cannot be null")
     private Condition condition;
+
+    @NotBlank(message = "name cannot be null")
+    private String name;
 
     @NotNull(message = "type is required")
     @EnumPattern(name = "type", regexp = "PERCENTAGE|FIXED_AMOUNT")

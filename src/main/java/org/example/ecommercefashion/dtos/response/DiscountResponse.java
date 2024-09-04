@@ -15,10 +15,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DiscountResponse {
     private Long id;
     private UUID code;
+    private String name;
     private Condition condition;
     private TypeDiscount type;
     private Double value;

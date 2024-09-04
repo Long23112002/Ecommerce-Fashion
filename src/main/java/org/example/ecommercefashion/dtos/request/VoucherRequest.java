@@ -14,7 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VoucherRequest {
-    @NotNull(message = "Voucher code cannot be null")
     private UUID code;
     @NotNull(message = "Creation time cannot be null")
     @PastOrPresent(message = "Creation time must be in the past or present")

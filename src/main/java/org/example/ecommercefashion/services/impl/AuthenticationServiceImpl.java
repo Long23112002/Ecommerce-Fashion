@@ -67,10 +67,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     return LoginResponse.builder()
         .authResponse(
-            AuthResponse.builder()
-                    .refreshToken(refreshToken)
-                    .accessToken(accessToken)
-                    .build())
+            AuthResponse.builder().refreshToken(refreshToken).accessToken(accessToken).build())
         .userResponse(
             UserResponse.builder()
                 .id(user.getId())
@@ -80,6 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .gender(user.getGender())
                 .phoneNumber(user.getPhoneNumber())
                 .avatar(user.getAvatar())
+                .isAdmin(user.getIsAdmin())
                 .build())
         .build();
   }

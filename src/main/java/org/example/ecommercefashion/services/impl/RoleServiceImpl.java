@@ -21,7 +21,9 @@ import org.example.ecommercefashion.services.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,14 +36,30 @@ public class RoleServiceImpl implements RoleService {
   private final RoleRepository roleRepository;
 
   @Override
-  public ResponsePage<Role, RoleResponse> filterRoles(String keyword,Pageable pageable) {
-    Page<Role> pageRole = roleRepository.filterRoles(keyword,pageable);
+  public ResponsePage<Role, RoleResponse> filterRoles(String keyword, Pageable pageable) {
+    Pageable sortedPageable =
+        PageRequest.of(
+            pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "id"));
+    Page<Role> pageRole = roleRepository.filterRoles(keyword, sortedPageable);
     return new ResponsePage<>(pageRole, RoleResponse.class);
   }
 
   @Override
   @Transactional
   public RoleResponse createRole(RoleRequest roleRequest) {
+    String roleName = roleRequest.getName();
+    Role existingRole =
+        entityManager
+            .createQuery("SELECT r FROM Role r WHERE r.name = :name", Role.class)
+            .setParameter("name", roleName)
+            .getResultStream()
+            .findFirst()
+            .orElse(null);
+
+    if (existingRole != null) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ROLE_EXISTED);
+    }
+
     Role role = new Role();
     FnCommon.coppyNonNullProperties(role, roleRequest);
 
@@ -57,21 +75,25 @@ public class RoleServiceImpl implements RoleService {
 
     role.setPermissions(permissionSet);
     entityManager.persist(role);
+
     return mapRoleToRoleResponse(role);
   }
 
   @Override
   @Transactional
   public RoleResponse updateRole(Long id, RoleRequest roleRequest) {
-    Optional<Role> role =
-        Optional.ofNullable(
-            Optional.of(entityManager.find(Role.class, id))
-                .orElseThrow(
-                    () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND)));
+    if (roleRepository.existsByName(roleRequest.getName())) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ROLE_EXISTED);
+    }
+    Role role =
+        roleRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND));
 
     FnCommon.coppyNonNullProperties(role, roleRequest);
-    entityManager.merge(role);
-    return mapRoleToRoleResponse(role.get());
+    role = entityManager.merge(role);
+    return mapRoleToRoleResponse(role);
   }
 
   @Override
@@ -85,6 +107,7 @@ public class RoleServiceImpl implements RoleService {
   }
 
   @Override
+  @Transactional
   public MessageResponse deleteRole(Long id) {
     Role role = entityManager.find(Role.class, id);
     if (role == null) {

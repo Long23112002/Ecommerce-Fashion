@@ -18,6 +18,7 @@ import org.example.ecommercefashion.httpclient.GoogleUserClient;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.Oauth2Service;
+import org.example.ecommercefashion.services.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,8 @@ public class Oauth2ServiceImpl implements Oauth2Service {
   private final GoogleUserClient googleUserClient;
 
   private final JwtService jwtService;
+
+  private final RefreshTokenService refreshTokenService;
 
   @NonFinal
   @Value("${facebook.client-id}")
@@ -90,6 +93,8 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       user.setAvatar(userInfo.getPicture().getData().getUrl());
       userRepository.save(user);
       jwtService.generateToken(user);
+      refreshTokenService.revokeAllUserToken(user);
+      refreshTokenService.saveUserToken(user, jwtService.generateRefreshToken(user));
       return LoginResponse.builder()
           .authResponse(
               AuthResponse.builder()
@@ -103,6 +108,9 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       existingUser.setDeleted(false);
       existingUser.setFacebookAccountId(userInfo.getId());
       existingUser.setAvatar(userInfo.getPicture().getData().getUrl());
+      refreshTokenService.revokeAllUserToken(existingUser);
+      refreshTokenService.saveUserToken(
+          existingUser, jwtService.generateRefreshToken(existingUser));
       userRepository.save(existingUser);
       return LoginResponse.builder()
           .authResponse(
@@ -136,29 +144,34 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       user.setFullName(userInfo.getName());
       user.setGender(GenderEnum.OTHER);
       user.setAvatar(userInfo.getPicture());
+      refreshTokenService.revokeAllUserToken(user);
+      refreshTokenService.saveUserToken(user, jwtService.generateRefreshToken(user));
       userRepository.save(user);
       return LoginResponse.builder()
-              .authResponse(
-                      AuthResponse.builder()
-                              .accessToken(jwtService.generateToken(user))
-                              .refreshToken(jwtService.generateRefreshToken(user))
-                              .build())
-              .userResponse(mapToUserResponse(user))
-              .build();
+          .authResponse(
+              AuthResponse.builder()
+                  .accessToken(jwtService.generateToken(user))
+                  .refreshToken(jwtService.generateRefreshToken(user))
+                  .build())
+          .userResponse(mapToUserResponse(user))
+          .build();
 
     } else {
       existingUser.setGoogleAccountId(userInfo.getId());
       existingUser.setAvatar(userInfo.getPicture());
       existingUser.setDeleted(false);
+      refreshTokenService.revokeAllUserToken(existingUser);
+      refreshTokenService.saveUserToken(
+          existingUser, jwtService.generateRefreshToken(existingUser));
       userRepository.save(existingUser);
       return LoginResponse.builder()
-              .authResponse(
-                      AuthResponse.builder()
-                              .accessToken(jwtService.generateToken(existingUser))
-                              .refreshToken(jwtService.generateRefreshToken(existingUser))
-                              .build())
-              .userResponse(mapToUserResponse(existingUser))
-              .build();
+          .authResponse(
+              AuthResponse.builder()
+                  .accessToken(jwtService.generateToken(existingUser))
+                  .refreshToken(jwtService.generateRefreshToken(existingUser))
+                  .build())
+          .userResponse(mapToUserResponse(existingUser))
+          .build();
     }
   }
 
@@ -169,6 +182,7 @@ public class Oauth2ServiceImpl implements Oauth2Service {
   private UserResponse mapToUserResponse(User user) {
     UserResponse userResponse = new UserResponse();
     FnCommon.copyNonNullProperties(userResponse, user);
+    userResponse.setIsAdmin(user.getIsAdmin());
     return userResponse;
   }
 }

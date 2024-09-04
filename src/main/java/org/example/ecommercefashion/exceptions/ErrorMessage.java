@@ -19,7 +19,9 @@ public enum ErrorMessage implements BaseErrorMessage {
     SOMETHING_WENT_WRONG("Something went wrong"),
     NOT_FOUND_BUCKET("Not found bucket"),
     ACCESS_DENIED("Access denied"),
-    IMAGE_NOT_FOUND("Image not found");
+    IMAGE_NOT_FOUND("Image not found"),
+    CHAT_ROOM_NOT_FOUND("chat room not found")
+    ;
 
     public String val;
 

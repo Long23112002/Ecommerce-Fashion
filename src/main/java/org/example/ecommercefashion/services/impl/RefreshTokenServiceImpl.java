@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.response.AuthResponse;
@@ -52,31 +53,25 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Override
   public AuthResponse refreshToken(HttpServletRequest request, HttpServletResponse response) {
     final String authHeader = request.getHeader("Authorization");
-    final String refreshToken;
-    final String email;
-    final String refreshTokenKey = jwtService.getJwtRefreshKey();
-
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN.val());
     }
 
-    refreshToken = authHeader.substring(7);
-    email = jwtService.extractUserName(refreshToken, refreshTokenKey);
+    final String refreshToken = authHeader.substring(7);
+    final String refreshTokenKey = jwtService.getJwtRefreshKey();
+    final String email = jwtService.extractUserName(refreshToken, refreshTokenKey);
+
     User user =
         Optional.ofNullable(userRepository.findByEmail(email))
             .orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
-    if (!user.getEmail().equals(email)) {
-      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN.val());
+    List<RefreshToken> tokens = refreshTokenRepository.findTokensByToken(refreshToken);
+    if (tokens.isEmpty()) {
+      throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.REFRESH_TOKEN_NOT_FOUND.val());
     }
 
-    RefreshToken existRefreshToken =
-        Optional.ofNullable(refreshTokenRepository.findByToken(refreshToken))
-            .orElseThrow(
-                () ->
-                    new ExceptionHandle(
-                        HttpStatus.NOT_FOUND, ErrorMessage.REFRESH_TOKEN_NOT_FOUND.val()));
+    RefreshToken existRefreshToken = tokens.get(0);
 
     if (!jwtService.isTokenValid(existRefreshToken.getToken(), user, refreshTokenKey)) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN.val());
@@ -88,6 +83,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     revokeAllUserToken(user);
     saveUserToken(user, newRefreshToken);
+
     return AuthResponse.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build();
   }
 }

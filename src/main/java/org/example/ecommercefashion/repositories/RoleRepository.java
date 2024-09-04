@@ -17,5 +17,6 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     Page<Role> filterRoles(@Param("keyword") String keyword, Pageable pageable);
 
 
+    boolean existsByName(String name);
 
 }

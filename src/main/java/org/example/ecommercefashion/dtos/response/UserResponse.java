@@ -33,5 +33,7 @@ public class UserResponse {
 
   private String avatar;
 
+  private Boolean isAdmin;
+
   private Set<RoleResponse> roles;
 }

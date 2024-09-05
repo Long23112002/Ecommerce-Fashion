@@ -88,7 +88,7 @@ public class User implements UserDetails, Serializable {
   @Column(nullable = false)
   private Boolean deleted = false;
 
-  @ManyToMany(fetch = FetchType.LAZY)
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_roles",
       schema = "users",

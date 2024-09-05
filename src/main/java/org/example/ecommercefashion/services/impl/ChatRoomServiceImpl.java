@@ -6,13 +6,16 @@ import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.entities.ChatRoom;
+import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ChatRoomRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,11 +43,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
+    @Transactional
     public ChatRoomResponse create(ChatRoomRequest request) {
         ChatRoom entity = FnCommon.copyProperties(ChatRoom.class, request);
         defaultCreateValue(entity);
         ChatRoom save = chatRoomRepository.save(entity);
-        ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, save);
+        ChatRoomResponse response = toDto(save);
         return response;
     }
 
@@ -52,6 +56,16 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         entity.setId(UUID.randomUUID().toString());
         entity.setCreateAt(new Date());
         entity.setDeleted(false);
+        entity.setIdsStaff(new ArrayList<>());
+    }
+
+    private ChatRoomResponse toDto(ChatRoom entity) {
+        ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
+        User user = userRepository.findById(entity.getIdClient())
+                .orElseThrow(()->new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND));
+        response.setNameClient(user.getFullName());
+        response.setAvatar(user.getAvatar());
+        return response;
     }
 
 }

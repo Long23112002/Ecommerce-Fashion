@@ -144,8 +144,8 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       user.setFullName(userInfo.getName());
       user.setGender(GenderEnum.OTHER);
       user.setAvatar(userInfo.getPicture());
-      refreshTokenService.revokeAllUserToken(user);
-      refreshTokenService.saveUserToken(user, jwtService.generateRefreshToken(user));
+//      refreshTokenService.revokeAllUserToken(user);
+//      refreshTokenService.saveUserToken(user, jwtService.generateRefreshToken(user));
       userRepository.save(user);
       return LoginResponse.builder()
           .authResponse(

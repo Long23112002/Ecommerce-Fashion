@@ -11,5 +11,4 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChatRoomRequest {
     private Long idClient;
-    private Long idStaff;
 }

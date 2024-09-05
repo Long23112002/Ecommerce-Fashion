@@ -20,9 +20,10 @@ public enum ErrorMessage implements BaseErrorMessage {
     NOT_FOUND_BUCKET("Not found bucket"),
     ACCESS_DENIED("Access denied"),
     IMAGE_NOT_FOUND("Image not found"),
-    CHAT_ROOM_NOT_FOUND("chat room not found"),
+    CHAT_ROOM_NOT_FOUND("Chat room not found"),
     ROLE_EXISTED("Role does not existed"),
-    WEBSOCKET_NOT_FOUND("websocket not found")
+    WEBSOCKET_NOT_FOUND("Websocket not found"),
+    USER_PERMISSION_DENIED ("user does not have the required permissions to access this action")
     ;
 
     public String val;

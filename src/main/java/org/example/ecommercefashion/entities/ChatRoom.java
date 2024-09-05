@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +23,7 @@ public class ChatRoom {
     private Long idClient;
 
     @Field("id_staff")
-    private Long idStaff;
+    private List<Long> idsStaff;
 
     @Field("create_at")
     private Date createAt;

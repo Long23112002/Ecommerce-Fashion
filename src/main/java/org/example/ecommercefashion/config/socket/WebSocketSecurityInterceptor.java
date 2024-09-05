@@ -4,6 +4,8 @@ package org.example.ecommercefashion.config.socket;
 import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.entities.ChatRoom;
+import org.example.ecommercefashion.entities.Permission;
+import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ChatRoomRepository;
@@ -17,6 +19,9 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -38,10 +43,9 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         }
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String url = accessor.getDestination();
-//            if (url.startsWith("/user/")) {
+            if (url.startsWith("/user/")) {
 //                verifyUserIdAndToken(accessor);
-//            } else
-            if (url.startsWith("/room/")) {
+            } else if (url.startsWith("/room/")) {
                 isUserInRoom(accessor);
             } else {
                 throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
@@ -50,7 +54,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         if (StompCommand.SEND.equals(accessor.getCommand())) {
             isUserInRoom(accessor);
         }
-
         return message;
     }
 
@@ -69,22 +72,22 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 //    }
 //
     private void isUserInRoom(StompHeaderAccessor accessor) {
-        try {
-            String idRoom = getIdRoomFromDestination(accessor);
-            String token = accessor.getFirstNativeHeader("Authorization");
-            ChatRoom chatRoom = chatRoomRepository.findById(idRoom)
-                    .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND));
-            Long idUser = jwtService.decodeToken(token).getUserId();
-            if (!chatRoom.getIdClient().equals(idUser) && !chatRoom.getIdStaff().equals(idUser)) {
-                throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
-            }
-        } catch (ExceptionHandle e){
-            if(e.getMessage().equals("JWT expired")){
+        String idRoom = getIdRoomFromDestination(accessor);
+        String token = accessor.getFirstNativeHeader("Authorization");
+        ChatRoom chatRoom = chatRoomRepository.findById(idRoom)
+                .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND));
+        Long idUser = jwtService.decodeToken(token).getUserId();
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.USER_NOT_FOUND));
 
-            }else{
-                throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
+        if (user.getIsAdmin()) {
+            boolean hasPermission = user.getRoles().stream()
+                    .flatMap(role -> role.getPermissions().stream())
+                    .anyMatch(permission -> permission.getName().equals("MESSAGE_CONSULT"));
+            if (!hasPermission) {
+                throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.USER_PERMISSION_DENIED);
             }
-        } catch (Exception e) {
+        } else if (!chatRoom.getIdClient().equals(user.getId())) {
             throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
         }
     }
@@ -92,12 +95,14 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     private String getIdRoomFromDestination(StompHeaderAccessor accessor) {
         String url = accessor.getDestination();
         StringBuilder idRoom = new StringBuilder(url);
-        if(url.startsWith("/app/chat.sendMessage/")){
-            idRoom.delete(0,"/app/chat.sendMessage/".length());
-        }else {
-            idRoom.delete(0,"/room/".length());
+        if (url.startsWith("/app/chat.sendMessage/")) {
+            idRoom.delete(0, "/app/chat.sendMessage/".length());
+        } else {
+            idRoom.delete(0, "/room/".length());
         }
         return idRoom.toString();
     }
 
+
 }
+

@@ -17,8 +17,8 @@ public class ChatRoomResponse {
 
     private Long idClient;
 
-    private Long idStaff;
+    private String nameClient;
 
-    private String nameReceiver;
+    private String avatar;
 
 }

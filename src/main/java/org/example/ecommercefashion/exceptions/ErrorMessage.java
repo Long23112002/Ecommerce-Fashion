@@ -21,7 +21,8 @@ public enum ErrorMessage implements BaseErrorMessage {
     ACCESS_DENIED("Access denied"),
     IMAGE_NOT_FOUND("Image not found"),
     CHAT_ROOM_NOT_FOUND("chat room not found"),
-    ROLE_EXISTED("Role does not existed")
+    ROLE_EXISTED("Role does not existed"),
+    WEBSOCKET_NOT_FOUND("websocket not found")
     ;
 
     public String val;

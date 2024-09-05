@@ -11,8 +11,8 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Condition {
-    @NotNull(message = "min_purchase cannot be null")
-    private Double min_purchase;
-    @NotBlank(message = "category cannot be null")
-    private String category;
+    private long ProductDetailId;
+    private long ProductId;
+    private long CategoryId;
+    private long BrandId;
 }

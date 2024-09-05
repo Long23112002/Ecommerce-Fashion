@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
@@ -59,8 +60,8 @@ public class UserController {
   }
 
   @GetMapping
-  public ResponsePage<User, UserResponse> getAllUsers(Pageable pageable) {
-    return userService.getAllUsers(pageable);
+  public ResponsePage<User, UserResponse> getAllUsers(UserParam param, Pageable pageable) {
+    return userService.getAllUsers(param, pageable);
   }
 
   @PatchMapping("/assign-user-role")
@@ -68,8 +69,8 @@ public class UserController {
     userService.assignUserRole(userRoleAssignRequest);
   }
 
-  public static void main(String[] args){
-     String password = "12345678";
+  public static void main(String[] args) {
+    String password = "12345678";
     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     String encodedPassword = passwordEncoder.encode(password);
     System.out.printf(encodedPassword);

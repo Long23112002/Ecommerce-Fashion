@@ -1,7 +1,6 @@
 package org.example.ecommercefashion.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
@@ -14,14 +13,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 @Tag(name = "User", description = "Endpoints for user management")
 public class UserController {
-
   private final UserService userService;
-
   @PostMapping
   public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) {
     return userService.createUser(userRequest);

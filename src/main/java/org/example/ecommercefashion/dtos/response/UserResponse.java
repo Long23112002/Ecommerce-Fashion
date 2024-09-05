@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Set;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,6 @@ import org.example.ecommercefashion.enums.GenderEnum;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
 public class UserResponse {
 
@@ -31,4 +32,8 @@ public class UserResponse {
   private GenderEnum gender;
 
   private String avatar;
+
+  private Boolean isAdmin;
+
+  private Set<RoleResponse> roles;
 }

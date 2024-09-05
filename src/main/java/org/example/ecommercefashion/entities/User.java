@@ -1,12 +1,16 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.ecommercefashion.enums.GenderEnum;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.Where;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,7 +29,12 @@ import java.util.stream.Collectors;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Where(clause = "deleted = false")
+@TypeDef(
+        name = "pgsql_enum",
+        typeClass = PostgreSQLEnumType.class
+)
 public class User implements UserDetails, Serializable {
 
 
@@ -51,6 +60,7 @@ public class User implements UserDetails, Serializable {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "gender")
+  @Type(type = "pgsql_enum")
   private GenderEnum gender;
 
   @Column(columnDefinition = "TEXT", name = "avatar")
@@ -81,6 +91,7 @@ public class User implements UserDetails, Serializable {
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "user_roles",
+      schema = "users",
       joinColumns = @JoinColumn(name = "id_user"),
       inverseJoinColumns = @JoinColumn(name = "id_role"))
   @JsonIgnore

@@ -36,6 +36,14 @@ spring:
   server:
     port: ${PORT_SERVER}
 
+  data:
+    mongodb:
+      host: ${MONGODB_HOST}
+      port: ${MONGODB_PORT}
+      database: ${MONGODB_DATABASE}
+      username: ${MONGODB_USERNAME}
+      password: ${MONGODB_PASSWORD}
+
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/ecommerce-fashion
     username: ${DATABASE_USERNAME}

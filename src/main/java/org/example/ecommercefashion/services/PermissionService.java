@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.services;
 
+import org.example.ecommercefashion.dtos.request.AssignPermissionRequest;
 import org.example.ecommercefashion.dtos.request.PermissionRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.PermissionResponse;
@@ -18,4 +19,6 @@ public interface PermissionService {
   PermissionResponse updatePermission(Long id, PermissionRequest permissionRequest);
 
   ResponsePage<Permission, PermissionResponse> getAllPermissions(Pageable pageable);
+
+  MessageResponse assignPermissionToRole(AssignPermissionRequest assignPermissionRequest);
 }

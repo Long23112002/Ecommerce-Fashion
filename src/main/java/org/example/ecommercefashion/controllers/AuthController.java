@@ -11,10 +11,8 @@ import org.example.ecommercefashion.dtos.request.FacebookLoginRequest;
 import org.example.ecommercefashion.dtos.request.LoginRequest;
 import org.example.ecommercefashion.dtos.request.ResetPasswordRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
-import org.example.ecommercefashion.dtos.response.AuthResponse;
-import org.example.ecommercefashion.dtos.response.LoginResponse;
-import org.example.ecommercefashion.dtos.response.MessageResponse;
-import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.dtos.response.*;
+import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.AuthenticationService;
 import org.example.ecommercefashion.services.Oauth2Service;
 import org.example.ecommercefashion.services.RefreshTokenService;
@@ -24,8 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Api(tags = "Authentication")
-//@Tag(name = "Authentication", description = "Endpoints for authentication")
+@Api(tags = "Auth", value = "Endpoints for authentication")
 public class AuthController {
 
   private final AuthenticationService authenticationService;
@@ -33,6 +30,8 @@ public class AuthController {
   private final RefreshTokenService refreshTokenService;
 
   private final Oauth2Service oauth2Service;
+
+  private final JwtService jwtService;
 
   @PostMapping("/login")
   public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -58,12 +57,20 @@ public class AuthController {
   }
 
   @PostMapping("/facebook-login")
-  public AuthResponse facebookLogin(@RequestBody FacebookLoginRequest facebookLoginRequest) {
+  public LoginResponse facebookLogin(@RequestBody FacebookLoginRequest facebookLoginRequest) {
     return oauth2Service.authenticateFacebookUser(facebookLoginRequest.getCode());
   }
 
   @PostMapping("/google-login")
-  public AuthResponse googleLogin(@RequestParam("code") String code) {
+  public LoginResponse googleLogin(@RequestParam("code") String code) {
     return oauth2Service.authenticateGoogleUser(code);
+  }
+
+  @PostMapping("/claim")
+  public JwtResponse claim(@RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
+    }
+    return jwtService.decodeToken(token);
   }
 }

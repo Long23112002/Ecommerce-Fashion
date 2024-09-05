@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.services;
 
+import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
@@ -24,7 +25,7 @@ public interface UserService {
 
   MessageResponse changePassword(ChangePasswordRequest changePasswordRequest);
 
-  ResponsePage<User, UserResponse> getAllUsers(Pageable pageable);
+  ResponsePage<User, UserResponse> getAllUsers(UserParam userParam,Pageable pageable);
 
   MessageResponse assignUserRole(UserRoleAssignRequest userRoleAssignRequest);
 }

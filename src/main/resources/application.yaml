@@ -67,6 +67,15 @@ spring:
           auth: true
           starttls:
             enable: true
+  quartz:
+    job:
+      store:
+        type: jdbc
+    properties:
+      org:
+        quartz:
+          threadPool:
+            threadCount:5
 #mailgun:
 #  apiKey: 1ca13d6dd4d32530a327dab7519b8097-2b91eb47-3b79f8c3
 #  domain: sandboxd33d1c65feb7420282cf794cefdc8a8c.mailgun.org

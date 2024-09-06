@@ -29,8 +29,8 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponsePage<Category, CategoryResponse> getAll(String name, Integer lever, Pageable pageable) {
-        return categoryService.filterVoucher(name, lever, pageable);
+    public ResponsePage<Category, CategoryResponse> getAll(String name,Long createBy, Pageable pageable) {
+        return categoryService.filterCategory(name,createBy,pageable);
     }
 
     @PostMapping

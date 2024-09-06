@@ -32,8 +32,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final JwtService JwtService;
 
     @Override
-    public ResponsePage<Category, CategoryResponse> filterVoucher(String name, Integer lever, Pageable pageable) {
-        Page<Category> CategoryResponsePage = categoryRepository.filterCategories(name, lever, pageable);
+    public ResponsePage<Category, CategoryResponse> filterCategory(String name,Long createBy, Pageable pageable) {
+        Page<Category> CategoryResponsePage = categoryRepository.filterCategories(name,createBy, pageable);
         return new ResponsePage<>(CategoryResponsePage, CategoryResponse.class);
     }
 
@@ -111,9 +111,17 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
         );
-        category.setDeleted(true);
+        markAsDeleted(category);
+
         categoryRepository.save(category);
 
-        return MessageResponse.builder().message("Category deleted successfully").build();
+        return MessageResponse.builder().message("Category and related records deleted successfully").build();
+    }
+    private void markAsDeleted(Category category) {
+        category.setDeleted(true);
+
+        for (Category subCategory : category.getSubCategories()) {
+            markAsDeleted(subCategory);
+        }
     }
 }

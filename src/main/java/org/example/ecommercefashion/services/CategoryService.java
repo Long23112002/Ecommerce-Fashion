@@ -9,7 +9,7 @@ import org.example.ecommercefashion.entities.Category;
 import org.springframework.data.domain.Pageable;
 
 public interface CategoryService {
-    ResponsePage<Category, CategoryResponse> filterVoucher(String name, Integer lever, Pageable pageable);
+    ResponsePage<Category, CategoryResponse> filterCategory(String name,Long createBy, Pageable pageable);
 
     CategoryResponse add(CategoryRequest request, String token);
 

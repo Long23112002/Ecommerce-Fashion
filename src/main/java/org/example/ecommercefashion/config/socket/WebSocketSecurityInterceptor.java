@@ -43,9 +43,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         }
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String url = accessor.getDestination();
-            if (url.startsWith("/user/")) {
-//                verifyUserIdAndToken(accessor);
-            } else if (url.startsWith("/room/")) {
+            if (url.startsWith("/user/") || url.startsWith("/room/")) {
                 isUserInRoom(accessor);
             } else {
                 throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
@@ -57,20 +55,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         return message;
     }
 
-    //    private void verifyUserIdAndToken(StompHeaderAccessor accessor) {
-//        try {
-//            String idUser = accessor.getFirstNativeHeader("idUser");
-//            String token = accessor.getFirstNativeHeader("Authorization");
-//            User userById = userRepository.findById(Integer.valueOf(idUser)).get();
-//            User userByToken = authenticationService.decodeToUser(token);
-//            if (!userById.getId().equals(userByToken.getId())) {
-//                throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
-//            }
-//        } catch (Exception e) {
-//            throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
-//        }
-//    }
-//
     private void isUserInRoom(StompHeaderAccessor accessor) {
         String idRoom = getIdRoomFromDestination(accessor);
         String token = accessor.getFirstNativeHeader("Authorization");
@@ -79,15 +63,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         Long idUser = jwtService.decodeToken(token).getUserId();
         User user = userRepository.findById(idUser)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.USER_NOT_FOUND));
-
-        if (user.getIsAdmin()) {
-            boolean hasPermission = user.getRoles().stream()
-                    .flatMap(role -> role.getPermissions().stream())
-                    .anyMatch(permission -> permission.getName().equals("MESSAGE_CONSULT"));
-            if (!hasPermission) {
-                throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.USER_PERMISSION_DENIED);
-            }
-        } else if (!chatRoom.getIdClient().equals(user.getId())) {
+        if (!chatRoom.getIdClient().equals(user.getId()) && !user.getIsAdmin()) {
             throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_DENIED);
         }
     }

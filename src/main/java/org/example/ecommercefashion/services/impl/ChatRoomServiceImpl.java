@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,6 +27,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     final ChatRoomRepository chatRoomRepository;
     final UserRepository userRepository;
+
+    @Override
+    public List<ChatRoomResponse> findAllChatRoom() {
+        return chatRoomRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
 
     @Override
     public String findIdChatRoomByUserId(Long id) {
@@ -62,7 +70,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private ChatRoomResponse toDto(ChatRoom entity) {
         ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
         User user = userRepository.findById(entity.getIdClient())
-                .orElseThrow(()->new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND));
+                .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND));
         response.setNameClient(user.getFullName());
         response.setAvatar(user.getAvatar());
         return response;

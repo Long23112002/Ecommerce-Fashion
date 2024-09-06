@@ -20,19 +20,19 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Data
-@Table(name = "voucher", schema = "discounts")
+@Table(name = "category", schema = "categorys")
 @Where(clause = "deleted = false")
-public class Voucher {
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code", unique = true, updatable = false)
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID code;
+    @Column(name = "name")
+    private String name;
 
+    @Column(name = "lever")
+    private Integer lever;
 
     @Column(name = "create_at", updatable = false)
     @CreationTimestamp
@@ -45,26 +45,18 @@ public class Voucher {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateAt;
 
-
-    @Column(name = "used_at")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Timestamp usedAt;
-
-    @Column(name = "create_by")
+    @Column(name = "create_by",updatable = false)
     private Long createBy;
 
     @Column(name = "update_by")
     private Long updateBy;
 
-    @Column(name = "used_by")
-    private Long usedBy;
-
-    @Column(name = "deleted")
-    private Boolean deleted ;
+    @Column(nullable = false)
+    private Boolean deleted = false;
 
     @ManyToOne
-    @JoinColumn(name = "id_discount")
+    @JoinColumn(name = "parent_id")
     @JsonBackReference
-    private Discount discount;
+    private Category parentCategory;
 
 }

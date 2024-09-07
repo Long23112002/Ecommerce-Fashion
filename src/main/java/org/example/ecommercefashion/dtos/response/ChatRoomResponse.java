@@ -21,4 +21,8 @@ public class ChatRoomResponse {
 
     private String avatar;
 
+    private Boolean seen;
+
+    private String lastChat;
+
 }

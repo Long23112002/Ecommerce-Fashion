@@ -22,9 +22,6 @@ public class ChatRoom {
     @Field("id_client")
     private Long idClient;
 
-    @Field("id_staff")
-    private List<Long> idsStaff;
-
     @Field("create_at")
     private Date createAt;
 

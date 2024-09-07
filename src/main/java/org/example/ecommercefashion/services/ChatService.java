@@ -12,4 +12,6 @@ public interface ChatService {
     ChatResponse create(ChatRequest request);
 
     List<ChatResponse> findAllChatByIdChatRoom(String id);
+
+    void seenAllChatByIdChatRoom(String id);
 }

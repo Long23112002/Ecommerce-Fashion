@@ -8,8 +8,10 @@ import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.example.ecommercefashion.services.ChatService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +31,7 @@ public class ChatRoomController {
     public List<ChatRoomResponse> findAllChatRoom() {
        return chatRoomService.findAllChatRoom();
     }
+
     @GetMapping("/user/{id}")
     public String findIdChatRoomByUserId(@PathVariable("id") Long id) {
        return chatRoomService.findIdChatRoomByUserId(id);
@@ -37,6 +40,11 @@ public class ChatRoomController {
     @GetMapping("/chats/{id}")
     public List<ChatResponse> findAllChatByIdChatRoom(@PathVariable("id") String id) {
        return chatService.findAllChatByIdChatRoom(id);
+    }
+
+    @PatchMapping("/chats/{id}")
+    public void seenAllChatByIdChatRoom(@PathVariable("id") String id) {
+        chatService.seenAllChatByIdChatRoom(id);
     }
 
     @PostMapping

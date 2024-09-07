@@ -5,9 +5,11 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
+import org.example.ecommercefashion.entities.Chat;
 import org.example.ecommercefashion.entities.ChatRoom;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.ChatRepository;
 import org.example.ecommercefashion.repositories.ChatRoomRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class ChatRoomServiceImpl implements ChatRoomService {
 
     final ChatRoomRepository chatRoomRepository;
+    final ChatRepository chatRepository;
     final UserRepository userRepository;
 
     @Override
@@ -64,7 +67,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         entity.setId(UUID.randomUUID().toString());
         entity.setCreateAt(new Date());
         entity.setDeleted(false);
-        entity.setIdsStaff(new ArrayList<>());
     }
 
     private ChatRoomResponse toDto(ChatRoom entity) {
@@ -73,6 +75,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND));
         response.setNameClient(user.getFullName());
         response.setAvatar(user.getAvatar());
+        Optional<Chat> optional = chatRepository.findLastChatByIdChatRoom(entity.getId());
+        if (optional.isPresent()) {
+            Chat chat = optional.get();
+            response.setLastChat(chat.getContent());
+            response.setSeen(chat.getSeen());
+        }
         return response;
     }
 

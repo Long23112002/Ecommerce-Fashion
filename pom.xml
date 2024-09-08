@@ -154,7 +154,10 @@
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
 
 
     </dependencies>
@@ -214,6 +217,20 @@
                         </configuration>
                     </execution>
 
+
+                    <execution>
+                        <id>products</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                    <configuration>
+                        <configFile>services/discounts/config/dev/flyway.conf</configFile>
+                    </configuration>
+                </execution>
+
+
+
                     <execution>
                         <id>products</id>
                         <phase>compile</phase>
@@ -224,6 +241,8 @@
                             <configFile>services/products/config/dev/flyway.conf</configFile>
                         </configuration>
                     </execution>
+
+
                 </executions>
             </plugin>
 

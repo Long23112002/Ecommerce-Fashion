@@ -1,1 +1,0 @@
-ALTER TABLE sizes.size RENAME COLUMN update_by TO updated_by;

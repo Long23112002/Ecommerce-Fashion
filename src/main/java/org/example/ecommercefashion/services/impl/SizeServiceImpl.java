@@ -20,7 +20,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -34,8 +33,6 @@ public class SizeServiceImpl implements SizeService {
     private final UserRepository userRepository;
 
     private final JwtService jwtService;
-
-    private ModelMapper modelMapper;
 
     private UserResponse getInforUser(Long id) {
         if (id == null) {
@@ -53,7 +50,8 @@ public class SizeServiceImpl implements SizeService {
     @Override
     public ResponsePage<Size, SizeResponse> getSizePage(String name, Pageable pageable) {
         Page<Size> sizePage = sizeRepository.getSizePage(name, pageable);
-        return new ResponsePage<>(sizePage, SizeResponse.class);
+        Page<SizeResponse> sizeResponsePage = sizePage.map(size -> mapSizeToSizeResponse(size));
+        return new ResponsePage<>(sizeResponsePage);
     }
 
     @Override
@@ -126,6 +124,8 @@ public class SizeServiceImpl implements SizeService {
     private SizeResponse mapSizeToSizeResponse(Size size) {
         SizeResponse sizeResponse = new SizeResponse();
         FnCommon.copyNonNullProperties(sizeResponse, size);
+        sizeResponse.setCreatedBy(getInforUser(size.getCreatedBy()));
+        sizeResponse.setUpdatedBy(getInforUser(size.getUpdatedBy()));
         return sizeResponse;
     }
 

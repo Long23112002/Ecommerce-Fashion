@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "size",schema = "sizes")
+@Table(name = "size",schema = "products")
 @Entity
 @Where(clause = "deleted = false")
 public class Size {

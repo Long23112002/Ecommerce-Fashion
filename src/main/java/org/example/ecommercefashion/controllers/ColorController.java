@@ -31,9 +31,9 @@ public class ColorController {
     private final ColorService colorService;
 
     @GetMapping
-    public ResponsePage<Color, ColorResponse> getColorPage(@RequestParam(defaultValue = "", required = false) String color,
+    public ResponsePage<Color, ColorResponse> getColorPage(@RequestParam(defaultValue = "", required = false) String name,
                                                            Pageable pageable) {
-        return colorService.getColorPage(color, pageable);
+        return colorService.getColorPage(name, pageable);
     }
 
     @GetMapping("{id}")

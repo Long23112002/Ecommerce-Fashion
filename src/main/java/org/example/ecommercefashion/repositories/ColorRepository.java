@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ColorRepository extends JpaRepository<Color,Long> {
-    @Query("SELECT c FROM Color c WHERE (:name IS NULL OR c.name LIKE %:name%)")
+    @Query("SELECT c FROM Color c WHERE (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')))")
     Page<Color> getColorPage(@Param("name") String name, Pageable pageable);
+
+    Boolean existsByName(String name);
 }

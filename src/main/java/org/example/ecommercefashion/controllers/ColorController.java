@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.controllers;
 
+import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ColorRequest;
 import org.example.ecommercefashion.dtos.request.SizeRequest;
@@ -27,6 +28,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("api/v1/color")
 @RequiredArgsConstructor
+@Api(tags = "Color", value = "Endpoints for color")
 public class ColorController {
     private final ColorService colorService;
 

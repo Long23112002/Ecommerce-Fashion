@@ -35,6 +35,12 @@ public class ResponsePage<T, S> {
     metaData = new MetaData(page);
   }
 
+  public ResponsePage(List<S> data, Page<T> page) {
+    this.data = data;
+    this.metaData = new MetaData(page);
+  }
+
+
   public ResponsePage(Pageable page, Long total, List<T> listInput, Class<S> s) {
     ModelMapper mapper = new ModelMapper();
     List<S> list = new ArrayList<>();

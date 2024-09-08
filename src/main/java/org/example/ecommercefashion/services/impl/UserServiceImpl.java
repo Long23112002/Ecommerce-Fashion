@@ -2,12 +2,14 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
-import javax.persistence.EntityManager;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
@@ -40,8 +42,15 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public UserResponse createUser(UserRequest userRequest) {
+    validateEmail(userRequest.getEmail());
+    validatePhone(userRequest.getPhoneNumber());
     User user = new User();
+    if (userRequest.getAvatar() == null) {
+      user.setAvatar(avatarDefault());
+    }
     FnCommon.copyProperties(user, userRequest);
+    user.setSlugEmail(userRequest.getEmail());
+    user.setSlugFullName(userRequest.getFullName());
     user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
     entityManager.persist(user);
     return mapEntityToResponse(user);
@@ -51,10 +60,22 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public UserResponse updateUser(Long id, UserRequest userRequest) {
     User user = entityManager.find(User.class, id);
-    if (user == null) {
-      return null;
+    if (!Objects.equals(user.getEmail(), userRequest.getEmail())) {
+      validateEmail(userRequest.getEmail());
     }
+
+    if (!Objects.equals(user.getPhoneNumber(), userRequest.getPhoneNumber())) {
+      validatePhone(userRequest.getPhoneNumber());
+    }
+
+    if (userRequest.getAvatar() == null) {
+      user.setAvatar(avatarDefault());
+    }
+
     FnCommon.copyProperties(user, userRequest);
+    user.setSlugEmail(userRequest.getEmail());
+    user.setSlugFullName(userRequest.getFullName());
+    user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
     entityManager.merge(user);
     return mapEntityToResponse(user);
   }
@@ -109,8 +130,8 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public ResponsePage<User, UserResponse> getAllUsers(Pageable pageable) {
-    Page<User> userPage = userRepository.findAll(pageable);
+  public ResponsePage<User, UserResponse> getAllUsers(UserParam userParam, Pageable pageable) {
+    Page<User> userPage = userRepository.filterUser(userParam, pageable);
     return new ResponsePage<>(userPage, UserResponse.class);
   }
 
@@ -137,10 +158,14 @@ public class UserServiceImpl implements UserService {
   private UserResponse mapEntityToResponse(User user) {
     UserResponse userResponse = new UserResponse();
     FnCommon.copyProperties(userResponse, user);
-    Set<RoleResponse> roleResponses = user.getRoles().stream()
-            .map(this::mapEntityToResponse)
-            .collect(Collectors.toSet());
-    userResponse.setRoles(roleResponses);
+    if (user.getRoles() != null) {
+      Set<RoleResponse> roleResponses =
+          user.getRoles().stream().map(this::mapEntityToResponse).collect(Collectors.toSet());
+      userResponse.setRoles(roleResponses);
+    } else {
+      userResponse.setRoles(Collections.emptySet());
+    }
+
     return userResponse;
   }
 
@@ -148,5 +173,21 @@ public class UserServiceImpl implements UserService {
     RoleResponse roleResponse = new RoleResponse();
     FnCommon.copyProperties(roleResponse, role);
     return roleResponse;
+  }
+
+  private String avatarDefault() {
+    return "https://scontent.fhan18-1.fna.fbcdn.net/v/t1.30497-1/453178253_471506465671661_2781666950760530985_n.png?stp=dst-png_s200x200&_nc_cat=1&ccb=1-7&_nc_sid=136b72&_nc_eui2=AeGpt-IzdO8nSbIthaK0yMISWt9TLzuBU1Ba31MvO4FTULwl6agze3fL9zZt1hbXkxGnZ0S8ZnZYCACyZt-MJXrQ&_nc_ohc=VVXDQ2ftWTsQ7kNvgFsi6op&_nc_ht=scontent.fhan18-1.fna&oh=00_AYD57d7dbnmi8QDkVFuJasFjTrN7RyXY3KZlU7_wIHXELA&oe=67008E3A";
+  }
+
+  private void validatePhone(String phoneNumber) {
+    if (userRepository.existsByPhoneNumberAndDeleted(phoneNumber , false)) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PHONE_EXISTED.val());
+    }
+  }
+
+  private void validateEmail(String email) {
+    if (userRepository.existsByEmailAndDeleted(email , false)) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_EXISTED.val());
+    }
   }
 }

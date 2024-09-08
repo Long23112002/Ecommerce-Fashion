@@ -28,6 +28,7 @@ import javax.validation.Valid;
 @Slf4j
 @RequestMapping("api/v1/size")
 @RequiredArgsConstructor
+@Api(tags = "Size", value = "Endpoints for size")
 public class SizeController {
 
     private final SizeService sizeService;

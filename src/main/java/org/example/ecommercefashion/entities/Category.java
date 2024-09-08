@@ -22,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Data
-@Table(name = "category", schema = "categorys")
+@Table(name = "category", schema = "products")
 @Where(clause = "deleted = false")
 public class Category {
 

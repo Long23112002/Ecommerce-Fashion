@@ -215,13 +215,13 @@
                     </execution>
 
                     <execution>
-                        <id>categorys</id>
+                        <id>products</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>migrate</goal>
                         </goals>
                         <configuration>
-                            <configFile>services/categorys/config/dev/flyway.conf</configFile>
+                            <configFile>services/products/config/dev/flyway.conf</configFile>
                         </configuration>
                     </execution>
                 </executions>

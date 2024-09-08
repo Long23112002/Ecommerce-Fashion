@@ -1,4 +1,4 @@
-CREATE TABLE categorys.category
+CREATE TABLE products.category
 (
     id        BIGSERIAL PRIMARY KEY,
     name      VARCHAR(50) NOT NULL,

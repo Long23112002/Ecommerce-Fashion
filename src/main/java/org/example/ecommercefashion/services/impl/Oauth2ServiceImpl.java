@@ -91,6 +91,8 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       user.setGender(GenderEnum.OTHER);
       user.setFullName(userInfo.getName());
       user.setAvatar(userInfo.getPicture().getData().getUrl());
+      user.setSlugFullName(userInfo.getName());
+      user.setSlugEmail(userInfo.getEmail());
       userRepository.save(user);
       jwtService.generateToken(user);
       refreshTokenService.revokeAllUserToken(user);
@@ -144,8 +146,10 @@ public class Oauth2ServiceImpl implements Oauth2Service {
       user.setFullName(userInfo.getName());
       user.setGender(GenderEnum.OTHER);
       user.setAvatar(userInfo.getPicture());
-//      refreshTokenService.revokeAllUserToken(user);
-//      refreshTokenService.saveUserToken(user, jwtService.generateRefreshToken(user));
+      user.setSlugFullName(userInfo.getName());
+      user.setSlugEmail(userInfo.getEmail());
+      //      refreshTokenService.revokeAllUserToken(user);
+      //      refreshTokenService.saveUserToken(user, jwtService.generateRefreshToken(user));
       userRepository.save(user);
       return LoginResponse.builder()
           .authResponse(

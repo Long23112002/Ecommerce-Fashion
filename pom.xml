@@ -219,7 +219,7 @@
 
 
                     <execution>
-                        <id>discounts</id>
+                        <id>products</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>migrate</goal>

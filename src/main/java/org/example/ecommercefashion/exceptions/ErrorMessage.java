@@ -3,7 +3,7 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
-
+    CATEGORY_NOT_FOUND("Category not found"),
     SUCCESS("Success"),
     FALSE("False"),
     ROLE_NOT_FOUND("Role not found"),

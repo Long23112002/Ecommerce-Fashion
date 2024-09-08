@@ -34,7 +34,10 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
-            request -> request.antMatchers("/api/v1/auth/**").permitAll().anyRequest().permitAll())
+            request -> request
+                    .antMatchers("/api/v1/auth/**").permitAll()
+                    .antMatchers("/ws/**").permitAll()
+                    .anyRequest().permitAll())
         .sessionManagement(
             manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider)
@@ -44,10 +47,11 @@ public class SecurityConfig {
                 cors.configurationSource(
                     request -> {
                       CorsConfiguration corsConfig = new CorsConfiguration();
-                      corsConfig.addAllowedOrigin("*");
+                      corsConfig.addAllowedOrigin("http://localhost:5173"); // Thái thay đổi
                       corsConfig.setAllowedMethods(
                           Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                       corsConfig.addAllowedHeader("*");
+                      corsConfig.setAllowCredentials(true); // Thái thay đổi
                       return corsConfig;
                     }))
         .logout()

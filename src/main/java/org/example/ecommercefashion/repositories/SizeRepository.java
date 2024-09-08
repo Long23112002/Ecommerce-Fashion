@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SizeRepository extends JpaRepository<Size, Long> {
-    @Query("SELECT s FROM Size s WHERE (:name IS NULL OR s.name LIKE %:name%)")
+    @Query("SELECT s FROM Size s WHERE (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%')))")
     Page<Size> getSizePage(@Param("name") String name, Pageable pageable);
+
+    Boolean existsByName(String name);
 }

@@ -27,6 +27,7 @@ public enum ErrorMessage implements BaseErrorMessage {
     USER_PERMISSION_DENIED("user does not have the required permissions to access this action"),
     EMAIL_EXISTED("Email của bạn đã tồn tại trong hệ thống"),
     PHONE_EXISTED("Số điện thoại của bạn đã tồn tại trong hệ thống"),
+    CHAT_ROOM_NOT_FOUND("Chat room not found"),
     ;
 
 

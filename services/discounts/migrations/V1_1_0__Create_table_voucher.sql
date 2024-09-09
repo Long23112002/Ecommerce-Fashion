@@ -11,6 +11,6 @@ Create TABLE discounts.voucher
     create_by BIGINT NOT NULL,
     update_by BIGINT,
     used_by BIGINT,
-    deleted BOOLEAN,
+    deleted BOOLEAN default FALSE ,
     FOREIGN KEY (id_discount) REFERENCES discounts.discount(id)
 );

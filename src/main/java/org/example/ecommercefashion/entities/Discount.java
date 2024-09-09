@@ -101,7 +101,7 @@ public class Discount {
     private Long updateBy;
 
     @Column(name = "deleted")
-    private Boolean deleted;
+    private Boolean deleted = false;
 
     @OneToMany(mappedBy = "discount")
     @JsonIgnoreProperties("discount")

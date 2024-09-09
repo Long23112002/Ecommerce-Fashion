@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.Param.VoucherParam;
 import org.example.ecommercefashion.dtos.request.VoucherRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
@@ -30,8 +31,8 @@ public class VoucherController {
     private final VoucherServise voucherServise;
 
     @GetMapping
-    public ResponsePage<Voucher, VoucherResponse> getAll(Long id,String createAt,Long createBy,Long discountId,Pageable pageable) {
-        return voucherServise.filterVoucher(id,createAt,createBy,discountId,pageable);
+    public ResponsePage<Voucher, VoucherResponse> getAll(VoucherParam param, Pageable pageable) {
+        return voucherServise.filterVoucher(param,pageable);
     }
 
     @PostMapping

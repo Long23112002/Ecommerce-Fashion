@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.services;
 
+import org.example.ecommercefashion.dtos.Param.VoucherParam;
 import org.example.ecommercefashion.dtos.request.VoucherRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
@@ -9,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface VoucherServise {
 
-    ResponsePage<Voucher, VoucherResponse> filterVoucher(Long id, String createAt, Long createBy, Long discountId, Pageable pageable);
+    ResponsePage<Voucher, VoucherResponse> filterVoucher(VoucherParam param, Pageable pageable);
 
     VoucherResponse add(VoucherRequest request, String token);
 

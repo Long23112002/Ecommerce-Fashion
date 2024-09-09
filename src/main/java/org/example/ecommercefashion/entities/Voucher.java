@@ -60,7 +60,7 @@ public class Voucher {
     private Long usedBy;
 
     @Column(name = "deleted")
-    private Boolean deleted ;
+    private Boolean deleted = false;
 
     @ManyToOne
     @JoinColumn(name = "id_discount")

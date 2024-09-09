@@ -17,5 +17,5 @@ Create TABLE discounts.discount
     update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     create_by BIGINT NOT NULL,
     update_by BIGINT,
-    deleted BOOLEAN
+    deleted BOOLEAN default FALSE;
 )

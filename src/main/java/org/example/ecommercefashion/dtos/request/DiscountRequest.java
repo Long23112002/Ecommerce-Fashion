@@ -48,18 +48,5 @@ public class DiscountRequest {
     @EnumPattern(name = "discountStatus", regexp = "ACTIVE|INACTIVE|EXPIRED")
     private StatusDiscount discountStatus;
 
-    @NotNull(message = "Creation date cannot be null")
-    @PastOrPresent(message = "Creation date must be in the past or present")
-    private Timestamp createAt;
-
-    private Timestamp updateAt;
-
-    @NotNull(message = "Created by cannot be null")
-    private Long createBy;
-
-    private Long updateBy;
-
-    @NotNull(message = "Deleted status cannot be null")
-    private Boolean deleted;
 
 }

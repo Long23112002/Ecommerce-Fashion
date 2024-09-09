@@ -14,7 +14,7 @@ INSERT INTO discounts.discount (code,
                                 deleted)
 VALUES (uuid_generate_v4(), -- Tạo UUID mới
         'giam gia soc',
-        '{"min_purchase": 1000, "category": "electronics"}',
+        '{"productDetailId": 1,"productId":1,"categoryId":1,"brandId":1}',
         'PERCENTAGE',
         15.0,
         200.0,
@@ -43,7 +43,7 @@ INSERT INTO discounts.discount (code,
                                 deleted)
 VALUES (uuid_generate_v4(),
         'giam gia soc',
-        '{"min_purchase": 500, "category": "clothing"}',
+        '{"productDetailId": 1,"productId":1,"categoryId":1,"brandId":1}',
         'FIXED_AMOUNT',
         50.0,
         100.0,

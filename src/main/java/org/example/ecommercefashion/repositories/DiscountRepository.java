@@ -1,6 +1,9 @@
 package org.example.ecommercefashion.repositories;
 
+import org.example.ecommercefashion.dtos.Param.DiscountParam;
 import org.example.ecommercefashion.entities.Discount;
+import org.example.ecommercefashion.enums.StatusDiscount;
+import org.example.ecommercefashion.enums.TypeDiscount;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,11 +13,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Long> {
-    @Query("select d from Discount d where (:type is NULL OR CAST(d.type AS string) LIKE %:type%) " +
-            "and (:discountStatus is NULL OR CAST(d.discountStatus AS string) LIKE %:discountStatus%) " +
-            "and (:name is NULL OR d.name LIKE %:name%)")
-    Page<Discount> getFilterDiscountPage(@Param("type") String type,
-                                         @Param("discountStatus") String discountStatus,
-                                         @Param("name") String id,
+    @Query("select d from Discount d where (:#{#param.type} IS NULL OR d.type = :#{#param.type}) " +
+            "and (:#{#param.status} is NULL OR d.discountStatus = :#{#param.status}) " +
+            "and (:#{#param.status} is NULL OR d.name LIKE %:#{#param.name}%)")
+    Page<Discount> getFilterDiscountPage(@Param("param")DiscountParam param,
                                          Pageable pageable);
 }

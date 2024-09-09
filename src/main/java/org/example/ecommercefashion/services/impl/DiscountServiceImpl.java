@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.Param.DiscountParam;
 import org.example.ecommercefashion.dtos.request.DiscountRequest;
 import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
@@ -34,8 +35,8 @@ public class DiscountServiceImpl implements DiscountService {
     private final DiscountRepository discountRepository;
 
     @Override
-    public ResponsePage<Discount, DiscountResponse> filterDiscount(String type, String discountStatus,String name,Pageable pageable) {
-        Page<Discount> discountResponsesPage = discountRepository.getFilterDiscountPage(type,discountStatus,name,pageable);
+    public ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam param, Pageable pageable) {
+        Page<Discount> discountResponsesPage = discountRepository.getFilterDiscountPage(param,pageable);
         return new ResponsePage<>(discountResponsesPage, DiscountResponse.class);
     }
 
@@ -47,6 +48,7 @@ public class DiscountServiceImpl implements DiscountService {
             Discount discount = new Discount();
             FnCommon.copyNonNullProperties(discount, request);
             discount.setCode(UUID.randomUUID());
+            discount.setCreateBy(jwt.getUserId());
             discount = discountRepository.save(discount);
             DiscountResponse discountResponse = new DiscountResponse();
             FnCommon.copyNonNullProperties(discountResponse, discount);
@@ -91,7 +93,7 @@ public class DiscountServiceImpl implements DiscountService {
             Discount discount = discountRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND)
             );
-
+            discount.setUpdateBy(jwt.getUserId());
             // Sao chép dữ liệu từ request vào Discount hiện tại
             FnCommon.copyNonNullProperties(discount, request);
 
@@ -101,9 +103,6 @@ public class DiscountServiceImpl implements DiscountService {
             // Chuyển đổi Discount sang DiscountResponse
             DiscountResponse discountResponse = new DiscountResponse();
             FnCommon.copyNonNullProperties(discountResponse, discount);
-
-            // Cập nhật thông tin người dùng
-            discountResponse.setUpdateBy(getInfoUser(jwt.getUserId()));
 
             return discountResponse;
         } else {

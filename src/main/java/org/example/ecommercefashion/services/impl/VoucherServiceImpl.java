@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.Param.VoucherParam;
 import org.example.ecommercefashion.dtos.request.VoucherRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -38,8 +39,8 @@ public class VoucherServiceImpl implements VoucherServise {
     private final JwtService JwtService;
 
     @Override
-    public ResponsePage<Voucher, VoucherResponse> filterVoucher(Long id,String createAt,Long createBy,Long discountId, Pageable pageable) {
-        Page<Voucher> voucherResponsesPage = voucherRepository.getFilterVoucherPage(id,createAt,createBy,discountId,pageable);
+    public ResponsePage<Voucher, VoucherResponse> filterVoucher(VoucherParam param, Pageable pageable) {
+        Page<Voucher> voucherResponsesPage = voucherRepository.getFilterVoucherPage(param,pageable);
         return new ResponsePage<>(voucherResponsesPage, VoucherResponse.class);
     }
 
@@ -50,13 +51,15 @@ public class VoucherServiceImpl implements VoucherServise {
             Voucher voucher = new Voucher();
             FnCommon.copyNonNullProperties(voucher, request);
             voucher.setCode(UUID.randomUUID());
+
             Discount discount = discountRepository.findById(request.getDiscountId()).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND));
+
             voucher.setDiscount(discount);
+            voucher.setCreateBy(jwt.getUserId());
             voucher = voucherRepository.save(voucher);
             VoucherResponse voucherResponse = new VoucherResponse();
             FnCommon.copyNonNullProperties(voucherResponse, voucher);
-            voucherResponse.setCreateBy(getInfoUser(jwt.getUserId()));
             return voucherResponse;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
@@ -98,13 +101,19 @@ public class VoucherServiceImpl implements VoucherServise {
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.VOUCHER_NOT_FOUND)
             );
 
+            voucher.setUpdateBy(jwt.getUserId());
             FnCommon.copyNonNullProperties(voucher, request);
+
+            if (request.getDiscountId() != null) {
+                Discount discount = discountRepository.findById(request.getDiscountId()).orElseThrow(
+                        () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND)
+                );
+                voucher.setDiscount(discount);
+            }
             voucher = voucherRepository.save(voucher);
 
             VoucherResponse response = new VoucherResponse();
             FnCommon.copyNonNullProperties(response, voucher);
-
-            response.setUpdateBy(getInfoUser(jwt.getUserId()));
 
             return response;
         } else {

@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.filter.CategoryParam;
 import org.example.ecommercefashion.dtos.request.CategoryRequest;
 import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
@@ -32,8 +33,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final JwtService JwtService;
 
     @Override
-    public ResponsePage<Category, CategoryResponse> filterCategory(String name,Long createBy, Pageable pageable) {
-        Page<Category> CategoryResponsePage = categoryRepository.filterCategories(name,createBy, pageable);
+    public ResponsePage<Category, CategoryResponse> filterCategory(CategoryParam param, Pageable pageable) {
+        Page<Category> CategoryResponsePage = categoryRepository.filterCategories(param, pageable);
         return new ResponsePage<>(CategoryResponsePage, CategoryResponse.class);
     }
 
@@ -43,14 +44,19 @@ public class CategoryServiceImpl implements CategoryService {
             JwtResponse jwt = JwtService.decodeToken(token);
             Category category = new Category();
             FnCommon.copyNonNullProperties(category, request);
-
-            Category categoryid = categoryRepository.findById(request.getCategoryId()).orElseThrow(
-                    () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND));
-            category.setParentCategory(categoryid);
+            Category parent = null;
+            if(request.getParentId() != null){
+                Category categoryid = categoryRepository.findById(request.getParentId()).orElseThrow(
+                        () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND));
+                parent = categoryid;
+            }
+            category.setParentCategory(parent);
+            category.setLever(category.calculateLevel());
+            category.setCreateBy(jwt.getUserId());
             category = categoryRepository.save(category);
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
-            response.setCreateBy(getInfoUser(jwt.getUserId()));
+
             return response;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
@@ -91,14 +97,12 @@ public class CategoryServiceImpl implements CategoryService {
             Category category = categoryRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
             );
-
+            category.setUpdateBy(jwt.getUserId());
             FnCommon.copyNonNullProperties(category, request);
             category = categoryRepository.save(category);
 
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
-
-            response.setUpdateBy(getInfoUser(jwt.getUserId()));
 
             return response;
         } else {

@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.filter.CategoryParam;
 import org.example.ecommercefashion.dtos.request.CategoryRequest;
 import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -29,8 +30,8 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponsePage<Category, CategoryResponse> getAll(String name,Long createBy, Pageable pageable) {
-        return categoryService.filterCategory(name,createBy,pageable);
+    public ResponsePage<Category, CategoryResponse> getAll(CategoryParam param, Pageable pageable) {
+        return categoryService.filterCategory(param,pageable);
     }
 
     @PostMapping

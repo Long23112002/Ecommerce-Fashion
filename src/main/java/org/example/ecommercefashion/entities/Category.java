@@ -64,4 +64,16 @@ public class Category {
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Category> subCategories;
+
+
+    public int calculateLevel() {
+        int level = 1;
+        Category currentParent = this.parentCategory;
+        while (currentParent != null) {
+            level++;
+            currentParent = currentParent.getParentCategory();
+        }
+        this.lever = level;
+        return this.lever;
+    }
 }

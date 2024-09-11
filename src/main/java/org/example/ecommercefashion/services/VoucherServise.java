@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface VoucherServise {
 
-    ResponsePage<Voucher, VoucherResponse> filterVoucher(VoucherParam param, Pageable pageable);
+    ResponsePage<Voucher, VoucherResponse> filterVoucher(VoucherParam paramgit , Pageable pageable);
 
     VoucherResponse add(VoucherRequest request, String token);
 

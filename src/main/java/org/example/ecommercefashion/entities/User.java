@@ -24,19 +24,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "user",schema = "users")
+@Table(name = "user", schema = "users")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Where(clause = "deleted = false")
-@TypeDef(
-        name = "pgsql_enum",
-        typeClass = PostgreSQLEnumType.class
-)
+@TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
 public class User implements UserDetails, Serializable {
-
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,7 +42,7 @@ public class User implements UserDetails, Serializable {
   @Column(nullable = false, unique = true, name = "email")
   private String email;
 
-  @Column(name = "password" )
+  @Column(name = "password")
   private String password;
 
   @Column(name = "full_name")
@@ -81,6 +77,12 @@ public class User implements UserDetails, Serializable {
   @CreationTimestamp
   @Temporal(TemporalType.TIMESTAMP)
   private Date updateAt;
+
+  @Column(name = "slug_email")
+  private String slugEmail;
+
+  @Column(name = "slug_full_name")
+  private String slugFullName;
 
   @Column(nullable = false, name = "is_admin")
   private Boolean isAdmin = false;

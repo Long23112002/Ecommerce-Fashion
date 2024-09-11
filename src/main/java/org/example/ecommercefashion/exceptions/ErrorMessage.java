@@ -3,6 +3,7 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+    CATEGORY_NOT_FOUND("Category not found"),
     SUCCESS("Success"),
     FALSE("False"),
     ROLE_NOT_FOUND("Role not found"),
@@ -22,7 +23,13 @@ public enum ErrorMessage implements BaseErrorMessage {
     IMAGE_NOT_FOUND("Image not found"),
     ROLE_EXISTED("Role does not existed"),
 
+    WEBSOCKET_NOT_FOUND("Websocket not found"),
+    USER_PERMISSION_DENIED("user does not have the required permissions to access this action"),
+    EMAIL_EXISTED("Email của bạn đã tồn tại trong hệ thống"),
+    PHONE_EXISTED("Số điện thoại của bạn đã tồn tại trong hệ thống"),
+    CHAT_ROOM_NOT_FOUND("Chat room not found"),
     ;
+
 
     public String val;
 

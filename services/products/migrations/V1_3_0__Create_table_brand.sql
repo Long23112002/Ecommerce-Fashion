@@ -6,5 +6,5 @@ CREATE TABLE products.brand
     update_at TIMESTAMP ,
     create_by BIGINT NOT NULL,
     update_by BIGINT,
-    deleted   BOOLEAN DEFAULT FALSE,
+    deleted   BOOLEAN DEFAULT FALSE
 );

@@ -25,9 +25,9 @@ public class BrandResponse {
 
     private Timestamp updateAt;
 
-    private Long createBy;
+    private UserResponse createBy;
 
-    private Long updateBy;
+    private UserResponse updateBy;
 
     private Boolean deleted ;
 }

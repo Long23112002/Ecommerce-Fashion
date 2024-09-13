@@ -63,10 +63,10 @@ public class BrandServiceImpl implements BrandService {
         BrandResponse response = new BrandResponse();
         FnCommon.copyNonNullProperties(response, brand);
         if (brand.getCreateBy() != null) {
-            response.setCreateBy(brand.getCreateBy());
+            response.setCreateBy(getInfoUser(brand.getCreateBy()));
         }
         if (brand.getUpdateBy() != null) {
-            response.setUpdateBy(brand.getUpdateBy());
+            response.setUpdateBy(getInfoUser(brand.getUpdateBy()));
         }
         return response;
     }
@@ -94,8 +94,10 @@ public class BrandServiceImpl implements BrandService {
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.BRAND_NOT_FOUND)
         );
 
+        brand.setDeleted(true);
+        brandRepository.save(brand);
 
-        return MessageResponse.builder().message("Category and related records deleted successfully").build();
+        return MessageResponse.builder().message("Brand deleted successfully").build();
     }
     private UserResponse getInfoUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() ->

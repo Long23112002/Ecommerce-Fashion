@@ -17,23 +17,5 @@ public class CategoryRequest {
     @NotBlank(message = "Name cannot be null")
     private String name;
 
-    @NotNull(message = "Lever cannot be null")
-    @Positive(message = "Lever must be a positive integer")
-    private Integer lever;
-
-    @PastOrPresent(message = "CreateAt must be in the past or present")
-    private Timestamp createAt;
-
-    @PastOrPresent(message = "UpdateAt must be in the past or present")
-    private Timestamp updateAt;
-
-    @NotNull(message = "CreateBy cannot be null")
-    @Positive(message = "CreateBy must be a positive number")
-    private Long createBy;
-
-    @Positive(message = "CreateBy must be a positive number")
-    private Long updateBy;
-
-    @Positive(message = "CategoryId must be a positive number")
-    private Long categoryId;
+    private Long parentId;
 }

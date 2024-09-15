@@ -5,11 +5,13 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.CategoryParam;
 import org.example.ecommercefashion.dtos.request.CategoryRequest;
+import org.example.ecommercefashion.dtos.response.BrandResponse;
 import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
@@ -34,8 +36,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public ResponsePage<Category, CategoryResponse> filterCategory(CategoryParam param, Pageable pageable) {
-        Page<Category> CategoryResponsePage = categoryRepository.filterCategories(param, pageable);
-        return new ResponsePage<>(CategoryResponsePage, CategoryResponse.class);
+        Page<Category> CategoryPage = categoryRepository.filterCategories(param, pageable);
+        Page<CategoryResponse> categoryResponses = CategoryPage.map(category -> mapSizeToSizeResponse(category));
+        return new ResponsePage<>(categoryResponses);
     }
 
     @Override
@@ -65,6 +68,9 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     private UserResponse getInfoUser(Long id) {
+        if (id == null) {
+            return null;
+        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
@@ -127,5 +133,12 @@ public class CategoryServiceImpl implements CategoryService {
         for (Category subCategory : category.getSubCategories()) {
             markAsDeleted(subCategory);
         }
+    }
+    private CategoryResponse mapSizeToSizeResponse(Category category) {
+        CategoryResponse categoryResponse = new CategoryResponse();
+        FnCommon.copyNonNullProperties(categoryResponse, category);
+        categoryResponse.setCreateBy(getInfoUser(category.getCreateBy()));
+        categoryResponse.setUpdateBy(getInfoUser(category.getUpdateBy()));
+        return categoryResponse;
     }
 }

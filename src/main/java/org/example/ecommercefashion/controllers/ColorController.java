@@ -44,7 +44,7 @@ public class ColorController {
     }
 
     @PostMapping
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ColorResponse createColor(@RequestBody @Valid ColorRequest colorRequest, @RequestHeader ("Authorization") String token){
         if(token.startsWith("Bearer ")){
             token = token.substring(7);
@@ -53,7 +53,7 @@ public class ColorController {
     }
 
     @PutMapping("{id}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ColorResponse updateColor(@PathVariable Long id,@RequestBody @Valid ColorRequest colorRequest, @RequestHeader ("Authorization") String token){
         if(token.startsWith("Bearer ")){
             token = token.substring(7);
@@ -63,7 +63,7 @@ public class ColorController {
 
 
     @DeleteMapping("{id}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ApiResponse<Object> deleteColor(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);

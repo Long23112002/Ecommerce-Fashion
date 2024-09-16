@@ -24,6 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +40,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public ResponsePage<Category, CategoryResponse> filterCategory(CategoryParam param, Pageable pageable) {
         Page<Category> CategoryPage = categoryRepository.filterCategories(param, pageable);
-        Page<CategoryResponse> categoryResponses = CategoryPage.map(category -> mapSizeToSizeResponse(category));
+        Page<CategoryResponse> categoryResponses = CategoryPage.map(category -> mapCategoryToCategoryResponse(category));
+        return new ResponsePage<>(categoryResponses);
+    }
+    @Override
+    public ResponsePage<Category, CategoryResponse> getAll(Pageable pageable){
+        Page<Category> categories = categoryRepository.findAll(pageable);
+        Page<CategoryResponse> categoryResponses = categories.map(category -> mapCategoryToCategoryResponse(category));
         return new ResponsePage<>(categoryResponses);
     }
 
@@ -85,15 +94,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
         );
-        CategoryResponse response = new CategoryResponse();
-        FnCommon.copyNonNullProperties(response, category);
-        if (category.getCreateBy() != null) {
-            response.setCreateBy(getInfoUser(category.getCreateBy()));
-        }
-        if (category.getUpdateBy() != null) {
-            response.setUpdateBy(getInfoUser(category.getUpdateBy()));
-        }
-        return response;
+
+        return mapCategoryToCategoryResponse(category);
     }
 
     @Override
@@ -104,7 +106,14 @@ public class CategoryServiceImpl implements CategoryService {
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
             );
             category.setUpdateBy(jwt.getUserId());
-            FnCommon.copyNonNullProperties(category, request);
+            category.setName(request.getName());
+            Category parent = null;
+            if (request.getParentId() != null) {
+                Category parentCategory = categoryRepository.findById(request.getParentId())
+                        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND));
+                parent = parentCategory;
+            }
+            category.setParentCategory(parent);
             category = categoryRepository.save(category);
 
             CategoryResponse response = new CategoryResponse();
@@ -134,11 +143,16 @@ public class CategoryServiceImpl implements CategoryService {
             markAsDeleted(subCategory);
         }
     }
-    private CategoryResponse mapSizeToSizeResponse(Category category) {
+    private CategoryResponse mapCategoryToCategoryResponse(Category category) {
         CategoryResponse categoryResponse = new CategoryResponse();
         FnCommon.copyNonNullProperties(categoryResponse, category);
+
         categoryResponse.setCreateBy(getInfoUser(category.getCreateBy()));
         categoryResponse.setUpdateBy(getInfoUser(category.getUpdateBy()));
+        List<CategoryResponse> subcategoryResponses = category.getSubCategories().stream()
+                                                    .map(this::mapCategoryToCategoryResponse)
+                                                    .collect(Collectors.toList());
+        categoryResponse.setSubCategories(subcategoryResponses);
         return categoryResponse;
     }
 }

@@ -33,6 +33,6 @@ public class CategoryResponse {
 
     private Category parentCategory;
 
-    private List<Category> subCategories;
+    private List<CategoryResponse> subCategories;
 
 }

@@ -5,15 +5,12 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.BrandParam;
 import org.example.ecommercefashion.dtos.request.BrandRequest;
-import org.example.ecommercefashion.dtos.request.CategoryRequest;
 import org.example.ecommercefashion.dtos.response.BrandResponse;
-import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Brand;
-import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.BrandRepository;
@@ -32,12 +29,13 @@ public class BrandServiceImpl implements BrandService {
 
     private final UserRepository userRepository;
 
-    private final org.example.ecommercefashion.security.JwtService JwtService;
+    private final JwtService JwtService;
 
     @Override
     public ResponsePage<Brand, BrandResponse> filterCategory(BrandParam param, Pageable pageable) {
         Page<Brand> brandPage = brandRepository.FilterBrand(param, pageable);
-        return new ResponsePage<>(brandPage, BrandResponse.class);
+        Page<BrandResponse> brandResponsePage = brandPage.map(brand -> mapSizeToSizeResponse(brand));
+        return new ResponsePage<>(brandResponsePage);
     }
 
     @Override
@@ -100,6 +98,9 @@ public class BrandServiceImpl implements BrandService {
         return MessageResponse.builder().message("Brand deleted successfully").build();
     }
     private UserResponse getInfoUser(Long id) {
+        if (id == null) {
+            return null;
+        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
@@ -107,5 +108,12 @@ public class BrandServiceImpl implements BrandService {
         FnCommon.copyNonNullProperties(userResponse, user);
         return userResponse;
 
+    }
+    private BrandResponse mapSizeToSizeResponse(Brand brand) {
+        BrandResponse brandResponse = new BrandResponse();
+        FnCommon.copyNonNullProperties(brandResponse, brand);
+        brandResponse.setCreateBy(getInfoUser(brand.getCreateBy()));
+        brandResponse.setUpdateBy(getInfoUser(brand.getUpdateBy()));
+        return brandResponse;
     }
 }

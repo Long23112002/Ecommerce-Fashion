@@ -32,14 +32,13 @@ public class Brand {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "create_at", updatable = false)
     @CreationTimestamp
+    @Column(name = "create_at", updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createAt;
 
-
-    @Column(name = "update_at")
     @UpdateTimestamp
+    @Column(name = "update_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateAt;
 

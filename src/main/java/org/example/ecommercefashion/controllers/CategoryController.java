@@ -30,10 +30,13 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponsePage<Category, CategoryResponse> getAll(CategoryParam param, Pageable pageable) {
+    public ResponsePage<Category, CategoryResponse> FiterAll(CategoryParam param, Pageable pageable) {
         return categoryService.filterCategory(param,pageable);
     }
-
+    @GetMapping("/select")
+    public ResponsePage<Category, CategoryResponse> getAll(Pageable pageable){
+        return categoryService.getAll(pageable);
+    }
     @PostMapping
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<CategoryResponse> add(@Valid @RequestBody CategoryRequest request,

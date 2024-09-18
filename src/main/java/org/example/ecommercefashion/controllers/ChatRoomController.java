@@ -48,7 +48,7 @@ public class ChatRoomController {
     }
 
     @PostMapping
-    public ChatRoomResponse create(@RequestBody ChatRoomRequest request) {
+    public ChatRoomResponse createChatRoom(@RequestBody ChatRoomRequest request) {
         return chatRoomService.create(request);
     }
 

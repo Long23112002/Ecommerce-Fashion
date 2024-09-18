@@ -5,11 +5,7 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.BrandParam;
 import org.example.ecommercefashion.dtos.request.BrandRequest;
-import org.example.ecommercefashion.dtos.response.BrandResponse;
-import org.example.ecommercefashion.dtos.response.JwtResponse;
-import org.example.ecommercefashion.dtos.response.MessageResponse;
-import org.example.ecommercefashion.dtos.response.ResponsePage;
-import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.dtos.response.*;
 import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
@@ -33,7 +29,12 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public ResponsePage<Brand, BrandResponse> filterCategory(BrandParam param, Pageable pageable) {
-        Page<Brand> brandPage = brandRepository.FilterBrand(param, pageable);
+        if (param.getName() != null) {
+            param.setName(param.getName().toLowerCase());
+        } else {
+            param.setName(null);
+        }
+        Page<Brand> brandPage = brandRepository.filterBrand(param, pageable);
         Page<BrandResponse> brandResponsePage = brandPage.map(brand -> mapSizeToSizeResponse(brand));
         return new ResponsePage<>(brandResponsePage);
     }
@@ -43,16 +44,17 @@ public class BrandServiceImpl implements BrandService {
         if (token != null) {
             JwtResponse jwt = JwtService.decodeToken(token);
             Brand brand = new Brand();
-            FnCommon.copyNonNullProperties(brand,request);
+            FnCommon.copyNonNullProperties(brand, request);
             brand.setCreateBy(jwt.getUserId());
             brand = brandRepository.save(brand);
             BrandResponse response = new BrandResponse();
-            FnCommon.copyNonNullProperties(response,brand);
+            FnCommon.copyNonNullProperties(response, brand);
             return response;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND);
         }
     }
+
     @Override
     public BrandResponse getByBrandId(Long id) {
         Brand brand = brandRepository.findById(id).orElseThrow(
@@ -68,6 +70,7 @@ public class BrandServiceImpl implements BrandService {
         }
         return response;
     }
+
     @Override
     public BrandResponse update(BrandRequest request, Long id, String token) {
         if (token != null) {
@@ -75,17 +78,18 @@ public class BrandServiceImpl implements BrandService {
             Brand brand = brandRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.BRAND_NOT_FOUND)
             );
-            FnCommon.copyNonNullProperties(brand,request);
+            FnCommon.copyNonNullProperties(brand, request);
             brand.setUpdateBy(jwt.getUserId());
             brand = brandRepository.save(brand);
             BrandResponse response = new BrandResponse();
-            FnCommon.copyNonNullProperties(response,brand);
+            FnCommon.copyNonNullProperties(response, brand);
             return response;
 
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN);
         }
     }
+
     @Override
     public MessageResponse deleted(Long id) {
         Brand brand = brandRepository.findById(id).orElseThrow(
@@ -97,6 +101,7 @@ public class BrandServiceImpl implements BrandService {
 
         return MessageResponse.builder().message("Brand deleted successfully").build();
     }
+
     private UserResponse getInfoUser(Long id) {
         if (id == null) {
             return null;
@@ -109,6 +114,7 @@ public class BrandServiceImpl implements BrandService {
         return userResponse;
 
     }
+
     private BrandResponse mapSizeToSizeResponse(Brand brand) {
         BrandResponse brandResponse = new BrandResponse();
         FnCommon.copyNonNullProperties(brandResponse, brand);

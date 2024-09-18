@@ -10,8 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT s FROM Category s WHERE s.parentCategory = null " +
-            "AND (:#{#param.name} IS NULL OR s.name LIKE %:#{#param.name}%) "+
-            "AND (:#{#param.createBy} IS NULL OR s.createBy = :#{#param.createBy})" )
+            "AND (:#{#param.name} IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :#{#param.name}, '%')))")
     Page<Category> filterCategories(CategoryParam param,
                                     Pageable pageable);
 

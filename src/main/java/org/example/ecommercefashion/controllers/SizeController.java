@@ -45,7 +45,7 @@ public class SizeController {
     }
 
     @PostMapping
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public SizeResponse createSize(@RequestBody @Valid SizeRequest sizeRequest, @RequestHeader ("Authorization") String token){
         if(token.startsWith("Bearer ")){
             token = token.substring(7);
@@ -54,7 +54,7 @@ public class SizeController {
     }
 
     @PutMapping("{id}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public SizeResponse updateSize(@PathVariable Long id,@RequestBody @Valid SizeRequest sizeRequest, @RequestHeader ("Authorization") String token){
         if(token.startsWith("Bearer ")){
             token = token.substring(7);
@@ -63,7 +63,7 @@ public class SizeController {
     }
 
     @DeleteMapping("{id}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ApiResponse<Object> deleteSize(@PathVariable Long id, @RequestHeader ("Authorization") String token) {
         if(token.startsWith("Bearer ")){
             token = token.substring(7);

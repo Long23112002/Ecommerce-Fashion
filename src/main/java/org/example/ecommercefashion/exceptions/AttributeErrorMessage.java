@@ -7,6 +7,8 @@ public enum AttributeErrorMessage  implements BaseErrorMessage {
     COLOR_NOT_FOUND("Color not found"),
     SIZE_NAME_EXISTED("Size name already exists"),
     COLOR_NAME_EXISTED("Color name already exists"),
+    MATERIAL_NOT_FOUND("Material not found"),
+    MATERIAL_NAME_EXISTED("Material name already exists")
     ;
 
     public String val;

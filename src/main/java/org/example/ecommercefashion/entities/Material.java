@@ -21,10 +21,10 @@ import java.sql.Timestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "color",schema = "products")
+@Table(name = "material",schema = "products")
 @Entity
 @Where(clause = "deleted = false")
-public class Color {
+public class Material {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

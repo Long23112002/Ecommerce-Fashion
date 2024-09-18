@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BrandRepository extends JpaRepository<Brand,Long> {
-    @Query("select b from Brand b WHERE (:#{#param.name} is null or b.name like %:#{#param.name}%)")
+    @Query("select b from Brand b WHERE (:#{#param.name} is null or LOWER(b.name) LIKE LOWER(CONCAT('%', :#{#param.name}, '%')))")
     Page<Brand> FilterBrand(BrandParam param, Pageable pageable);
 
 }

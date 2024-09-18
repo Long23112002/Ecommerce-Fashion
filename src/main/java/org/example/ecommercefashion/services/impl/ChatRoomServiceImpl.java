@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +32,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public List<ChatRoomResponse> findAllChatRoom() {
-        return chatRoomRepository.findAll().stream()
+        return chatRoomRepository.findAllChatRoom().stream()
                 .map(this::toDto)
                 .toList();
     }
@@ -43,14 +42,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findChatRoomByUserId(id);
         if (chatRoomOptional.isPresent()) {
             return chatRoomOptional.get().getId();
-        } else {
-            var user = userRepository.findById(id)
-                    .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
-            var response = create(ChatRoomRequest.builder()
-                    .idClient(user.getId())
-                    .build());
-            return response.getId();
         }
+        throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND);
     }
 
     @Override

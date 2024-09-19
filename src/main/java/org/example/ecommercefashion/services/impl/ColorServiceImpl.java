@@ -67,7 +67,7 @@ public class ColorServiceImpl implements ColorService {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Color color = new Color();
 
-            if (colorRepository.existsByName(colorRequest.getName().trim())) {
+            if (colorRepository.existsByNameIgnoreCase(colorRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
             }
 
@@ -89,7 +89,7 @@ public class ColorServiceImpl implements ColorService {
             Color color = colorRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.COLOR_NOT_FOUND);
             });
-            boolean isNameDuplicate = colorRepository.existsByName(colorRequest.getName().trim());
+            boolean isNameDuplicate = colorRepository.existsByNameIgnoreCase(colorRequest.getName().trim());
             if (isNameDuplicate && !colorRequest.getName().trim().equals(color.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
             }

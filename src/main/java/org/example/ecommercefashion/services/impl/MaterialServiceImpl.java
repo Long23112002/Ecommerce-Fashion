@@ -68,7 +68,7 @@ public class MaterialServiceImpl implements MaterialService {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Material material = new Material();
 
-            if (materialRepository.existsByName(materialRequest.getName().trim())) {
+            if (materialRepository.existsByNameIgnoreCase(materialRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NAME_EXISTED);
             }
 
@@ -91,7 +91,7 @@ public class MaterialServiceImpl implements MaterialService {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.MATERIAL_NOT_FOUND);
             });
 
-            boolean isNameDuplicate = materialRepository.existsByName(materialRequest.getName().trim());
+            boolean isNameDuplicate = materialRepository.existsByNameIgnoreCase(materialRequest.getName().trim());
             if (isNameDuplicate && !material.getName().trim().equals(materialRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NAME_EXISTED);
             }

@@ -8,6 +8,7 @@ import org.example.ecommercefashion.dtos.request.BrandRequest;
 import org.example.ecommercefashion.dtos.response.*;
 import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.BrandRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
@@ -17,6 +18,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.text.Normalizer;
+
+import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +36,7 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public ResponsePage<Brand, BrandResponse> filterCategory(BrandParam param, Pageable pageable) {
         if (param.getName() != null) {
-            param.setName(param.getName().toLowerCase());
+            param.setName(removeDiacritics(param.getName().toLowerCase()));
         } else {
             param.setName(null);
         }
@@ -44,7 +50,16 @@ public class BrandServiceImpl implements BrandService {
         if (token != null) {
             JwtResponse jwt = JwtService.decodeToken(token);
             Brand brand = new Brand();
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(brand, request);
+            if(brandRepository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND);
+            }
             brand.setCreateBy(jwt.getUserId());
             brand = brandRepository.save(brand);
             BrandResponse response = new BrandResponse();
@@ -78,7 +93,16 @@ public class BrandServiceImpl implements BrandService {
             Brand brand = brandRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.BRAND_NOT_FOUND)
             );
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(brand, request);
+            if(brandRepository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND);
+            }
             brand.setUpdateBy(jwt.getUserId());
             brand = brandRepository.save(brand);
             BrandResponse response = new BrandResponse();
@@ -122,4 +146,14 @@ public class BrandServiceImpl implements BrandService {
         brandResponse.setUpdateBy(getInfoUser(brand.getUpdateBy()));
         return brandResponse;
     }
+    public String removeDiacritics(String input) {
+        if (input == null) {
+            return null;
+        }
+        // Chuẩn hóa chuỗi theo dạng NFD
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        // Loại bỏ các ký tự thuộc nhóm dấu
+        return normalized.replaceAll("\\p{M}", "");
+    }
+
 }

@@ -66,10 +66,12 @@ public class ColorServiceImpl implements ColorService {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Color color = new Color();
-            Color colorCreate = mapColorRequestToColor(color, colorRequest);
+
             if (colorRepository.existsByName(colorRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
             }
+
+            Color colorCreate = mapColorRequestToColor(color, colorRequest);
             colorCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             colorRepository.save(colorCreate);
             ColorResponse colorResponse = mapColorToColorResponse(colorCreate);

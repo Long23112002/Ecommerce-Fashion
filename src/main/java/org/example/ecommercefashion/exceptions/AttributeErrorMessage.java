@@ -19,6 +19,6 @@ public enum AttributeErrorMessage  implements BaseErrorMessage {
 
     @Override
     public String val() {
-        return "";
+        return val;
     }
 }

@@ -68,7 +68,7 @@ public class SizeServiceImpl implements SizeService {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Size size = new Size();
             Size sizeCreate = mapSizeRequestToSize(size, sizeRequest);
-            if(sizeRepository.existsByName(sizeRequest.getName())){
+            if (sizeRepository.existsByName(sizeRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.SIZE_NAME_EXISTED);
             }
             sizeCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
@@ -88,6 +88,10 @@ public class SizeServiceImpl implements SizeService {
             Size size = sizeRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
             });
+            boolean isNameDuplicate = sizeRepository.existsByName(sizeRequest.getName().trim());
+            if (isNameDuplicate && !size.getName().trim().equals(sizeRequest.getName().trim())) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.SIZE_NAME_EXISTED);
+            }
             Size sizeUpdate = mapSizeRequestToSize(size, sizeRequest);
             sizeUpdate.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             sizeUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));

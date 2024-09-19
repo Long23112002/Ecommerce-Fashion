@@ -35,7 +35,7 @@ public class MaterialServiceImpl implements MaterialService {
     private final JwtService jwtService;
 
     private UserResponse getInforUser(Long id) {
-        if (id == null){
+        if (id == null) {
             return null;
         }
         User user = userRepository.findById(id).orElseThrow(() ->
@@ -46,6 +46,7 @@ public class MaterialServiceImpl implements MaterialService {
         FnCommon.copyNonNullProperties(userResponse, user);
         return userResponse;
     }
+
     @Override
     public ResponsePage<Material, MaterialResponse> getMaterialPage(String name, Pageable pageable) {
         Page<Material> materialPage = materialRepository.getMaterialPage(name, pageable);
@@ -63,11 +64,11 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     public MaterialResponse createMaterial(MaterialRequest materialRequest, String token) {
-        if(token!=null){
+        if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Material material = new Material();
-            Material mateialCreate = mapMaterialRequestToMaterial(materialRequest,material);
-            if(materialRepository.existsByName(materialRequest.getName())){
+            Material mateialCreate = mapMaterialRequestToMaterial(materialRequest, material);
+            if (materialRepository.existsByName(materialRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NAME_EXISTED);
             }
             mateialCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
@@ -75,19 +76,25 @@ public class MaterialServiceImpl implements MaterialService {
             MaterialResponse materialResponse = mapMaterialToMaterialResponse(mateialCreate);
             materialResponse.setCreatedBy(getInforUser(jwtResponse.getUserId()));
             return materialResponse;
-        }else {
+        } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 
     @Override
     public MaterialResponse updateMaterial(MaterialRequest materialRequest, Long id, String token) {
-        if(token!=null){
+        if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
-            Material material = materialRepository.findById(id).orElseThrow(()->{
+            Material material = materialRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.MATERIAL_NOT_FOUND);
             });
-            Material materialUpdate = mapMaterialRequestToMaterial(materialRequest,material);
+
+            boolean isNameDuplicate = materialRepository.existsByName(materialRequest.getName().trim());
+            if (isNameDuplicate && !material.getName().trim().equals(materialRequest.getName().trim())) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NAME_EXISTED);
+            }
+
+            Material materialUpdate = mapMaterialRequestToMaterial(materialRequest, material);
             materialUpdate.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             materialUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             materialRepository.save(materialUpdate);
@@ -95,16 +102,16 @@ public class MaterialServiceImpl implements MaterialService {
             materialResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
             materialResponse.setCreatedBy(getInforUser(material.getCreatedBy()));
             return materialResponse;
-        }else {
+        } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 
     @Override
     public String deleteMaterial(Long id, String token) {
-        if(token!=null){
+        if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
-            Material material = materialRepository.findById(id).orElseThrow(()->{
+            Material material = materialRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.MATERIAL_NOT_FOUND);
             });
             material.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
@@ -112,17 +119,17 @@ public class MaterialServiceImpl implements MaterialService {
             material.setDeleted(true);
             materialRepository.save(material);
             return "Material deleted successfully";
-        }else{
+        } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 
-    private Material mapMaterialRequestToMaterial(MaterialRequest materialRequest,Material material){
-        FnCommon.copyNonNullProperties(material,materialRequest);
+    private Material mapMaterialRequestToMaterial(MaterialRequest materialRequest, Material material) {
+        FnCommon.copyNonNullProperties(material, materialRequest);
         return material;
     }
 
-    private MaterialResponse mapMaterialToMaterialResponse(Material material){
+    private MaterialResponse mapMaterialToMaterialResponse(Material material) {
         MaterialResponse materialResponse = new MaterialResponse();
         FnCommon.copyNonNullProperties(materialResponse, material);
         materialResponse.setCreatedBy(getInforUser(material.getCreatedBy()));

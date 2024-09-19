@@ -14,5 +14,5 @@ public interface MaterialRepository extends JpaRepository<Material,Long> {
     @Query("SELECT m FROM Material m WHERE (:name IS NULL OR LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%')))")
     Page<Material> getMaterialPage(@Param("name") String name, Pageable pageable);
 
-    Boolean existsByName(String name);
+    Boolean existsByNameIgnoreCase(String name);
 }

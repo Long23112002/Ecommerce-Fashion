@@ -68,7 +68,7 @@ public class SizeServiceImpl implements SizeService {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Size size = new Size();
 
-            if (sizeRepository.existsByName(sizeRequest.getName().trim())) {
+            if (sizeRepository.existsByNameIgnoreCase(sizeRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.SIZE_NAME_EXISTED);
             }
 
@@ -90,7 +90,7 @@ public class SizeServiceImpl implements SizeService {
             Size size = sizeRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
             });
-            boolean isNameDuplicate = sizeRepository.existsByName(sizeRequest.getName().trim());
+            boolean isNameDuplicate = sizeRepository.existsByNameIgnoreCase(sizeRequest.getName().trim());
             if (isNameDuplicate && !size.getName().trim().equals(sizeRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.SIZE_NAME_EXISTED);
             }

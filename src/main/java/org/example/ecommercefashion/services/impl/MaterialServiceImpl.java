@@ -67,10 +67,12 @@ public class MaterialServiceImpl implements MaterialService {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Material material = new Material();
-            Material mateialCreate = mapMaterialRequestToMaterial(materialRequest, material);
+
             if (materialRepository.existsByName(materialRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NAME_EXISTED);
             }
+
+            Material mateialCreate = mapMaterialRequestToMaterial(materialRequest, material);
             mateialCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             materialRepository.save(mateialCreate);
             MaterialResponse materialResponse = mapMaterialToMaterialResponse(mateialCreate);

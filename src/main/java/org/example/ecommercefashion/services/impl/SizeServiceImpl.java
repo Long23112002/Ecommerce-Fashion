@@ -67,10 +67,12 @@ public class SizeServiceImpl implements SizeService {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Size size = new Size();
-            Size sizeCreate = mapSizeRequestToSize(size, sizeRequest);
+
             if (sizeRepository.existsByName(sizeRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.SIZE_NAME_EXISTED);
             }
+
+            Size sizeCreate = mapSizeRequestToSize(size, sizeRequest);
             sizeCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             sizeRepository.save(sizeCreate);
             SizeResponse sizeResponse = mapSizeToSizeResponse(sizeCreate);

@@ -11,9 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AssignPermissionRequest {
 
-    @NotNull(message = "Role id is required")
-    private Long roleId;
-    
-    private List<Long> permissionIds;
+  @NotNull(message = "Role id is required")
+  private Long roleId;
 
+  private List<Long> permissionIds;
 }

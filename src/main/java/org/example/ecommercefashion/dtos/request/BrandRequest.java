@@ -12,8 +12,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BrandRequest {
-    @NotBlank(message = "name is required")
-    @Size(min = 2, max = 50, message = "name must be between 2 and 50 characters")
-    private String name;
-
+  @NotBlank(message = "name is required")
+  @Size(min = 2, max = 50, message = "name must be between 2 and 50 characters")
+  private String name;
 }

@@ -1,11 +1,10 @@
 package org.example.ecommercefashion.controllers;
 
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.BrandParam;
 import org.example.ecommercefashion.dtos.request.BrandRequest;
-import org.example.ecommercefashion.dtos.request.CategoryRequest;
 import org.example.ecommercefashion.dtos.response.BrandResponse;
-import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Brand;
@@ -22,9 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
-
 
 @RestController
 @RequestMapping("/api/v1/brand")

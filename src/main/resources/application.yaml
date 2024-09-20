@@ -33,9 +33,6 @@ spring:
     uris: ${ELASTICSEARCH_URL}
 
 
-  server:
-    port: ${PORT_SERVER}
-
   data:
     mongodb:
       host: ${MONGODB_HOST}
@@ -65,4 +62,6 @@ spring:
         register-types: auto
 
 
+server:
+  port: ${PORT_SERVER}
 

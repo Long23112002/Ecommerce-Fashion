@@ -1,7 +1,7 @@
 pipeline {
     agent { label "master" }
     environment {
-        PATH = "/usr/local/bin:${PATH}"
+        PATH = "/usr/bin:${PATH}"
     }
     stages {
         stage("Build") {

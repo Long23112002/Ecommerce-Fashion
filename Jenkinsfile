@@ -10,17 +10,9 @@ pipeline {
             }
         }
     }
-     post {
-         always {
-             script {
-                 // Tạo thông điệp
-                 def message = "[DEV] ecommerce-fashion - Build number ${env.BUILD_NUMBER} - ${currentBuild.currentResult}!"
-                 // Mã hóa thông điệp
-                 def encodedMessage = message.replace(' ', '%20').replace('–', '-')
-
-                 // Gọi lệnh curl
-                 sh """curl 'https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodedMessage}'"""
-             }
-         }
-     }
+    post {
+        always {
+            curl "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=[${ENVIRONMENT}] ${env.JOB_NAME} – Build number ${env.BUILD_NUMBER} – ${currentBuild.currentResult}!"
+        }
+    }
 }

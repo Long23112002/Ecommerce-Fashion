@@ -12,7 +12,10 @@ pipeline {
     }
     post {
         always {
-            sh """curl 'https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=[${ENVIRONMENT}] ${env.JOB_NAME} – Build number ${env.BUILD_NUMBER} – ${currentBuild.currentResult}!'"""
+            def message = "[${ENVIRONMENT}] ${env.JOB_NAME} - Build number ${env.BUILD_NUMBER} - ${currentBuild.currentResult}!"
+                   def encodedMessage = message.replace(' ', '%20').replace('–', '-')
+
+                   sh """curl -s 'https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodedMessage}'"""
         }
     }
 }

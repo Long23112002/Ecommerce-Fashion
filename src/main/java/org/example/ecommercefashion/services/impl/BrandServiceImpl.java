@@ -35,11 +35,6 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public ResponsePage<Brand, BrandResponse> filterCategory(BrandParam param, Pageable pageable) {
-        if (param.getName() != null) {
-            param.setName(removeDiacritics(param.getName().toLowerCase()));
-        } else {
-            param.setName(null);
-        }
         Page<Brand> brandPage = brandRepository.filterBrand(param, pageable);
         Page<BrandResponse> brandResponsePage = brandPage.map(brand -> mapSizeToSizeResponse(brand));
         return new ResponsePage<>(brandResponsePage);
@@ -58,7 +53,7 @@ public class BrandServiceImpl implements BrandService {
             }
             FnCommon.copyNonNullProperties(brand, request);
             if(brandRepository.existsByName(normalizedCategoryName)){
-                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND);
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NAME_EXISTED);
             }
             brand.setCreateBy(jwt.getUserId());
             brand = brandRepository.save(brand);
@@ -101,7 +96,7 @@ public class BrandServiceImpl implements BrandService {
             }
             FnCommon.copyNonNullProperties(brand, request);
             if(brandRepository.existsByName(normalizedCategoryName)){
-                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND);
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NAME_EXISTED);
             }
             brand.setUpdateBy(jwt.getUserId());
             brand = brandRepository.save(brand);
@@ -123,7 +118,7 @@ public class BrandServiceImpl implements BrandService {
         brand.setDeleted(true);
         brandRepository.save(brand);
 
-        return MessageResponse.builder().message("Brand deleted successfully").build();
+        return MessageResponse.builder().message("Xóa Thành Công Thương Hiệu :"+brand.getName()).build();
     }
 
     private UserResponse getInfoUser(Long id) {

@@ -33,7 +33,6 @@ public class BrandController {
     private final BrandService brandService;
     @GetMapping
     public ResponsePage<Brand, BrandResponse> getAll(BrandParam param, Pageable pageable){
-        System.out.println(param.getName());
         return brandService.filterCategory(param,pageable);
     }
 

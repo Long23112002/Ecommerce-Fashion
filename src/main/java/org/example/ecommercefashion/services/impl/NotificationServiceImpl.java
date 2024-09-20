@@ -13,6 +13,7 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Override
   public void sendNotificationAll(NotificationMessage notificationMessage) {
+    System.out.printf("Sending notification to all users: %s\n");
     notificationMessageRepository.save(notificationMessage);
   }
 

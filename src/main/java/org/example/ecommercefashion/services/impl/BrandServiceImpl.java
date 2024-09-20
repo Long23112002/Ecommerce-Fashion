@@ -29,11 +29,6 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public ResponsePage<Brand, BrandResponse> filterCategory(BrandParam param, Pageable pageable) {
-        if (param.getName() != null) {
-            param.setName(param.getName().toLowerCase());
-        } else {
-            param.setName(null);
-        }
         Page<Brand> brandPage = brandRepository.filterBrand(param, pageable);
         Page<BrandResponse> brandResponsePage = brandPage.map(brand -> mapSizeToSizeResponse(brand));
         return new ResponsePage<>(brandResponsePage);

@@ -43,7 +43,7 @@ public class ChatServiceImpl implements ChatService {
             ChatResponse response = toDto(save);
             return response;
         }finally {
-            webSocketService.responseRealtime("/admin",chatRoomService.findAllChatRoom());
+            webSocketService.responseRealtime("/admin", chatRoomService.findAllChatRoom());
         }
     }
 

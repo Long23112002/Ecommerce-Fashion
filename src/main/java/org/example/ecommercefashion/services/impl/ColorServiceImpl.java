@@ -34,7 +34,7 @@ public class ColorServiceImpl implements ColorService {
     private final JwtService jwtService;
 
     private UserResponse getInforUser(Long id) {
-        if (id == null){
+        if (id == null) {
             return null;
         }
         User user = userRepository.findById(id).orElseThrow(() ->
@@ -45,6 +45,7 @@ public class ColorServiceImpl implements ColorService {
         FnCommon.copyNonNullProperties(userResponse, user);
         return userResponse;
     }
+
     @Override
     public ResponsePage<Color, ColorResponse> getColorPage(String name, Pageable pageable) {
         Page<Color> colorPage = colorRepository.getColorPage(name, pageable);
@@ -54,39 +55,46 @@ public class ColorServiceImpl implements ColorService {
 
     @Override
     public ColorResponse getColorById(Long id) {
-        Color color = colorRepository.findById(id).orElseThrow(()->{
+        Color color = colorRepository.findById(id).orElseThrow(() -> {
             throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.COLOR_NOT_FOUND);
         });
         return mapColorToColorResponse(color);
     }
 
     @Override
-    public ColorResponse createColor(ColorRequest colorRequest,String token) {
-        if(token!=null){
+    public ColorResponse createColor(ColorRequest colorRequest, String token) {
+        if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Color color = new Color();
-            Color colorCreate = mapColorRequestToColor(color, colorRequest);
-            if(colorRepository.existsByName(colorRequest.getName())){
+
+            if (colorRepository.existsByNameIgnoreCase(colorRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
             }
+
+            Color colorCreate = mapColorRequestToColor(color, colorRequest);
             colorCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             colorRepository.save(colorCreate);
             ColorResponse colorResponse = mapColorToColorResponse(colorCreate);
             colorResponse.setCreatedBy(getInforUser(jwtResponse.getUserId()));
             return colorResponse;
-        }else {
+        } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 
     @Override
     public ColorResponse updateColor(ColorRequest colorRequest, Long id, String token) {
-        if(token!=null){
+        if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
-            Color color = colorRepository.findById(id).orElseThrow(()->{
+            Color color = colorRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.COLOR_NOT_FOUND);
             });
-            Color colorUpdate = mapColorRequestToColor(color,colorRequest);
+            boolean isNameDuplicate = colorRepository.existsByNameIgnoreCase(colorRequest.getName().trim());
+            if (isNameDuplicate && !colorRequest.getName().trim().equals(color.getName().trim())) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
+            }
+
+            Color colorUpdate = mapColorRequestToColor(color, colorRequest);
             colorUpdate.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             colorUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             colorRepository.save(colorUpdate);
@@ -94,16 +102,16 @@ public class ColorServiceImpl implements ColorService {
             colorResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
             colorResponse.setCreatedBy(getInforUser(color.getCreatedBy()));
             return colorResponse;
-        }else {
+        } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 
     @Override
-    public String deleteColor(Long id,String token) {
-        if(token!=null){
+    public String deleteColor(Long id, String token) {
+        if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
-            Color color = colorRepository.findById(id).orElseThrow(()->{
+            Color color = colorRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.COLOR_NOT_FOUND);
             });
             color.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
@@ -111,13 +119,13 @@ public class ColorServiceImpl implements ColorService {
             color.setDeleted(true);
             colorRepository.save(color);
             return "Color deleted successfully";
-        }else{
+        } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
 
     }
 
-    private Color mapColorRequestToColor(Color color,ColorRequest colorRequest){
+    private Color mapColorRequestToColor(Color color, ColorRequest colorRequest) {
         FnCommon.copyNonNullProperties(color, colorRequest);
         return color;
     }

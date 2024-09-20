@@ -31,48 +31,49 @@ import javax.validation.Valid;
 @Api(tags = "Size", value = "Endpoints for size")
 public class SizeController {
 
-    private final SizeService sizeService;
+  private final SizeService sizeService;
 
-    @GetMapping
-    public ResponsePage<Size, SizeResponse> getSizePage(@RequestParam(defaultValue = "", required = false) String name,
-                                                        Pageable pageable) {
-        return sizeService.getSizePage(name, pageable);
+  @GetMapping
+  public ResponsePage<Size, SizeResponse> getSizePage(
+      @RequestParam(defaultValue = "", required = false) String name, Pageable pageable) {
+    return sizeService.getSizePage(name, pageable);
+  }
+
+  @GetMapping("{id}")
+  public SizeResponse getSizeById(@PathVariable Long id) {
+    return sizeService.getSizeById(id);
+  }
+
+  @PostMapping
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public SizeResponse createSize(
+      @RequestBody @Valid SizeRequest sizeRequest, @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return sizeService.createSize(sizeRequest, token);
+  }
 
-    @GetMapping("{id}")
-    public SizeResponse getSizeById(@PathVariable Long id){
-        return sizeService.getSizeById(id);
+  @PutMapping("{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public SizeResponse updateSize(
+      @PathVariable Long id,
+      @RequestBody @Valid SizeRequest sizeRequest,
+      @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return sizeService.updateSize(sizeRequest, id, token);
+  }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public SizeResponse createSize(@RequestBody @Valid SizeRequest sizeRequest, @RequestHeader ("Authorization") String token){
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        return sizeService.createSize(sizeRequest, token);
+  @DeleteMapping("{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public ApiResponse<Object> deleteSize(
+      @PathVariable Long id, @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
-
-    @PutMapping("{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public SizeResponse updateSize(@PathVariable Long id,@RequestBody @Valid SizeRequest sizeRequest, @RequestHeader ("Authorization") String token){
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        return sizeService.updateSize(sizeRequest,id, token);
-    }
-
-    @DeleteMapping("{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ApiResponse<Object> deleteSize(@PathVariable Long id, @RequestHeader ("Authorization") String token) {
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        String result = sizeService.deleteSize(id,token);
-        return ApiResponse.builder()
-                .code(200)
-                .message(result)
-                .build();
-    }
-
+    String result = sizeService.deleteSize(id, token);
+    return ApiResponse.builder().code(200).message(result).build();
+  }
 }

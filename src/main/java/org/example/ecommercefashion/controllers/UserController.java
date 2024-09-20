@@ -26,6 +26,13 @@ public class UserController {
 
   private final UserService userService;
 
+  public static void main(String[] args) {
+    String password = "12345678";
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    String encodedPassword = passwordEncoder.encode(password);
+    System.out.printf(encodedPassword);
+  }
+
   @PostMapping
   public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) {
     return userService.createUser(userRequest);
@@ -67,12 +74,5 @@ public class UserController {
   @PatchMapping("/assign-user-role")
   public void assignUserRole(@Valid @RequestBody UserRoleAssignRequest userRoleAssignRequest) {
     userService.assignUserRole(userRoleAssignRequest);
-  }
-
-  public static void main(String[] args) {
-    String password = "12345678";
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    String encodedPassword = passwordEncoder.encode(password);
-    System.out.printf(encodedPassword);
   }
 }

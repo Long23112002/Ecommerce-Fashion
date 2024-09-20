@@ -14,8 +14,8 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CategoryRequest {
-    @NotBlank(message = "Name cannot be null")
-    private String name;
+  @NotBlank(message = "Name cannot be null")
+  private String name;
 
-    private Long parentId;
+  private Long parentId;
 }

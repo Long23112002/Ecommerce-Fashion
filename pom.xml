@@ -164,6 +164,7 @@
 
 
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -234,5 +235,14 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>skip-flyway</id>
+            <properties>
+                <flyway.skip>true</flyway.skip>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

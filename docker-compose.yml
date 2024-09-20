@@ -23,5 +23,4 @@ services:
 
 networks:
   longnh:
-    external:
-      name: longnh
+    driver: bridge

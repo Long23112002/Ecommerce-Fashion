@@ -30,48 +30,49 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 @Api(tags = "Color", value = "Endpoints for color")
 public class ColorController {
-    private final ColorService colorService;
+  private final ColorService colorService;
 
-    @GetMapping
-    public ResponsePage<Color, ColorResponse> getColorPage(@RequestParam(defaultValue = "", required = false) String name,
-                                                           Pageable pageable) {
-        return colorService.getColorPage(name, pageable);
+  @GetMapping
+  public ResponsePage<Color, ColorResponse> getColorPage(
+      @RequestParam(defaultValue = "", required = false) String name, Pageable pageable) {
+    return colorService.getColorPage(name, pageable);
+  }
+
+  @GetMapping("{id}")
+  public ColorResponse getColorById(@PathVariable("id") Long id) {
+    return colorService.getColorById(id);
+  }
+
+  @PostMapping
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public ColorResponse createColor(
+      @RequestBody @Valid ColorRequest colorRequest, @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return colorService.createColor(colorRequest, token);
+  }
 
-    @GetMapping("{id}")
-    public ColorResponse getColorById(@PathVariable("id") Long id) {
-        return colorService.getColorById(id);
+  @PutMapping("{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public ColorResponse updateColor(
+      @PathVariable Long id,
+      @RequestBody @Valid ColorRequest colorRequest,
+      @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return colorService.updateColor(colorRequest, id, token);
+  }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ColorResponse createColor(@RequestBody @Valid ColorRequest colorRequest, @RequestHeader ("Authorization") String token){
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        return colorService.createColor(colorRequest, token);
+  @DeleteMapping("{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public ApiResponse<Object> deleteColor(
+      @PathVariable Long id, @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
-
-    @PutMapping("{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ColorResponse updateColor(@PathVariable Long id,@RequestBody @Valid ColorRequest colorRequest, @RequestHeader ("Authorization") String token){
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        return colorService.updateColor(colorRequest,id, token);
-    }
-
-
-    @DeleteMapping("{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ApiResponse<Object> deleteColor(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        String result = colorService.deleteColor(id,token);
-        return ApiResponse.builder()
-                .code(200)
-                .message(result)
-                .build();
-    }
+    String result = colorService.deleteColor(id, token);
+    return ApiResponse.builder().code(200).message(result).build();
+  }
 }

@@ -24,6 +24,7 @@ public enum ErrorMessage implements BaseErrorMessage {
 
     ACCESS_DENIED("Access denied"),
     ROLE_EXISTED("Role does not existed"),
+    USER_EXISTED("User existed"),
 
 
     ;

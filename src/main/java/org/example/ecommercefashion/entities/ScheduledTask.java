@@ -7,53 +7,52 @@ import org.example.ecommercefashion.enums.email.LogStatusEnum;
 import org.example.ecommercefashion.repositories.EmailRepository;
 import org.example.ecommercefashion.repositories.EmailSendLogRepository;
 import org.example.ecommercefashion.repositories.TemplateRepository;
-import org.example.ecommercefashion.services.OTPService;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-@Component
 @RequiredArgsConstructor
 @Slf4j
-public class EmailJob implements Job {
+@Component
+public class ScheduledTask {
     @Autowired
     private JavaMailSender mailSender;
     @Value("${spring.mail.username}")
     private String sendFrom;
-    private final OTPService otpService;
-    private final TemplateRepository templateRepository;
-    private final EmailRepository emailRepository;
-    private final EmailSendLogRepository emailSendLogRepository;
+    @Autowired
+    private TemplateRepository templateRepository;
+    @Autowired
+    private EmailRepository emailRepository;
+    @Autowired
+    private EmailSendLogRepository emailSendLogRepository;
     private MimeMessage mimeMessage;
     private MimeMessageHelper helper;
-
-    @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
-        String email = (String) context.getMergedJobDataMap().get("email");
+    @Scheduled(cron = "0 8 22 * * ?")
+    public void performTask() throws MessagingException {
+        log.info("testtttttttttttt");
+        System.out.println("jdcdcfd");
+//        String email = (String) context.getMergedJobDataMap().get("email");
         mimeMessage = mailSender.createMimeMessage();
         helper = new MimeMessageHelper(mimeMessage, "utf-8");
 
-        Template template = templateRepository.findTemplateBySubjectIgnoreCase("Verification code");
-        if (template == null) {
-            throw new JobExecutionException("Template for 'Verification code' not found");
-        }
-        String otp = otpService.generateOTP();
-        otpService.saveOtp(email, otp);
+        Template template = templateRepository.findTemplateBySubjectIgnoreCase("Notification Promotion");
 
-        log.info("email user : {}" , email);
-        log.info("otp user : {}" , otp);
+        LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
 
         String content = template.getHtml()
-                .replace("{{email}}", email)
-                .replace("{{OTP}}", otp);
+                .replace("{{startDate}}", today.toString())
+                .replace("{{endDate}}", tomorrow.toString());
 
         // Lưu email vào log
         Email emailLog = createEmail(template.getSubject());
@@ -63,24 +62,30 @@ public class EmailJob implements Job {
         // Log trước khi gửi
         EmailSendLog sentLog = createEmailLog(emailLog);
         sentLog.setEmail(emailLog);
-        sentLog.setSendTo(email);
         log.info("Log created before email is sent.");
 
-        try {
-            helper.setTo(email);
-            helper.setSubject(template.getSubject());
-            helper.setText(content, true);
-            helper.setFrom(sendFrom);
-            mailSender.send(mimeMessage);
+//        try {
+            for (String x : listEmail()) {
+                helper.setTo(x);
+                helper.setSubject(template.getSubject());
+                helper.setText(content, true);
+                helper.setFrom(sendFrom);
+                mailSender.send(mimeMessage);
 
-            sentLog.setStatus(LogStatusEnum.SUCCESS);
-            emailSendLogRepository.save(sentLog);
+                sentLog.setStatus(LogStatusEnum.SUCCESS);
+                emailSendLogRepository.save(sentLog);
 
-            log.info("Email sent successfully, log updated.");
-
-        } catch (MessagingException e) {
-            throw new JobExecutionException(e);
-        }
+                log.info("Email sent successfully, log updated.");
+            }
+//        } catch (MessagingException e) {
+//            throw new JobExecutionException(e);
+//        }
+    }
+    public List<String> listEmail() {
+        List<String> email = new ArrayList<String>();
+        email.add("quyennttph44488@fpt.edu.vn");
+        email.add("htuquyen@gmail.com");
+        return email;
     }
 
     public Email createEmail(String subject) {

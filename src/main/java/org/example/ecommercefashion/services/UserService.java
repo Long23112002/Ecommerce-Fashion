@@ -2,30 +2,36 @@ package org.example.ecommercefashion.services;
 
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
+import org.example.ecommercefashion.dtos.request.OptCodeRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.entities.Email;
 import org.example.ecommercefashion.entities.User;
 import org.springframework.data.domain.Pageable;
 
 @SuppressWarnings("unused")
 public interface UserService {
 
-  UserResponse createUser(UserRequest userRequest);
+    UserResponse createUser(UserRequest userRequest) throws Exception;
 
-  UserResponse updateUser(Long id, UserRequest userRequest);
+    void signUp(UserRequest userRequest) throws Exception;
 
-  MessageResponse deleteUser(Long id);
+    String verifyUser(OptCodeRequest request);
 
-  UserResponse getUserById(Long id);
+    UserResponse updateUser(Long id, UserRequest userRequest);
 
-  MessageResponse assignRoleAdmin(String email);
+    MessageResponse deleteUser(Long id);
 
-  MessageResponse changePassword(ChangePasswordRequest changePasswordRequest);
+    UserResponse getUserById(Long id);
 
-  ResponsePage<User, UserResponse> getAllUsers(UserParam userParam,Pageable pageable);
+    MessageResponse assignRoleAdmin(String email);
 
-  MessageResponse assignUserRole(UserRoleAssignRequest userRoleAssignRequest);
+    MessageResponse changePassword(ChangePasswordRequest changePasswordRequest);
+
+    ResponsePage<User, UserResponse> getAllUsers(UserParam userParam, Pageable pageable);
+
+    MessageResponse assignUserRole(UserRoleAssignRequest userRoleAssignRequest);
 }

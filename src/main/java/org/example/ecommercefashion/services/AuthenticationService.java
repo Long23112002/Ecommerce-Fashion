@@ -13,5 +13,5 @@ public interface AuthenticationService {
 
   MessageResponse resetPassword(ResetPasswordRequest request, String token);
 
-  UserResponse signUp(UserRequest userRequest);
+  UserResponse signUp(UserRequest userRequest) throws Exception;
 }

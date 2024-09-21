@@ -14,7 +14,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   @EntityGraph(attributePaths = "roles")
   User findByEmail(String email);
-
+  @EntityGraph(attributePaths = "roles")
+  User findUserByEmailOrPhoneNumber(String email, String phoneNumber);
   @Query(
       "SELECT u FROM User u WHERE "
           + "(:#{#param.email} IS NULL OR u.email LIKE %:#{#param.email}%) AND "

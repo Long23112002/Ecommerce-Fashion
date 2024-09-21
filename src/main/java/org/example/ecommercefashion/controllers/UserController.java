@@ -2,11 +2,10 @@
 package org.example.ecommercefashion.controllers;
 
 import io.swagger.annotations.Api;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
+import org.example.ecommercefashion.dtos.request.OptCodeRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
@@ -19,6 +18,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
@@ -28,8 +29,18 @@ public class UserController {
   private final UserService userService;
 
   @PostMapping
-  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) {
+  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) throws Exception {
     return userService.createUser(userRequest);
+  }
+
+  @PostMapping("/sign-up")
+  public void signUp(@Valid @RequestBody UserRequest userRequest) throws Exception {
+     userService.signUp(userRequest);
+  }
+
+  @PostMapping("/verify")
+  public String verifyOtp(@Valid @RequestBody OptCodeRequest optCodeRequest) throws Exception {
+    return userService.verifyUser(optCodeRequest);
   }
 
   @PutMapping("/{id}")

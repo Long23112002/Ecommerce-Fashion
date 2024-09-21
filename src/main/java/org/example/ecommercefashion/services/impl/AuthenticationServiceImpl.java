@@ -84,7 +84,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   @Transactional
-  public UserResponse signUp(UserRequest userRequest) {
+  public UserResponse signUp(UserRequest userRequest) throws Exception {
     return userService.createUser(userRequest);
   }
 

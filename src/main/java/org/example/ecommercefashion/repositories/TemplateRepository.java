@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface TemplateRepository extends JpaRepository<Template, Long> {
     Page<Template> findByIsDeleted(Boolean isDeleted, Pageable pageable);
     Page<Template> findAll(Pageable pageable);
-
+    Template findTemplateBySubjectIgnoreCase(String subject);
 }

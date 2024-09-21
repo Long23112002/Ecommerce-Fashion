@@ -78,15 +78,26 @@ spring:
   quartz:
     job:
       store:
-        type: jdbc
+#        type: jdbc
+      auto:
+        startup:true
+      scheduler:
+        auto:
+          startup:true
     properties:
       org:
         quartz:
           threadPool:
             threadCount:5
-#mailgun:
-#  apiKey: 1ca13d6dd4d32530a327dab7519b8097-2b91eb47-3b79f8c3
-#  domain: sandboxd33d1c65feb7420282cf794cefdc8a8c.mailgun.org
+  cache:
+    redis:
+      time-to-live: 180
+  redis:
+    host: localhost
+    port: 6379
+    password:
+#    timeout: 180
+
 
 
 

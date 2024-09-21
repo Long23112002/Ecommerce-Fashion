@@ -39,7 +39,7 @@ public class AuthController {
   }
 
   @PostMapping("/signup")
-  public UserResponse signUp(@Valid @RequestBody UserRequest userRequest) {
+  public UserResponse signUp(@Valid @RequestBody UserRequest userRequest) throws Exception {
     return authenticationService.signUp(userRequest);
   }
 

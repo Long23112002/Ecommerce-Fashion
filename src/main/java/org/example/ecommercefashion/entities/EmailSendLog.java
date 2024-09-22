@@ -5,19 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.ecommercefashion.enums.email.LogStatusEnum;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "process_send" , schema = "emails")
+@Table(name = "mail_send_log" , schema = "emails")
 @Entity
-public class ProcessSend {
+public class EmailSendLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -26,22 +26,21 @@ public class ProcessSend {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
-    @Column(name = "count_mail_sent")
-    private Long countSent;
-    @Column(name = "count_mail_failed")
-    private Long countFailed;
-    @Column(name = "size_process")
-    private Long sizeProcess;
-
+    @Column(name = "description")
+    private String description;
+    @Column(name = "send_to")
+    private String sendTo;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
+    private LogStatusEnum status;
     @ManyToOne(cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH},
             fetch = FetchType.LAZY)
+    @JoinColumn(name = "process_send_id")
+    private ProcessSend processSend;
+    @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "email_id")
     private Email email;
-
-    @OneToMany(mappedBy = "processSend", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
-    private List<EmailSendLog> emailSendLogs;
-
 }

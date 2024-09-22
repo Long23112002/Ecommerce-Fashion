@@ -18,8 +18,8 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class ColorRequest {
 
-    @NotBlank(message = "Color name is not null")
-    @Size(min = 2, max = 50, message = "Color name is between 2 and 50 characters")
+    @NotBlank(message = "Tên màu không được trống")
+    @Size(min = 2, max = 50, message = "Tên màu phải từ 2 đến 50 ký tự")
     private String name;
 
 }

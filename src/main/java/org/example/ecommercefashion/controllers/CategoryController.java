@@ -27,52 +27,55 @@ import javax.validation.Valid;
 @RequestMapping("/api/v1/category")
 @RequiredArgsConstructor
 public class CategoryController {
-    private final CategoryService categoryService;
+  private final CategoryService categoryService;
 
-    @GetMapping
-    public ResponsePage<Category, CategoryResponse> FiterAll(CategoryParam param, Pageable pageable) {
-        return categoryService.filterCategory(param,pageable);
-    }
-    @GetMapping("/select")
-    public ResponsePage<Category, CategoryResponse> getAll(Pageable pageable){
-        return categoryService.getAll(pageable);
-    }
-    @PostMapping
-    @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<CategoryResponse> add(@Valid @RequestBody CategoryRequest request,
-                                                @RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        return ResponseEntity.ok(categoryService.add(request, token));
-    }
+  @GetMapping
+  public ResponsePage<Category, CategoryResponse> FiterAll(CategoryParam param, Pageable pageable) {
+    return categoryService.filterCategory(param, pageable);
+  }
 
-    @PutMapping("/{id}")
-    @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<CategoryResponse> update(@PathVariable long id, @Valid @RequestBody CategoryRequest request,
-                                                   @RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        return ResponseEntity.ok(categoryService.update(request, id, token));
-    }
+  @GetMapping("/select")
+  public ResponsePage<Category, CategoryResponse> getAll(Pageable pageable) {
+    return categoryService.getAll(pageable);
+  }
 
-    @GetMapping("/{id}")
-    @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<CategoryResponse> getFindById(@PathVariable Long id) {
-        CategoryResponse response = categoryService.getByCategoryId(id);
-        if (response != null) {
-            return ResponseEntity.ok(response);
-        } else {
-            return null;
-        }
+  @PostMapping
+  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  public ResponseEntity<CategoryResponse> add(
+      @Valid @RequestBody CategoryRequest request, @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return ResponseEntity.ok(categoryService.add(request, token));
+  }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {
-        MessageResponse messageResponse = categoryService.deleted(id);
-        return ResponseEntity.ok(messageResponse);
+  @PutMapping("/{id}")
+  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  public ResponseEntity<CategoryResponse> update(
+      @PathVariable long id,
+      @Valid @RequestBody CategoryRequest request,
+      @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return ResponseEntity.ok(categoryService.update(request, id, token));
+  }
 
+  @GetMapping("/{id}")
+  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  public ResponseEntity<CategoryResponse> getFindById(@PathVariable Long id) {
+    CategoryResponse response = categoryService.getByCategoryId(id);
+    if (response != null) {
+      return ResponseEntity.ok(response);
+    } else {
+      return null;
+    }
+  }
+
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {
+    MessageResponse messageResponse = categoryService.deleted(id);
+    return ResponseEntity.ok(messageResponse);
+  }
 }

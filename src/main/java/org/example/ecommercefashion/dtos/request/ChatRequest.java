@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ChatRequest {
-    private String idRoom;
-    private String content;
-    private Long createBy;
+  private String idRoom;
+  private String content;
+  private Long createBy;
 }

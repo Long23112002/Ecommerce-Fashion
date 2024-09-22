@@ -58,7 +58,7 @@
         <dependency>
             <groupId>io.github.long23112002</groupId>
             <artifactId>common-service</artifactId>
-            <version>1.4.1</version>
+            <version>1.5.1</version>
         </dependency>
 
         <dependency>
@@ -138,10 +138,10 @@
             <version>7.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>com.vladmihalcea</groupId>
@@ -159,11 +159,29 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!-- Spring Cache Abstraction -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
 
     </dependencies>
 
 
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -234,5 +252,14 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>skip-flyway</id>
+            <properties>
+                <flyway.skip>true</flyway.skip>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

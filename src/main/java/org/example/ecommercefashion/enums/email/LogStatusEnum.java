@@ -1,6 +1,6 @@
 package org.example.ecommercefashion.enums.email;
 
-public enum StatusEmailEnum {
-    PENDING,
-    SENT
+public enum LogStatusEnum {
+    FAILED,
+    SUCCESS
 }

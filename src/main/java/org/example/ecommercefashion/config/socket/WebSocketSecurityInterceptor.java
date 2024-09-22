@@ -28,7 +28,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
     StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-
     String urlNotification = accessor.getDestination();
     if (urlNotification != null && urlNotification.startsWith("/notification")) {
       return message;
@@ -53,7 +52,17 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     if (StompCommand.SEND.equals(accessor.getCommand())) {
       isUserInRoom(accessor);
     }
+    if (StompCommand.MESSAGE.equals(accessor.getCommand())) {
+      handleReceive(accessor);
+    }
     return message;
+  }
+
+  private void handleReceive(StompHeaderAccessor accessor) {
+    User user = decodeToUser(accessor);
+    if(user.getIsAdmin()){
+      System.out.println("Hello");
+    }
   }
 
   private void isUserHasPermission(StompHeaderAccessor accessor) {

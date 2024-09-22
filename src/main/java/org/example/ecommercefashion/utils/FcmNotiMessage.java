@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 @Builder
-public class FcmNotiMessage {
+  public class FcmNotiMessage {
 
   private String subject;
   private String content;

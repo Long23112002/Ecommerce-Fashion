@@ -16,16 +16,6 @@ google:
   redirect-uri: ${GOOGLE_REDIRECT_URI}
 
 
-minio:
-  endpoint: ${MINIO_ENDPOINT}
-  access:
-    key: ${MINIO_ACCESS_KEY}
-  secret:
-    key: ${MINIO_SECRET_KEY}
-  bucket:
-    name: ${MINIO_BUCKET_NAME}
-
-
 spring:
   application:
     name: ecommerce-fashion
@@ -49,8 +39,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-      show-sql: true
-      format-sql: true
+    show-sql: true
 
     properties:
       hibernate:
@@ -64,4 +53,6 @@ spring:
 
 server:
   port: ${PORT_SERVER}
+
+
 

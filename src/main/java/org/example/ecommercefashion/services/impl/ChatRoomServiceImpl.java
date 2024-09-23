@@ -4,6 +4,7 @@ import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
+import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.entities.Chat;
 import org.example.ecommercefashion.entities.ChatRoom;
@@ -38,12 +39,24 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
+    public ChatRoomResponse findById(String id) {
+        return chatRoomRepository.findById(id).map(this::toDto)
+                .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND));
+    }
+
+    @Override
     public String findIdChatRoomByUserId(Long id) {
         Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findChatRoomByUserId(id);
         if (chatRoomOptional.isPresent()) {
             return chatRoomOptional.get().getId();
         }
         throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND);
+    }
+    @Override
+    public Optional<Chat> findLastChatByIdChatRoom(String id) {
+        ChatRoom chatRoom = chatRoomRepository.findById(id)
+                .orElseThrow(()->new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND));
+        return chatRepository.findLastChatByIdChatRoom(id);
     }
 
     @Override
@@ -68,7 +81,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND));
         response.setNameClient(user.getFullName());
         response.setAvatar(user.getAvatar());
-        Optional<Chat> optional = chatRepository.findLastChatByIdChatRoom(entity.getId());
+        Optional<Chat> optional = findLastChatByIdChatRoom(entity.getId());
         if (optional.isPresent()) {
             Chat chat = optional.get();
             response.setLastChat(chat.getContent());

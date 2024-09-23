@@ -23,6 +23,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
+import static org.example.ecommercefashion.annotations.normalized.normalizeString;
+
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +49,16 @@ public class OriginServiceImpl implements OriginService{
         if (token != null) {
             JwtResponse jwt = JwtService.decodeToken(token);
             Origin origin = new Origin();
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(origin,request);
+            if(repository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NAME_EXISTED);
+            }
             origin.setCreateBy(jwt.getUserId());
             origin = repository.save(origin);
             OriginResponse response = new OriginResponse();
@@ -77,7 +90,16 @@ public class OriginServiceImpl implements OriginService{
             Origin origin = repository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ORIGIN_NOT_FOUND)
             );
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(origin,request);
+            if(repository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NAME_EXISTED);
+            }
             origin.setUpdateBy(jwt.getUserId());
             origin = repository.save(origin);
             OriginResponse response = new OriginResponse();

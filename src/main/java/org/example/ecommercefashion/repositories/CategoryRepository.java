@@ -13,5 +13,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             "AND (:#{#param.name} IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :#{#param.name}, '%')))")
     Page<Category> filterCategories(CategoryParam param,
                                     Pageable pageable);
-
+    Boolean existsByName(String name);
 }

@@ -40,9 +40,9 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             handleSubcribe(accessor);
         }
-        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-            handleDisConnect(accessor);
-        }
+//        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+//            handleDisConnect(accessor);
+//        }
         if (StompCommand.SEND.equals(accessor.getCommand())) {
             isUserInRoom(accessor);
         }
@@ -67,11 +67,11 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         }
     }
 
-    private void handleDisConnect(StompHeaderAccessor accessor) {
-        User user = decodeToUser(accessor);
-        String idRoom = getIdRoomFromDestination(accessor);
-        subscriptionManager.removeUserFromRoom(idRoom,user.getId());
-    }
+//    private void handleDisConnect(StompHeaderAccessor accessor) {
+//        User user = decodeToUser(accessor);
+//        String idRoom = getIdRoomFromDestination(accessor);
+//        subscriptionManager.removeUserFromRoom(idRoom,user.getId());
+//    }
 
     private void isUserHasPermission(StompHeaderAccessor accessor) {
         User user = decodeToUser(accessor);

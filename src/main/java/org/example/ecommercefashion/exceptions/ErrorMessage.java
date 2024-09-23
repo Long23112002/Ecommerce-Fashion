@@ -3,6 +3,9 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+    CATEGORY_NAME_EXISTED("Tên Danh Mục Đã Tồn Tại"),
+    ORIGIN_NAME_EXISTED("Tên Xuất Xứ Đã Tồn Tại"),
+    BRAND_NAME_EXISTED("Tên Thương Hiệu Đã Tồn Tại"),
     ORIGIN_NOT_FOUND("Origin not found"),
     BRAND_NOT_FOUND("Brand not found"),
     CATEGORY_NOT_FOUND("Category not found"),

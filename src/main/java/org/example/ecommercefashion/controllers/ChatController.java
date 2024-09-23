@@ -18,7 +18,8 @@ public class ChatController {
   final ChatService chatService;
 
   @MessageMapping("/chat.sendMessage/{idRoom}")
-  public void sendMessage(@DestinationVariable String idRoom, @Payload ChatRequest request) {
+  public void sendMessage(@DestinationVariable String idRoom,
+                          @Payload ChatRequest request) {
     ChatResponse response = chatService.create(request);
     webSocketService.responseRealtime("/room/" + idRoom, response);
   }

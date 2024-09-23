@@ -11,8 +11,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BrandRepository extends JpaRepository<Brand, Long> {
     @Query(value = "SELECT * FROM products.brand o WHERE " +
-            "(CAST(:#{#param.name} AS text) IS NULL OR LOWER(o.name) LIKE LOWER(CONCAT('%', :#{#param.name}, '%')))",
+            "(CAST(:#{#param.name} AS text) IS NULL OR LOWER(o.name) LIKE LOWER(CONCAT('%', :#{#param.name}, '%'))) AND o.deleted = false ",
             nativeQuery = true)
     Page<Brand> filterBrand(BrandParam param, Pageable pageable);
 
+    Boolean existsByName(String name);
 }

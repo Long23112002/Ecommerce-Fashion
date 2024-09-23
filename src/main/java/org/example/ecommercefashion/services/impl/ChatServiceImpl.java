@@ -42,7 +42,7 @@ public class ChatServiceImpl implements ChatService {
             Chat save = chatRepository.save(entity);
             ChatResponse response = toDto(save);
             return response;
-        }finally {
+        } finally {
             webSocketService.responseRealtime("/admin", chatRoomService.findAllChatRoom());
         }
     }
@@ -56,10 +56,18 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void seenAllChatByIdChatRoom(String id) {
+        var responses = chatRoomService.findAllChatRoom().stream()
+                .map(chatRoom -> {
+                    if (chatRoom.getId().equals(id)) {
+                        chatRoom.setSeen(true);
+                    }
+                    return chatRoom;
+                })
+                .toList();
+        webSocketService.responseRealtime("/admin", responses);
         Query query = new Query(Criteria.where("id_room").is(id));
-        Update update = new Update().set("seen",true);
-        mongoTemplate.updateMulti(query,update,Chat.class);
-        webSocketService.responseRealtime("/admin",chatRoomService.findAllChatRoom());
+        Update update = new Update().set("seen", true);
+        mongoTemplate.updateMulti(query, update, Chat.class);
     }
 
     private void defaultCreateValue(Chat entity) {

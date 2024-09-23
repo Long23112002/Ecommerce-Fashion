@@ -32,44 +32,50 @@ import javax.validation.Valid;
 @RequestMapping("/api/v1/origin")
 @RequiredArgsConstructor
 public class OriginController {
-    private final OriginService originService;
-    @GetMapping
-    public ResponsePage<Origin, OriginResponse> getAll(OriginParam param, Pageable pageable){
-        return originService.filterOrigin(param,pageable);
-    }
+  private final OriginService originService;
 
-    @PostMapping
-    @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<OriginResponse> add(@Valid @RequestBody OriginRequest request,
-                                             @RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        return ResponseEntity.ok(originService.add(request, token));
+  @GetMapping
+  public ResponsePage<Origin, OriginResponse> getAll(OriginParam param, Pageable pageable) {
+    return originService.filterOrigin(param, pageable);
+  }
+
+  @PostMapping
+  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  public ResponseEntity<OriginResponse> add(
+      @Valid @RequestBody OriginRequest request, @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
-    @PutMapping("/{id}")
-    @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<OriginResponse> update(@PathVariable long id, @Valid @RequestBody OriginRequest request,
-                                                @RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        return ResponseEntity.ok(originService.update(request, id, token));
+    return ResponseEntity.ok(originService.add(request, token));
+  }
+
+  @PutMapping("/{id}")
+  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  public ResponseEntity<OriginResponse> update(
+      @PathVariable long id,
+      @Valid @RequestBody OriginRequest request,
+      @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
-    @GetMapping("/{id}")
-    @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<OriginResponse> getFindById(@PathVariable Long id) {
-        OriginResponse response = originService.getByOriginId(id);
-        if (response != null) {
-            return ResponseEntity.ok(response);
-        } else {
-            return null;
-        }
+    return ResponseEntity.ok(originService.update(request, id, token));
+  }
+
+  @GetMapping("/{id}")
+  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  public ResponseEntity<OriginResponse> getFindById(@PathVariable Long id) {
+    OriginResponse response = originService.getByOriginId(id);
+    if (response != null) {
+      return ResponseEntity.ok(response);
+    } else {
+      return null;
     }
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {
-        MessageResponse messageResponse = originService.deleted(id);
-        return ResponseEntity.ok(messageResponse);
-    }
+  }
+
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {
+    MessageResponse messageResponse = originService.deleted(id);
+    return ResponseEntity.ok(messageResponse);
+  }
 }

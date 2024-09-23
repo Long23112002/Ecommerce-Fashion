@@ -32,5 +32,5 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           curl -s -X POST https://api.telegram.org/bot7002498142:AAEjxsMSEIRjomBxKOEDgCrlTWURA6H3nU8/sendMessage \
-            -d chat_id=1828497602 \
+            -d chat_id=-4563669936 \
             -d text="New commit to repository: ${GITHUB_REPOSITORY}%0ABranch: ${BRANCH_NAME}%0ACommit message: ${COMMIT_MESSAGE}%0AAuthor: ${COMMIT_AUTHOR_NAME} <${COMMIT_AUTHOR_EMAIL}>%0ADate: ${COMMIT_DATE}"

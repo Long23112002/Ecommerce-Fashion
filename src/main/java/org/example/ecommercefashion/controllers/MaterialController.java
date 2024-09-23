@@ -30,47 +30,50 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 @Api(tags = "Material", value = "Endpoints for material")
 public class MaterialController {
-    private final MaterialService materialService;
+  private final MaterialService materialService;
 
-    @GetMapping
-    public ResponsePage<Material, MaterialResponse> getMaterialPage(@RequestParam(defaultValue = "", required = false) String name,
-                                                                    Pageable pageable){
-        return materialService.getMaterialPage(name, pageable);
-    }
+  @GetMapping
+  public ResponsePage<Material, MaterialResponse> getMaterialPage(
+      @RequestParam(defaultValue = "", required = false) String name, Pageable pageable) {
+    return materialService.getMaterialPage(name, pageable);
+  }
 
-    @GetMapping("/{id}")
-    public MaterialResponse getMaterialById(@PathVariable Long id){
-        return materialService.getMaterialById(id);
-    }
+  @GetMapping("/{id}")
+  public MaterialResponse getMaterialById(@PathVariable Long id) {
+    return materialService.getMaterialById(id);
+  }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public MaterialResponse createMaterial(@RequestBody @Valid MaterialRequest materialRequest, @RequestHeader("Authorization") String token){
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        return materialService.createMaterial(materialRequest,token);
+  @PostMapping
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public MaterialResponse createMaterial(
+      @RequestBody @Valid MaterialRequest materialRequest,
+      @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return materialService.createMaterial(materialRequest, token);
+  }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public MaterialResponse updateMaterial(@PathVariable Long id, @RequestBody @Valid MaterialRequest materialRequest, @RequestHeader ("Authorization") String token){
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        return materialService.updateMaterial(materialRequest, id, token);
+  @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public MaterialResponse updateMaterial(
+      @PathVariable Long id,
+      @RequestBody @Valid MaterialRequest materialRequest,
+      @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    return materialService.updateMaterial(materialRequest, id, token);
+  }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ApiResponse<Object> deleteMaterial(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
-        String result = materialService.deleteMaterial(id, token);
-        return ApiResponse.builder()
-               .code(200)
-               .message(result)
-               .build();
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public ApiResponse<Object> deleteMaterial(
+      @PathVariable Long id, @RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
     }
+    String result = materialService.deleteMaterial(id, token);
+    return ApiResponse.builder().code(200).message(result).build();
+  }
 }

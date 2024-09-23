@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CategoryRequest {
+
     @NotBlank(message = "name là bắt buộc")
     @Size(min = 2, max = 50, message = "tên phải từ 2 đến 50 ký tự")
     private String name;

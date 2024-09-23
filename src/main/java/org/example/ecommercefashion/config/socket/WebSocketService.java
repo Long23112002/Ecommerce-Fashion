@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class WebSocketService {
+public class WebSocketService{
 
-    SimpMessagingTemplate messagingTemplate;
+   final SimpMessagingTemplate messagingTemplate;
 
     public <T> void responseRealtime(String url, T responses) {
         try {

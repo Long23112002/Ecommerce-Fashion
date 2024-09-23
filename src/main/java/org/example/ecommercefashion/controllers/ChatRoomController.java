@@ -24,32 +24,31 @@ import java.util.List;
 @Api(tags = "ChatRoom", value = "Endpoints for chat room management")
 public class ChatRoomController {
 
-    final ChatRoomService chatRoomService;
-    final ChatService chatService;
+  final ChatRoomService chatRoomService;
+  final ChatService chatService;
 
-    @GetMapping
-    public List<ChatRoomResponse> findAllChatRoom() {
-       return chatRoomService.findAllChatRoom();
-    }
+  @GetMapping
+  public List<ChatRoomResponse> findAllChatRoom() {
+    return chatRoomService.findAllChatRoom();
+  }
 
-    @GetMapping("/user/{id}")
-    public String findIdChatRoomByUserId(@PathVariable("id") Long id) {
-       return chatRoomService.findIdChatRoomByUserId(id);
-    }
+  @GetMapping("/user/{id}")
+  public String findIdChatRoomByUserId(@PathVariable("id") Long id) {
+    return chatRoomService.findIdChatRoomByUserId(id);
+  }
 
-    @GetMapping("/chats/{id}")
-    public List<ChatResponse> findAllChatByIdChatRoom(@PathVariable("id") String id) {
-       return chatService.findAllChatByIdChatRoom(id);
-    }
+  @GetMapping("/chats/{id}")
+  public List<ChatResponse> findAllChatByIdChatRoom(@PathVariable("id") String id) {
+    return chatService.findAllChatByIdChatRoom(id);
+  }
 
-    @PatchMapping("/chats/{id}")
-    public void seenAllChatByIdChatRoom(@PathVariable("id") String id) {
-        chatService.seenAllChatByIdChatRoom(id);
-    }
+  @PatchMapping("/chats/{id}")
+  public void seenAllChatByIdChatRoom(@PathVariable("id") String id) {
+    chatService.seenAllChatByIdChatRoom(id);
+  }
 
-    @PostMapping
-    public ChatRoomResponse create(@RequestBody ChatRoomRequest request) {
-        return chatRoomService.create(request);
-    }
-
+  @PostMapping
+  public ChatRoomResponse createChatRoom(@RequestBody ChatRoomRequest request) {
+    return chatRoomService.create(request);
+  }
 }

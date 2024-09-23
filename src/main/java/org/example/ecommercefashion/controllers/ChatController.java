@@ -14,13 +14,12 @@ import org.springframework.stereotype.Controller;
 @RequiredArgsConstructor
 public class ChatController {
 
-    final WebSocketService webSocketService;
-    final ChatService chatService;
+  final WebSocketService webSocketService;
+  final ChatService chatService;
 
-    @MessageMapping("/chat.sendMessage/{idRoom}")
-    public void sendMessage(@DestinationVariable String idRoom,
-                            @Payload ChatRequest request) {
-        ChatResponse response = chatService.create(request);
-        webSocketService.responseRealtime("/room/" + idRoom, response);
-    }
+  @MessageMapping("/chat.sendMessage/{idRoom}")
+  public void sendMessage(@DestinationVariable String idRoom, @Payload ChatRequest request) {
+    ChatResponse response = chatService.create(request);
+    webSocketService.responseRealtime("/room/" + idRoom, response);
+  }
 }

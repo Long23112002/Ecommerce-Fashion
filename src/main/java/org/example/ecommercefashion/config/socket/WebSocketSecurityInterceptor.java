@@ -24,7 +24,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     final JwtService jwtService;
     final ChatRoomRepository chatRoomRepository;
     final UserRepository userRepository;
-    final RoomSubscriptionManager subscriptionManager;
+    final RoomSubscriptionService subscriptionService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -40,9 +40,9 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             handleSubcribe(accessor);
         }
-//        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-//            handleDisConnect(accessor);
-//        }
+        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+            handleDisConnect(accessor);
+        }
         if (StompCommand.SEND.equals(accessor.getCommand())) {
             isUserInRoom(accessor);
         }
@@ -51,9 +51,12 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
     private void handleConnect(StompHeaderAccessor accessor) {
         String token = accessor.getFirstNativeHeader("Authorization") + "";
-        if (token.length() == 0 || jwtService.decodeToken(token) == null) {
+        var user = jwtService.decodeToken(token);
+        if (token.length() == 0 || user == null) {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
+        Long id = user.getUserId();
+        accessor.getSessionAttributes().put("idUser", id);
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
@@ -67,11 +70,14 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         }
     }
 
-//    private void handleDisConnect(StompHeaderAccessor accessor) {
-//        User user = decodeToUser(accessor);
-//        String idRoom = getIdRoomFromDestination(accessor);
-//        subscriptionManager.removeUserFromRoom(idRoom,user.getId());
-//    }
+    private void handleDisConnect(StompHeaderAccessor accessor) {
+        try {
+            Long idUser = Long.valueOf(accessor.getSessionAttributes().get("idUser").toString());
+            subscriptionService.removeUserFromAllRooms(idUser);
+        }catch (NumberFormatException e){
+            throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND);
+        }
+    }
 
     private void isUserHasPermission(StompHeaderAccessor accessor) {
         User user = decodeToUser(accessor);
@@ -92,7 +98,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         if (!chatRoom.getIdClient().equals(user.getId()) && !user.getIsAdmin()) {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
-        subscriptionManager.addUserToRoom(idRoom, user.getId());
+        subscriptionService.addUserToRoom(idRoom, user.getId());
     }
 
     private User decodeToUser(StompHeaderAccessor accessor) {

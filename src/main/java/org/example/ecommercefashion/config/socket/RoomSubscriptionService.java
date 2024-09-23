@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class RoomSubscriptionManager {
+public class RoomSubscriptionService {
 
     private final ConcurrentHashMap<String, Set<Long>> roomSubscriptions = new ConcurrentHashMap<>();
 

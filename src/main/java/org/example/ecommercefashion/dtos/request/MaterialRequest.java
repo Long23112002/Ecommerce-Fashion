@@ -10,8 +10,8 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MaterialRequest {
-    @NotBlank(message = "Material name is not null")
-    @Size(min = 2, max = 50, message = "Material name is between 2 and 50 characters")
+    @NotBlank(message = "Tên chất liệu không được trống")
+    @Size(min = 2, max = 50, message = "Tên chất liệu phải từ 2 đến 50 ký tự")
     private String name;
 
 }

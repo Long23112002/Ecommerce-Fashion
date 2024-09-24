@@ -44,7 +44,7 @@ public class ChatRoomController {
 
   @PatchMapping("/chats/{id}")
   public void seenAllChatByIdChatRoom(@PathVariable("id") String id) {
-    chatService.seenAllChatByIdChatRoom(id);
+    chatService.seenAllChatByIdChatRoom(id, null);
   }
 
   @PostMapping

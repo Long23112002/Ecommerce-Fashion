@@ -12,33 +12,36 @@ public class RoomSubscriptionService {
 
     private final ConcurrentHashMap<String, Set<Long>> roomSubscriptions = new ConcurrentHashMap<>();
 
-    public void addUserToRoom(String roomId, Long userId) {
-        roomSubscriptions.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet()).add(userId);
+    public void addUserToRoom(String idRoom, Long idUser) {
+        roomSubscriptions.computeIfAbsent(idRoom, k -> ConcurrentHashMap.newKeySet()).add(idUser);
     }
 
-    public void removeUserFromRoom(String roomId, Long userId) {
-        Set<Long> users = roomSubscriptions.get(roomId);
+    public void removeUserFromRoom(String idRoom, Long idUser) {
+        Set<Long> users = roomSubscriptions.get(idRoom);
         if (users != null) {
-            users.remove(userId);
+            users.remove(idUser);
             if (users.isEmpty()) {
-                roomSubscriptions.remove(roomId);
+                roomSubscriptions.remove(idRoom);
             }
         }
     }
 
-    public Set<Long> getUsersInRoom(String roomId) {
-        return roomSubscriptions.getOrDefault(roomId, ConcurrentHashMap.newKeySet());
+    public Set<Long> getUsersInRoom(String idRoom) {
+        return roomSubscriptions.getOrDefault(idRoom, ConcurrentHashMap.newKeySet());
     }
 
-    public void removeUserFromAllRooms(Long userId) {
-        roomSubscriptions.forEach((roomId, users) -> {
-            if (users.contains(userId)) {
-                users.remove(userId);
-                System.out.println("Removed user " + userId + " from room " + roomId);
-                if (users.isEmpty()) {
-                    roomSubscriptions.remove(roomId);
+    public String removeUserFromAnyRooms(Long idUser) {
+        for(Map.Entry<String, Set<Long>> room :roomSubscriptions.entrySet()) {
+            String idRoom = room.getKey();
+            Set<Long> users = room.getValue();
+            if(users.contains(idUser)) {
+                users.remove(idUser);
+                if(users.isEmpty()){
+                    roomSubscriptions.remove(idRoom);
                 }
+                return idRoom;
             }
-        });
+        }
+        return null;
     }
 }

@@ -73,7 +73,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     private void handleDisConnect(StompHeaderAccessor accessor) {
         try {
             Long idUser = Long.valueOf(accessor.getSessionAttributes().get("idUser").toString());
-            subscriptionService.removeUserFromAllRooms(idUser);
+            subscriptionService.removeUserFromAnyRooms(idUser);
         }catch (NumberFormatException e){
             throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND);
         }

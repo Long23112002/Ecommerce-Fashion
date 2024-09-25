@@ -2,8 +2,8 @@ package org.example.ecommercefashion.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.ecommercefashion.entities.EmailJob;
-import org.example.ecommercefashion.entities.PromotionEmail;
+import org.example.ecommercefashion.schedule.EmailJob;
+import org.example.ecommercefashion.schedule.PromotionEmail;
 import org.example.ecommercefashion.services.EmailService;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;

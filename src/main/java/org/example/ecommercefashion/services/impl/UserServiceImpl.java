@@ -15,7 +15,7 @@ import org.example.ecommercefashion.dtos.request.OtpRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
 import org.example.ecommercefashion.dtos.response.*;
-import org.example.ecommercefashion.entities.EmailJob;
+import org.example.ecommercefashion.schedule.EmailJob;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;

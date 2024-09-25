@@ -1,14 +1,15 @@
-package org.example.ecommercefashion.entities;
+package org.example.ecommercefashion.schedule;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.ecommercefashion.entities.Email;
+import org.example.ecommercefashion.entities.EmailSendLog;
+import org.example.ecommercefashion.entities.Template;
 import org.example.ecommercefashion.enums.email.EmailTypeEnum;
 import org.example.ecommercefashion.enums.email.LogStatusEnum;
 import org.example.ecommercefashion.repositories.EmailRepository;
 import org.example.ecommercefashion.repositories.EmailSendLogRepository;
 import org.example.ecommercefashion.repositories.TemplateRepository;
-import org.example.ecommercefashion.repositories.UserRepository;
-import org.example.ecommercefashion.services.EmailService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;

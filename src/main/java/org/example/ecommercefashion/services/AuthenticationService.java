@@ -6,6 +6,7 @@ import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.response.LoginResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.quartz.JobExecutionException;
 
 public interface AuthenticationService {
 
@@ -13,5 +14,5 @@ public interface AuthenticationService {
 
   MessageResponse resetPassword(ResetPasswordRequest request, String token);
 
-  UserResponse signUp(UserRequest userRequest);
+  UserResponse signUp(UserRequest userRequest) throws JobExecutionException;
 }

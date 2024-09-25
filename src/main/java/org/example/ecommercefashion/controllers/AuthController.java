@@ -7,15 +7,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
-import org.example.ecommercefashion.dtos.request.FacebookLoginRequest;
-import org.example.ecommercefashion.dtos.request.LoginRequest;
-import org.example.ecommercefashion.dtos.request.ResetPasswordRequest;
-import org.example.ecommercefashion.dtos.request.UserRequest;
+import org.example.ecommercefashion.dtos.request.*;
 import org.example.ecommercefashion.dtos.response.*;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.AuthenticationService;
 import org.example.ecommercefashion.services.Oauth2Service;
 import org.example.ecommercefashion.services.RefreshTokenService;
+import org.example.ecommercefashion.services.UserService;
+import org.quartz.JobExecutionException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,14 +32,21 @@ public class AuthController {
 
   private final JwtService jwtService;
 
+  private final UserService userService;
+
   @PostMapping("/login")
   public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
     return authenticationService.login(loginRequest);
   }
 
   @PostMapping("/signup")
-  public UserResponse signUp(@Valid @RequestBody UserRequest userRequest) {
+  public UserResponse signUp(@Valid @RequestBody UserRequest userRequest) throws JobExecutionException {
     return authenticationService.signUp(userRequest);
+  }
+
+  @PostMapping("/valid-email")
+  public void validEmail(@Valid @RequestBody OtpRequest otpRequest) {
+    userService.validEmail(otpRequest);
   }
 
   @PostMapping("/reset-password")

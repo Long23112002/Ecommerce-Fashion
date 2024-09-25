@@ -12,6 +12,7 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.services.UserService;
+import org.quartz.JobExecutionException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -34,7 +35,7 @@ public class UserController {
   }
 
   @PostMapping
-  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) {
+  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) throws JobExecutionException {
     return userService.createUser(userRequest);
   }
 

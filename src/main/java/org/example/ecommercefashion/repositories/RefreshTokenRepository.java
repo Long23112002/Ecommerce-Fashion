@@ -1,12 +1,11 @@
 package org.example.ecommercefashion.repositories;
 
+import java.util.List;
 import org.example.ecommercefashion.entities.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
@@ -17,4 +16,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
   List<RefreshToken> findAllValidTokenByUserId(Long userId);
 
   RefreshToken findByToken(String token);
+
+  void deleteByUserId( Long id);
 }

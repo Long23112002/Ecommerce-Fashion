@@ -2,6 +2,12 @@ package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,13 +21,6 @@ import org.hibernate.annotations.Where;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "user", schema = "users")
@@ -87,6 +86,9 @@ public class User implements UserDetails, Serializable {
   @Column(nullable = false, name = "is_admin")
   private Boolean isAdmin = false;
 
+  @Column(nullable = false, name = "is_verified")
+  private Boolean isVerified = false;
+
   @Column(nullable = false)
   private Boolean deleted = false;
 
@@ -140,6 +142,6 @@ public class User implements UserDetails, Serializable {
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return isVerified;
   }
 }

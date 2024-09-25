@@ -34,6 +34,8 @@ public enum ErrorMessage implements BaseErrorMessage {
     PHONE_EXISTED("Số điện thoại của bạn đã tồn tại trong hệ thống"),
     CHAT_ROOM_NOT_FOUND("Chat room not found"),
     TEMPLATE_NOT_FOUND("Template not found"),
+    OTP_NOT_MATCH("OTP not match"),
+    OTP_EXPIRED("OTP expired"),
     ;
 
 

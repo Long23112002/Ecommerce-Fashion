@@ -11,17 +11,19 @@ import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
+import org.example.ecommercefashion.dtos.request.OtpRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
-import org.example.ecommercefashion.dtos.response.MessageResponse;
-import org.example.ecommercefashion.dtos.response.ResponsePage;
-import org.example.ecommercefashion.dtos.response.RoleResponse;
-import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.dtos.response.*;
+import org.example.ecommercefashion.entities.EmailJob;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
+import org.example.ecommercefashion.services.OTPService;
 import org.example.ecommercefashion.services.UserService;
+import org.quartz.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -39,10 +41,17 @@ public class UserServiceImpl implements UserService {
 
   private final PasswordEncoder passwordEncoder;
 
+  private final RefreshTokenRepository refreshTokenRepository;
+
+  private final EmailJob emailJob;
+
+  private final OTPService otpService;
+
   @Override
   @Transactional
-  public UserResponse createUser(UserRequest userRequest) {
+  public UserResponse createUser(UserRequest userRequest) throws JobExecutionException {
     validateEmail(userRequest.getEmail());
+    sendEmailOtp(userRequest.getEmail());
     validatePhone(userRequest.getPhoneNumber());
     User user = new User();
     if (userRequest.getAvatar() == null) {
@@ -83,8 +92,11 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public MessageResponse deleteUser(Long id) {
+
     User user = entityManager.find(User.class, id);
+
     if (user != null) {
+      refreshTokenRepository.deleteByUserId(user.getId());
       user.setDeleted(true);
       entityManager.merge(user);
     }
@@ -155,6 +167,26 @@ public class UserServiceImpl implements UserService {
     return MessageResponse.builder().message("Role assigned successfully").build();
   }
 
+  @Override
+  public void validEmail(OtpRequest otpRequest) {
+    Optional<OtpResponse> otpResponse = otpService.getOtp(otpRequest.getEmail());
+    System.out.printf("otpResponse: " + otpResponse);
+    if (otpResponse.isPresent()) {
+      if (!otpResponse.get().getOtp().equals(otpRequest.getCode())) {
+        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.OTP_NOT_MATCH.val());
+      }
+    } else {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.OTP_EXPIRED.val());
+    }
+    otpService.deleteOtp(otpRequest.getEmail());
+    User user =
+        Optional.ofNullable(userRepository.findByEmail(otpRequest.getEmail()))
+            .orElseThrow(
+                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+    user.setIsVerified(true);
+    userRepository.save(user);
+  }
+
   private UserResponse mapEntityToResponse(User user) {
     UserResponse userResponse = new UserResponse();
     FnCommon.copyProperties(userResponse, user);
@@ -180,14 +212,18 @@ public class UserServiceImpl implements UserService {
   }
 
   private void validatePhone(String phoneNumber) {
-    if (userRepository.existsByPhoneNumberAndDeleted(phoneNumber , false)) {
+    if (userRepository.existsByPhoneNumberAndDeleted(phoneNumber, false)) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PHONE_EXISTED.val());
     }
   }
 
   private void validateEmail(String email) {
-    if (userRepository.existsByEmailAndDeleted(email , false)) {
+    if (userRepository.existsByEmailAndDeleted(email, false)) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_EXISTED.val());
     }
+  }
+
+  private void sendEmailOtp(String email) throws JobExecutionException {
+    emailJob.sendOtpEmail(email);
   }
 }

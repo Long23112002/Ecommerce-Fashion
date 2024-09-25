@@ -4,7 +4,6 @@ import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
-import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.entities.Chat;
 import org.example.ecommercefashion.entities.ChatRoom;

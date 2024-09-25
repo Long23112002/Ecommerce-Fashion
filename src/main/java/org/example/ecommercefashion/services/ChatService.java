@@ -2,7 +2,6 @@ package org.example.ecommercefashion.services;
 
 import org.example.ecommercefashion.dtos.request.ChatRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -52,10 +52,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
         throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND);
     }
+
     @Override
     public Optional<Chat> findLastChatByIdChatRoom(String id) {
         ChatRoom chatRoom = chatRoomRepository.findById(id)
-                .orElseThrow(()->new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND));
+                .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND));
         return chatRepository.findLastChatByIdChatRoom(id);
     }
 
@@ -78,12 +79,16 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private ChatRoomResponse toDto(ChatRoom entity) {
         ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
         User user = userRepository.findById(entity.getIdClient())
-                .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND));
+                .filter(ent -> !ent.getDeleted())
+                .orElseGet(() -> User.builder()
+                        .fullName("Không xác định")
+                        .build());
         response.setNameClient(user.getFullName());
         response.setAvatar(user.getAvatar());
-        Optional<Chat> optional = findLastChatByIdChatRoom(entity.getId());
-        if (optional.isPresent()) {
-            Chat chat = optional.get();
+
+        Optional<Chat> optionalChat = findLastChatByIdChatRoom(entity.getId());
+        if (optionalChat.isPresent()) {
+            Chat chat = optionalChat.get();
             response.setLastChat(chat.getContent());
             response.setSeen(chat.getSeen());
         }

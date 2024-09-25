@@ -2,6 +2,7 @@ package org.example.ecommercefashion.services;
 
 import org.example.ecommercefashion.dtos.request.ChatRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,7 +12,7 @@ public interface ChatService {
 
     ChatResponse create(ChatRequest request);
 
-    List<ChatResponse> findAllChatByIdChatRoom(String id);
+    List<ChatResponse> findAllChatByIdChatRoom(String id, int p);
 
     void seenAllChatByIdChatRoom(String id, Long createBy);
 }

@@ -14,4 +14,5 @@ public interface ChatRoomService {
     String findIdChatRoomByUserId(Long id);
     Optional<Chat> findLastChatByIdChatRoom(String id);
     ChatRoomResponse create(ChatRoomRequest request);
+    void delete(String id);
 }

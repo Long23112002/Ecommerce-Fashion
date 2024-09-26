@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.config.socket.WebSocketService;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.entities.Chat;
@@ -29,6 +30,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     final ChatRoomRepository chatRoomRepository;
     final ChatRepository chatRepository;
     final UserRepository userRepository;
+    final WebSocketService webSocketService;
 
     @Override
     public List<ChatRoomResponse> findAllChatRoom() {
@@ -54,7 +56,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public Optional<Chat> findLastChatByIdChatRoom(String id) {
-        ChatRoom chatRoom = chatRoomRepository.findById(id)
+        chatRoomRepository.findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND));
         return chatRepository.findLastChatByIdChatRoom(id);
     }
@@ -67,6 +69,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoom save = chatRoomRepository.save(entity);
         ChatRoomResponse response = toDto(save);
         return response;
+    }
+
+    @Override
+    public void delete(String id) {
+        chatRoomRepository.deleteById(id);
+        webSocketService.responseRealtime("/admin", findAllChatRoom());
     }
 
     private void defaultCreateValue(ChatRoom entity) {

@@ -16,7 +16,7 @@ public interface ChatRoomRepository extends MongoRepository<ChatRoom, String> {
 
     @Aggregation(pipeline = {
             "{ '$lookup': { 'from': 'chat', 'localField': '_id', 'foreignField': 'id_room', 'as': 'chat' }}",
-            "{ '$match': { '$expr': { '$gt': [{ $size: '$chat' }, 0] }} }",
+            "{ '$match': { '$expr': { '$gt': [{ $size: '$chat' }, 0] }, 'deleted': false} }",
             "{ '$project': { '_id': 1, 'id_client': 1, 'create_at': 1, 'deleted': 1, 'chat': {'$arrayElemAt': ['$chat', -1]} } }",
             "{ '$sort': { 'chat.seen': 1, 'chat.create_at': -1 }}"
     })

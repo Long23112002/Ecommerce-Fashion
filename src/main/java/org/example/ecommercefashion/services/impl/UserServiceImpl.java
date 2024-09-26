@@ -51,7 +51,6 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public UserResponse createUser(UserRequest userRequest) throws JobExecutionException {
     validateEmail(userRequest.getEmail());
-    sendEmailOtp(userRequest.getEmail());
     validatePhone(userRequest.getPhoneNumber());
     User user = new User();
     if (userRequest.getAvatar() == null) {
@@ -63,6 +62,11 @@ public class UserServiceImpl implements UserService {
     user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
     entityManager.persist(user);
     return mapEntityToResponse(user);
+  }
+
+  @Override
+  public void sendOtp(String email) throws JobExecutionException {
+    sendEmailOtp(email);
   }
 
   @Override
@@ -111,13 +115,12 @@ public class UserServiceImpl implements UserService {
     }
     return mapEntityToResponse(user);
   }
-
   @Transactional
   public MessageResponse assignRoleAdmin(String email) {
     User user =
-        Optional.ofNullable(userRepository.findByEmail(email))
-            .orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+            Optional.ofNullable(userRepository.findByEmail(email))
+                    .orElseThrow(
+                            () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
 
     user.setIsAdmin(true);
     entityManager.merge(user);
@@ -128,13 +131,13 @@ public class UserServiceImpl implements UserService {
   @Override
   public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest) {
     User user =
-        Optional.ofNullable(userRepository.findByEmail(changePasswordRequest.getEmail()))
-            .orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+            Optional.ofNullable(userRepository.findByEmail(changePasswordRequest.getEmail()))
+                    .orElseThrow(
+                            () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
     String currentPassword = user.getPassword();
     if (passwordEncoder.matches(changePasswordRequest.getNewPassword(), currentPassword)) {
       throw new ExceptionHandle(
-          HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_SAME_NEW_PASSWORD.val());
+              HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_SAME_NEW_PASSWORD.val());
     }
     user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
     entityManager.merge(user);
@@ -151,15 +154,15 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public MessageResponse assignUserRole(UserRoleAssignRequest userRoleAssignRequest) {
     User user =
-        Optional.ofNullable(userRepository.findByEmail(userRoleAssignRequest.getEmail()))
-            .orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+            Optional.ofNullable(userRepository.findByEmail(userRoleAssignRequest.getEmail()))
+                    .orElseThrow(
+                            () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
 
     for (Long roleId : userRoleAssignRequest.getRoleIds()) {
       Role role =
-          Optional.ofNullable(entityManager.find(Role.class, roleId))
-              .orElseThrow(
-                  () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND));
+              Optional.ofNullable(entityManager.find(Role.class, roleId))
+                      .orElseThrow(
+                              () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND));
       user.getRoles().add(role);
     }
 
@@ -180,9 +183,9 @@ public class UserServiceImpl implements UserService {
     }
     otpService.deleteOtp(otpRequest.getEmail());
     User user =
-        Optional.ofNullable(userRepository.findByEmail(otpRequest.getEmail()))
-            .orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+            Optional.ofNullable(userRepository.findByEmail(otpRequest.getEmail()))
+                    .orElseThrow(
+                            () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
     user.setIsVerified(true);
     userRepository.save(user);
   }
@@ -192,7 +195,7 @@ public class UserServiceImpl implements UserService {
     FnCommon.copyProperties(userResponse, user);
     if (user.getRoles() != null) {
       Set<RoleResponse> roleResponses =
-          user.getRoles().stream().map(this::mapEntityToResponse).collect(Collectors.toSet());
+              user.getRoles().stream().map(this::mapEntityToResponse).collect(Collectors.toSet());
       userResponse.setRoles(roleResponses);
     } else {
       userResponse.setRoles(Collections.emptySet());
@@ -206,7 +209,6 @@ public class UserServiceImpl implements UserService {
     FnCommon.copyProperties(roleResponse, role);
     return roleResponse;
   }
-
   private String avatarDefault() {
     return "https://scontent.fhan18-1.fna.fbcdn.net/v/t1.30497-1/453178253_471506465671661_2781666950760530985_n.png?stp=dst-png_s200x200&_nc_cat=1&ccb=1-7&_nc_sid=136b72&_nc_eui2=AeGpt-IzdO8nSbIthaK0yMISWt9TLzuBU1Ba31MvO4FTULwl6agze3fL9zZt1hbXkxGnZ0S8ZnZYCACyZt-MJXrQ&_nc_ohc=VVXDQ2ftWTsQ7kNvgFsi6op&_nc_ht=scontent.fhan18-1.fna&oh=00_AYD57d7dbnmi8QDkVFuJasFjTrN7RyXY3KZlU7_wIHXELA&oe=67008E3A";
   }

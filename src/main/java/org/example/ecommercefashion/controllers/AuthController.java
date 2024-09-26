@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.controllers;
 
 import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -38,6 +39,11 @@ public class AuthController {
     return authenticationService.login(loginRequest);
   }
 
+  @PostMapping("/send-otp")
+  public void sendOtp(@Valid @RequestBody SendOtp request) throws JobExecutionException {
+    userService.sendOtp(request.getEmail());
+  }
+
   @PostMapping("/signup")
   public UserResponse signUp(@Valid @RequestBody UserRequest userRequest) throws JobExecutionException {
     return authenticationService.signUp(userRequest);
@@ -50,13 +56,13 @@ public class AuthController {
 
   @PostMapping("/reset-password")
   public MessageResponse resetPassword(
-      @Valid @RequestBody ResetPasswordRequest resetPasswordRequest, String token) {
+          @Valid @RequestBody ResetPasswordRequest resetPasswordRequest, String token) {
     return authenticationService.resetPassword(resetPasswordRequest, token);
   }
 
   @PostMapping("/refresh-token")
   public ResponseEntity<AuthResponse> refreshToken(
-      HttpServletRequest request, HttpServletResponse response) throws IOException {
+          HttpServletRequest request, HttpServletResponse response) throws IOException {
     AuthResponse res = refreshTokenService.refreshToken(request, response);
     return ResponseEntity.ok(res);
   }

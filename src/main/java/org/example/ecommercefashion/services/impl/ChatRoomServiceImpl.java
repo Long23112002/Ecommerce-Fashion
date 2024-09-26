@@ -77,6 +77,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     private ChatRoomResponse toDto(ChatRoom entity) {
         ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
+
+        Optional<Chat> optionalChat = findLastChatByIdChatRoom(entity.getId());
+        if (optionalChat.isPresent()) {
+            Chat chat = optionalChat.get();
+            response.setLastChat(chat.getContent());
+            response.setSeen(chat.getSeen());
+        }
+
         User user = userRepository.findById(entity.getIdClient())
                 .filter(ent -> !ent.getDeleted())
                 .orElseGet(() -> User.builder()
@@ -85,12 +93,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         response.setNameClient(user.getFullName());
         response.setAvatar(user.getAvatar());
 
-        Optional<Chat> optionalChat = findLastChatByIdChatRoom(entity.getId());
-        if (optionalChat.isPresent()) {
-            Chat chat = optionalChat.get();
-            response.setLastChat(chat.getContent());
-            response.setSeen(chat.getSeen());
-        }
         return response;
     }
 

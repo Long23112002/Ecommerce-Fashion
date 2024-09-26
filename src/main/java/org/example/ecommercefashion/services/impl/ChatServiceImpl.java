@@ -36,25 +36,21 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatResponse create(ChatRequest request) {
-        ChatResponse response = null;
-        try {
-            Chat entity = FnCommon.copyProperties(Chat.class, request);
-            defaultCreateValue(entity);
-            Chat save = chatRepository.save(entity);
-            response = toDto(save);
-            return response;
-        } finally {
-            if (response != null) {
-                seenAllChatByIdChatRoom(request.getIdRoom(), request.getCreateBy());
-                webSocketService.responseRealtime("/room/" + request.getIdRoom(), response);
-            }
-        }
+        Chat entity = FnCommon.copyProperties(Chat.class, request);
+        defaultCreateValue(entity);
+        Chat save = chatRepository.save(entity);
+        ChatResponse response = toDto(save);
+
+        seenAllChatByIdChatRoom(request.getIdRoom(), request.getCreateBy());
+        webSocketService.responseRealtime("/room/" + request.getIdRoom(), response);
+
+        return response;
     }
 
     @Override
     public List<ChatResponse> findAllChatByIdChatRoom(String id, int p) {
         int limit = 15;
-        int offset = p*limit;
+        int offset = p * limit;
         return chatRepository.findAllChatByIdChatRoom(id, offset, limit).stream()
                 .map(this::toDto)
                 .toList();

@@ -18,6 +18,8 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class WebSocketSecurityInterceptor implements ChannelInterceptor {
@@ -73,9 +75,12 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
     private void handleDisConnect(StompHeaderAccessor accessor) {
         try {
-            Long idUser = Long.valueOf(accessor.getSessionAttributes().get("idUser").toString());
-            subscriptionService.removeUserFromAnyRooms(idUser);
-        }catch (NumberFormatException e){
+            Optional.ofNullable(accessor.getSessionAttributes().get("idUser"))
+                    .ifPresent(object -> {
+                        Long idUser = Long.valueOf(object.toString());
+                        subscriptionService.removeUserFromAnyRooms(idUser);
+                    });
+        } catch (NumberFormatException e) {
             throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND);
         }
     }

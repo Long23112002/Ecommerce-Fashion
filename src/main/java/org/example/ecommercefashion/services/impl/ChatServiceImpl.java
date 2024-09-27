@@ -74,21 +74,24 @@ public class ChatServiceImpl implements ChatService {
         webSocketService.responseRealtime("/admin", chatRooms);
     }
 
-    private void updateSeenStatus(String roomId, Long creatorId) {
+    private Update updateSeenStatus(String roomId, Long userId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("id_room").is(roomId));
-        query.addCriteria(Criteria.where("create_by").ne(creatorId));
-
+        query.addCriteria(new Criteria().andOperator(
+                Criteria.where("id_room").is(roomId),
+                Criteria.where("create_by").ne(userId)
+        ));
         Update update = new Update().set("seen", true);
         mongoTemplate.updateMulti(query, update, Chat.class);
+        return update;
     }
 
     private void updateSeenStatus(String roomId, Set<Long> userIds) {
         for(Long userId : userIds) {
             Query query = new Query();
-            query.addCriteria(Criteria.where("id_room").is(roomId));
-            query.addCriteria(Criteria.where("create_by").ne(userId));
-
+            query.addCriteria(new Criteria().andOperator(
+                    Criteria.where("id_room").is(roomId),
+                    Criteria.where("create_by").ne(userId)
+            ));
             Update update = new Update().set("seen", true);
             mongoTemplate.updateMulti(query, update, Chat.class);
         }

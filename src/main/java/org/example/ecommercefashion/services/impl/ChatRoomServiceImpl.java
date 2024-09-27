@@ -14,6 +14,10 @@ import org.example.ecommercefashion.repositories.ChatRepository;
 import org.example.ecommercefashion.repositories.ChatRoomRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +35,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     final ChatRepository chatRepository;
     final UserRepository userRepository;
     final WebSocketService webSocketService;
+    final MongoTemplate mongoTemplate;
 
     @Override
     public List<ChatRoomResponse> findAllChatRoom() {
@@ -73,7 +78,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public void delete(String id) {
-        chatRoomRepository.deleteById(id);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id));
+        Update update = new Update().set("deleted",true);
+        mongoTemplate.updateMulti(query, update, ChatRoom.class);
         webSocketService.responseRealtime("/admin", findAllChatRoom());
     }
 

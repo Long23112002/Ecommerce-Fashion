@@ -33,7 +33,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
         String urlNotification = accessor.getDestination();
-        System.out.println(accessor.getCommand());
         if (urlNotification != null && urlNotification.startsWith("/notification")) {
             return message;
         }
@@ -46,9 +45,9 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             handleDisConnect(accessor);
         }
-        if (StompCommand.SEND.equals(accessor.getCommand())) {
-            isUserInRoom(accessor);
-        }
+//        if (StompCommand.SEND.equals(accessor.getCommand())) {
+//            isUserInRoom(accessor);
+//        }
         return message;
     }
 
@@ -60,6 +59,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         }
         Long id = user.getUserId();
         accessor.getSessionAttributes().put("idUser", id);
+        System.out.println(id.toString()+"_CONNECT");
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
@@ -77,6 +77,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         try {
             Optional.ofNullable(accessor.getSessionAttributes().get("idUser"))
                     .ifPresent(object -> {
+                        System.out.println(object.toString()+"_DISCONNECT");
                         Long idUser = Long.valueOf(object.toString());
                         subscriptionService.removeUserFromAnyRooms(idUser);
                     });

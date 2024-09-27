@@ -1,15 +1,14 @@
 package org.example.ecommercefashion.dtos.request;
 
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OtpRequest {
+public class SendOtp {
+
   @NotBlank private String email;
-  @NotBlank private String otp;
 }

@@ -43,7 +43,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
       nativeQuery = true)
   boolean isUserHasPermission(@Param("id") Long id, @Param("permission") String permission);
 
-
   boolean existsByEmailAndDeleted(String email , boolean deleted);
 
   boolean existsByPhoneNumberAndDeleted(String phoneNumber , boolean deleted);

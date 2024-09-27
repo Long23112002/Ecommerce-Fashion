@@ -10,8 +10,6 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OtpRequest {
-    @NotBlank
-    private String email;
-    @NotBlank
-    private String code;
+  @NotBlank private String email;
+  @NotBlank private String otp;
 }

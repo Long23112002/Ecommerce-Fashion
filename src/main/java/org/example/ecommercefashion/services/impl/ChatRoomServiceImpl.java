@@ -86,18 +86,18 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private ChatRoomResponse toDto(ChatRoom entity) {
         ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
 
-        Optional<Chat> optionalChat = findLastChatByIdChatRoom(entity.getId());
-        if (optionalChat.isPresent()) {
-            Chat chat = optionalChat.get();
-            response.setLastChat(chat.getContent());
+        findLastChatByIdChatRoom(entity.getId()).ifPresent(chat -> {
+            response.setLastChatContent(chat.getContent());
             response.setSeen(chat.getSeen());
-        }
+            response.setLastChatSendBy(chat.getCreateBy());
+        });
 
         User user = userRepository.findById(entity.getIdClient())
                 .filter(ent -> !ent.getDeleted())
                 .orElseGet(() -> User.builder()
                         .fullName("Không xác định")
                         .build());
+
         response.setNameClient(user.getFullName());
         response.setAvatar(user.getAvatar());
 

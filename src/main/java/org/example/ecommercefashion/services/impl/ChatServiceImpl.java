@@ -6,20 +6,25 @@ import org.example.ecommercefashion.config.socket.RoomSubscriptionService;
 import org.example.ecommercefashion.config.socket.WebSocketService;
 import org.example.ecommercefashion.dtos.request.ChatRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
+import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.entities.Chat;
 import org.example.ecommercefashion.repositories.ChatRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.example.ecommercefashion.services.ChatService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +42,9 @@ public class ChatServiceImpl implements ChatService {
         Chat chatEntity = FnCommon.copyProperties(Chat.class, request);
         setDefaultChatValues(chatEntity);
         Chat savedChat = chatRepository.save(chatEntity);
-        ChatResponse chatResponse = convertToDto(savedChat);
+        ChatResponse chatResponse = toDto(savedChat);
 
-        markAllChatsAsSeen(request.getIdRoom());
+        markAllChatsAsSeenAsync(request.getIdRoom());
         webSocketService.responseRealtime("/room/" + request.getIdRoom(), chatResponse);
 
         return chatResponse;
@@ -50,21 +55,22 @@ public class ChatServiceImpl implements ChatService {
         int limit = 15;
         int offset = page * limit;
         return chatRepository.findAllChatByIdChatRoom(roomId, offset, limit).stream()
-                .map(this::convertToDto)
-                .toList();
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void markAllChatsAsSeen(String roomId, Long userId) {
         updateSeenStatus(roomId, userId);
-        var chatRooms = chatRoomService.findAllChatRoom();
+        var chatRooms = findAllChatRoomsCached();
         webSocketService.responseRealtime("/admin", chatRooms);
     }
 
-    private void markAllChatsAsSeen(String roomId) {
+    @Async
+    public void markAllChatsAsSeenAsync(String roomId) {
         var usersInRoom = subscriptionService.getUsersInRoom(roomId);
-        updateSeenStatus(roomId, usersInRoom.stream().toList());
-        var chatRooms = chatRoomService.findAllChatRoom();
+        updateSeenStatus(roomId, usersInRoom);
+        var chatRooms = findAllChatRoomsCached();
         webSocketService.responseRealtime("/admin", chatRooms);
     }
 
@@ -77,8 +83,8 @@ public class ChatServiceImpl implements ChatService {
         mongoTemplate.updateMulti(query, update, Chat.class);
     }
 
-    private void updateSeenStatus(String roomId, List<Long> userIds) {
-        for (Long userId : userIds) {
+    private void updateSeenStatus(String roomId, Set<Long> userIds) {
+        for(Long userId : userIds) {
             Query query = new Query();
             query.addCriteria(Criteria.where("id_room").is(roomId));
             query.addCriteria(Criteria.where("create_by").ne(userId));
@@ -88,6 +94,11 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
+    @Cacheable("chatRooms")
+    public List<ChatRoomResponse> findAllChatRoomsCached() {
+        return chatRoomService.findAllChatRoom();
+    }
+
     private void setDefaultChatValues(Chat chatEntity) {
         chatEntity.setId(UUID.randomUUID().toString());
         chatEntity.setCreateAt(new Date());
@@ -95,10 +106,11 @@ public class ChatServiceImpl implements ChatService {
         chatEntity.setSeen(false);
     }
 
-    private ChatResponse convertToDto(Chat chatEntity) {
+    private ChatResponse toDto(Chat chatEntity) {
         ChatResponse chatResponse = FnCommon.copyProperties(ChatResponse.class, chatEntity);
         userRepository.findById(chatEntity.getCreateBy())
                 .ifPresent(user -> chatResponse.setAvatar(user.getAvatar()));
         return chatResponse;
     }
+
 }

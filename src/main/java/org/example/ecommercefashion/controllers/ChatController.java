@@ -15,6 +15,6 @@ public class ChatController {
 
   @MessageMapping("/chat.sendMessage/{idRoom}")
   public void sendMessage(@Payload ChatRequest request) {
-    chatService.create(request);
+    chatService.createChat(request);
   }
 }

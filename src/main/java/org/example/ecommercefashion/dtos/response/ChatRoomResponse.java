@@ -23,6 +23,8 @@ public class ChatRoomResponse {
 
     private Boolean seen;
 
-    private String lastChat;
+    private String lastChatContent;
+
+    private Long lastChatSendBy;
 
 }

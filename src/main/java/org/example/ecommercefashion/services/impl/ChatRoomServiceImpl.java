@@ -87,8 +87,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
 
         findLastChatByIdChatRoom(entity.getId()).ifPresent(chat -> {
-            response.setLastChat(chat.getContent());
+            response.setLastChatContent(chat.getContent());
             response.setSeen(chat.getSeen());
+            response.setLastChatSendBy(chat.getCreateBy());
         });
 
         User user = userRepository.findById(entity.getIdClient())

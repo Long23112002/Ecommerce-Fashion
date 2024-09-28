@@ -143,6 +143,16 @@ public class UserServiceImpl implements UserService {
     return mapEntityToResponse(user);
   }
 
+  @Override
+  public User findUserOrDefault(Long id) {
+    return userRepository.findById(id)
+            .filter(entity -> !entity.getDeleted())
+            .orElse(User.builder()
+                    .fullName("Tài khoản đã bị xóa")
+                    .deleted(true)
+                    .build());
+  }
+
   @Transactional
   public MessageResponse assignRoleAdmin(String email) {
     User user =
@@ -212,6 +222,7 @@ public class UserServiceImpl implements UserService {
     String email = otpRequest.getEmail();
     redisTemplate.opsForValue().set(email, "done", 10, TimeUnit.MINUTES);
   }
+
 
   private UserResponse mapEntityToResponse(User user) {
     UserResponse userResponse = new UserResponse();

@@ -23,6 +23,8 @@ public interface UserService {
 
   UserResponse getUserById(Long id);
 
+  User findUserOrDefault(Long id);
+
   MessageResponse assignRoleAdmin(String email);
 
   MessageResponse changePassword(ChangePasswordRequest changePasswordRequest);

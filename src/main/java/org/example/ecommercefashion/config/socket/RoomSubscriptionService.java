@@ -1,13 +1,12 @@
 package org.example.ecommercefashion.config.socket;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+@Service
 public class RoomSubscriptionService {
 
     private final ConcurrentHashMap<String, Set<Long>> roomSubscriptions = new ConcurrentHashMap<>();

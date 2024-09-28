@@ -6,13 +6,13 @@ import org.example.ecommercefashion.config.socket.RoomSubscriptionService;
 import org.example.ecommercefashion.config.socket.WebSocketService;
 import org.example.ecommercefashion.dtos.request.ChatRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
-import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
+import org.example.ecommercefashion.dtos.response.ReplyResponse;
 import org.example.ecommercefashion.entities.Chat;
+import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.repositories.ChatRepository;
-import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.example.ecommercefashion.services.ChatService;
-import org.springframework.cache.annotation.Cacheable;
+import org.example.ecommercefashion.services.UserService;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class ChatServiceImpl implements ChatService {
 
     private final ChatRepository chatRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final WebSocketService webSocketService;
     private final ChatRoomService chatRoomService;
     private final MongoTemplate mongoTemplate;
@@ -62,7 +62,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void markAllChatsAsSeen(String roomId, Long userId) {
         updateSeenStatus(roomId, userId);
-        var chatRooms = findAllChatRoomsCached();
+        var chatRooms = chatRoomService.findAllChatRoom();
         webSocketService.responseRealtime("/admin", chatRooms);
     }
 
@@ -70,7 +70,7 @@ public class ChatServiceImpl implements ChatService {
     public void markAllChatsAsSeenAsync(String roomId) {
         var usersInRoom = subscriptionService.getUsersInRoom(roomId);
         updateSeenStatus(roomId, usersInRoom);
-        var chatRooms = findAllChatRoomsCached();
+        var chatRooms = chatRoomService.findAllChatRoom();
         webSocketService.responseRealtime("/admin", chatRooms);
     }
 
@@ -86,7 +86,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private void updateSeenStatus(String roomId, Set<Long> userIds) {
-        for(Long userId : userIds) {
+        for (Long userId : userIds) {
             Query query = new Query();
             query.addCriteria(new Criteria().andOperator(
                     Criteria.where("id_room").is(roomId),
@@ -97,23 +97,36 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
-    @Cacheable("chatRooms")
-    public List<ChatRoomResponse> findAllChatRoomsCached() {
-        return chatRoomService.findAllChatRoom();
+    private void setDefaultChatValues(Chat entity) {
+        entity.setId(UUID.randomUUID().toString());
+        entity.setCreateAt(new Date());
+        entity.setDeleted(false);
+        entity.setSeen(false);
     }
 
-    private void setDefaultChatValues(Chat chatEntity) {
-        chatEntity.setId(UUID.randomUUID().toString());
-        chatEntity.setCreateAt(new Date());
-        chatEntity.setDeleted(false);
-        chatEntity.setSeen(false);
-    }
+    private ChatResponse toDto(Chat entity) {
+        ChatResponse response = FnCommon.copyProperties(ChatResponse.class, entity);
+        User user = userService.findUserOrDefault(entity.getCreateBy());
+        response.setAvatar(user.getAvatar());
+        response.setNameCreateBy(user.getFullName());
 
-    private ChatResponse toDto(Chat chatEntity) {
-        ChatResponse chatResponse = FnCommon.copyProperties(ChatResponse.class, chatEntity);
-        userRepository.findById(chatEntity.getCreateBy())
-                .ifPresent(user -> chatResponse.setAvatar(user.getAvatar()));
-        return chatResponse;
+        String idReply = entity.getIdReply();
+        if (idReply != null) {
+            chatRepository.findById(idReply)
+                    .ifPresent(reply -> {
+                        String nameCreateBy = userService.findUserOrDefault(reply.getCreateBy()).getFullName();
+                        response.setReply(
+                                ReplyResponse.builder()
+                                        .id(reply.getId())
+                                        .content(reply.getContent())
+                                        .createAt(reply.getCreateAt())
+                                        .createBy(reply.getCreateBy())
+                                        .nameCreateBy(nameCreateBy)
+                                        .build()
+                        );
+                    });
+        }
+        return response;
     }
 
 }

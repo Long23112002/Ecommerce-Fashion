@@ -13,4 +13,5 @@ public class ChatRequest {
   private String idRoom;
   private String content;
   private Long createBy;
+  private String idReply;
 }

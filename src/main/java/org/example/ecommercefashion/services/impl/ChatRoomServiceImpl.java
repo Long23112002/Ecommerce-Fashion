@@ -14,6 +14,8 @@ import org.example.ecommercefashion.repositories.ChatRepository;
 import org.example.ecommercefashion.repositories.ChatRoomRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
+import org.example.ecommercefashion.services.UserService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -33,11 +35,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     final ChatRoomRepository chatRoomRepository;
     final ChatRepository chatRepository;
-    final UserRepository userRepository;
+    final UserService userService;
     final WebSocketService webSocketService;
     final MongoTemplate mongoTemplate;
 
     @Override
+    @Cacheable("chatRooms")
     public List<ChatRoomResponse> findAllChatRoom() {
         return chatRoomRepository.findAllChatRoom().stream()
                 .map(this::toDto)
@@ -100,11 +103,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             response.setLastChatSendBy(chat.getCreateBy());
         });
 
-        User user = userRepository.findById(entity.getIdClient())
-                .filter(ent -> !ent.getDeleted())
-                .orElseGet(() -> User.builder()
-                        .fullName("Không xác định")
-                        .build());
+        User user = userService.findUserOrDefault(entity.getIdClient());
 
         response.setNameClient(user.getFullName());
         response.setAvatar(user.getAvatar());

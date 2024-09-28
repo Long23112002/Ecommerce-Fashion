@@ -13,6 +13,8 @@ import java.util.Date;
 @Builder
 public class ChatResponse {
 
+  private String id;
+
   private String idRoom;
 
   private String content;
@@ -24,4 +26,8 @@ public class ChatResponse {
   private String avatar;
 
   private Date createAt;
+
+  private String nameCreateBy;
+
+  private ReplyResponse reply;
 }

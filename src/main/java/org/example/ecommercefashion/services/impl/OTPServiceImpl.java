@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 public class OTPServiceImpl implements OTPService {
   private final Map<String, User> temporaryUserStorage = new HashMap<>();
   private final ExecutorService executorService = Executors.newCachedThreadPool();
-  private final int LENGTH_OTP = 5;
-  private final String NUMBERS = "0123456789";
+  private final int LENGTH_OTP = 6;
+  private final String NUMBERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   @Value("${spring.cache.redis.time-to-live}")
   private int expireTime;
@@ -41,7 +41,7 @@ public class OTPServiceImpl implements OTPService {
   public void saveOtp(String emailUser, String otp) {
     try {
       valueOps = redisTemplate.opsForValue();
-      valueOps.set(emailUser, otp, expireTime, TimeUnit.SECONDS); // Lưu OTP kèm thời gian hết hạn
+      valueOps.set(emailUser, otp, expireTime, TimeUnit.SECONDS);
       log.info("đã save trong redis ");
       log.info("valueOps {} ", valueOps);
     } catch (Exception e) {

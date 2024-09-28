@@ -39,6 +39,11 @@ public class AuthController {
     return authenticationService.login(loginRequest);
   }
 
+  @PostMapping("/send-otp")
+  public void sendOtp(@Valid @RequestBody SendOtp request) throws JobExecutionException {
+    userService.sendOtp(request.getEmail());
+  }
+
   @PostMapping("/signup")
   public UserResponse signUp(@Valid @RequestBody UserRequest userRequest) throws JobExecutionException {
     return authenticationService.signUp(userRequest);
@@ -51,13 +56,13 @@ public class AuthController {
 
   @PostMapping("/reset-password")
   public MessageResponse resetPassword(
-      @Valid @RequestBody ResetPasswordRequest resetPasswordRequest, String token) {
+          @Valid @RequestBody ResetPasswordRequest resetPasswordRequest, String token) {
     return authenticationService.resetPassword(resetPasswordRequest, token);
   }
 
   @PostMapping("/refresh-token")
   public ResponseEntity<AuthResponse> refreshToken(
-      HttpServletRequest request, HttpServletResponse response) throws IOException {
+          HttpServletRequest request, HttpServletResponse response) throws IOException {
     AuthResponse res = refreshTokenService.refreshToken(request, response);
     return ResponseEntity.ok(res);
   }

@@ -32,4 +32,6 @@ public interface UserService {
   MessageResponse assignUserRole(UserRoleAssignRequest userRoleAssignRequest);
 
   void validEmail(OtpRequest otpRequest);
+
+  void sendOtp(String email) throws JobExecutionException;
 }

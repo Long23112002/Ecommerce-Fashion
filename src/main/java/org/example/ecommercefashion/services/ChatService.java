@@ -9,9 +9,9 @@ import java.util.List;
 @Service
 public interface ChatService {
 
-    ChatResponse create(ChatRequest request);
+    ChatResponse createChat(ChatRequest request);
 
-    List<ChatResponse> findAllChatByIdChatRoom(String id);
+    List<ChatResponse> findAllChatsByRoomId(String id, int p);
 
-    void seenAllChatByIdChatRoom(String id);
+    void markAllChatsAsSeen(String id, Long createBy);
 }

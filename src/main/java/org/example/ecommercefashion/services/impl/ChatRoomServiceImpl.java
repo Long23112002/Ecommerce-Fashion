@@ -56,7 +56,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         if (chatRoomOptional.isPresent()) {
             return chatRoomOptional.get().getId();
         }
-        throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_ROOM_NOT_FOUND);
+        return null;
     }
 
     @Override

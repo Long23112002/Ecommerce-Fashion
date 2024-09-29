@@ -23,8 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -57,9 +60,8 @@ public class ChatServiceImpl implements ChatService {
     public List<ChatResponse> findAllChatsByRoomId(String roomId, int page) {
         int limit = 15;
         int offset = page * limit;
-        return chatRepository.findAllChatByIdChatRoom(roomId, offset, limit).stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        var responses = chatRepository.findAllChatByIdChatRoom(roomId, offset, limit);
+        return toDtos(responses);
     }
 
     @Override
@@ -73,9 +75,13 @@ public class ChatServiceImpl implements ChatService {
     public List<ChatResponse> findChatsUntilTarget(String id) {
         Chat target = chatRepository.findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_NOT_FOUND));
-        return chatRepository.findChatsUntilTarget(target).stream()
-                .map(this::toDto)
-                .toList();
+        var responses = chatRepository.findChatsUntilTarget(target);
+        return toDtos(responses);
+    }
+
+    @Override
+    public List<ChatResponse> findAllLastChatByRoomIds(Collection<String> ids) {
+        return findAllLastChatByRoomIds(ids);
     }
 
     @Async
@@ -139,6 +145,48 @@ public class ChatServiceImpl implements ChatService {
                     });
         }
         return response;
+    }
+
+    private List<ChatResponse> toDtos(Collection<Chat> entities) {
+        Set<Long> idUsers = entities.stream()
+                .map(entity -> entity.getCreateBy())
+                .collect(Collectors.toSet());
+
+        Map<Long, User> mapUsers =
+                userService.findAllEntityUserByIds(idUsers).stream()
+                        .collect(Collectors.toMap(
+                                user -> user.getId(),
+                                user -> user
+                        ));
+
+        return entities.stream()
+                .map(entity -> {
+                    ChatResponse response = FnCommon.copyProperties(ChatResponse.class, entity);
+                    User user = mapUsers.get(entity.getCreateBy());
+                    if (user == null) {
+                        user = userService.getDeletedUser();
+                    }
+                    response.setAvatar(user.getAvatar());
+                    response.setNameCreateBy(user.getFullName());
+
+                    String idReply = entity.getIdReply();
+                    if (idReply != null) {
+                        chatRepository.findById(idReply)
+                                .ifPresent(reply -> {
+                                    String nameCreateBy = userService.findUserOrDefault(reply.getCreateBy()).getFullName();
+                                    response.setReply(
+                                            ReplyResponse.builder()
+                                                    .id(reply.getId())
+                                                    .content(reply.getContent())
+                                                    .createAt(reply.getCreateAt())
+                                                    .createBy(reply.getCreateBy())
+                                                    .nameCreateBy(nameCreateBy)
+                                                    .build());
+                                });
+                    }
+                    return response;
+                })
+                .toList();
     }
 
 }

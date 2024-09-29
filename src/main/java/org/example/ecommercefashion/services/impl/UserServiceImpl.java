@@ -2,7 +2,10 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
+
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -97,6 +100,11 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public List<User> findAllEntityUserByIds(Collection<Long> ids) {
+    return userRepository.findAllById(ids);
+  }
+
+  @Override
   @Transactional
   public UserResponse updateUser(Long id, UserRequest userRequest) {
     User user = entityManager.find(User.class, id);
@@ -147,10 +155,15 @@ public class UserServiceImpl implements UserService {
   public User findUserOrDefault(Long id) {
     return userRepository.findById(id)
             .filter(entity -> !entity.getDeleted())
-            .orElse(User.builder()
-                    .fullName("Tài khoản đã bị xóa")
-                    .deleted(true)
-                    .build());
+            .orElse(getDeletedUser());
+  }
+
+  @Override
+  public User getDeletedUser() {
+    return User.builder()
+            .fullName("Tài khoản đã bị xóa")
+            .deleted(true)
+            .build();
   }
 
   @Transactional

@@ -5,7 +5,9 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.config.socket.WebSocketService;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
+import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
+import org.example.ecommercefashion.dtos.response.ReplyResponse;
 import org.example.ecommercefashion.entities.Chat;
 import org.example.ecommercefashion.entities.ChatRoom;
 import org.example.ecommercefashion.entities.User;
@@ -24,10 +26,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +48,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Cacheable("chatRooms")
     public List<ChatRoomResponse> findAllChatRoom() {
-        return chatRoomRepository.findAllChatRoom().stream()
-                .map(this::toDto)
-                .toList();
+        var reponses = chatRoomRepository.findAllChatRoom();
+        return toDtos(reponses);
     }
 
     @Override
@@ -109,6 +114,53 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         response.setAvatar(user.getAvatar());
 
         return response;
+    }
+
+    private List<ChatRoomResponse> toDtos(Collection<ChatRoom> entities) {
+
+        Set<String> idRooms = entities.stream()
+                .map(entity -> entity.getId())
+                .collect(Collectors.toSet());
+
+        Set<Long> idUsers = entities.stream()
+                .map(entity -> entity.getIdClient())
+                .collect(Collectors.toSet());
+
+        Map<String, Chat> mapLastChat =
+                chatRepository.findAllLastChatByRoomIds(idRooms).stream()
+                        .collect(Collectors.toMap(
+                                chat -> chat.getIdRoom(),
+                                chat -> chat
+                        ));
+
+        Map<Long, User> mapUsers =
+                userService.findAllEntityUserByIds(idUsers).stream()
+                        .collect(Collectors.toMap(
+                                user -> user.getId(),
+                                user -> user
+                        ));
+
+        return entities.stream()
+                .map(entity -> {
+                    ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
+
+                    Chat chat = mapLastChat.get(entity.getId());
+                    if(chat!=null){
+                        response.setLastChatContent(chat.getContent());
+                        response.setSeen(chat.getSeen());
+                        response.setLastChatSendBy(chat.getCreateBy());
+                    }
+
+                    User user = mapUsers.get(entity.getIdClient());
+                    if(user==null) {
+                        user = userService.getDeletedUser();
+                    }
+                    response.setNameClient(user.getFullName());
+                    response.setAvatar(user.getAvatar());
+
+                    return response;
+                })
+                .toList();
     }
 
 }

@@ -4,6 +4,7 @@ import org.example.ecommercefashion.dtos.request.ChatRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -16,4 +17,6 @@ public interface ChatService {
     void markAllChatsAsSeen(String id, Long createBy);
 
     List<ChatResponse> findChatsUntilTarget(String id);
+
+    List<ChatResponse> findAllLastChatByRoomIds(Collection<String> ids);
 }

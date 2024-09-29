@@ -12,6 +12,10 @@ import org.example.ecommercefashion.entities.User;
 import org.quartz.JobExecutionException;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 @SuppressWarnings("unused")
 public interface UserService {
 
@@ -25,6 +29,8 @@ public interface UserService {
 
   User findUserOrDefault(Long id);
 
+  User getDeletedUser();
+
   MessageResponse assignRoleAdmin(String email);
 
   MessageResponse changePassword(ChangePasswordRequest changePasswordRequest);
@@ -36,4 +42,6 @@ public interface UserService {
   void validEmail(OtpRequest otpRequest);
 
   void sendOtp(String email) throws JobExecutionException;
+
+  List<User> findAllEntityUserByIds(Collection<Long> ids);
 }

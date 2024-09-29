@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.services.impl;
 
+import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.config.socket.RoomSubscriptionService;
@@ -9,6 +10,7 @@ import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ReplyResponse;
 import org.example.ecommercefashion.entities.Chat;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ChatRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.example.ecommercefashion.services.ChatService;
@@ -17,6 +19,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +67,15 @@ public class ChatServiceImpl implements ChatService {
         updateSeenStatus(roomId, userId);
         var chatRooms = chatRoomService.findAllChatRoom();
         webSocketService.responseRealtime("/admin", chatRooms);
+    }
+
+    @Override
+    public List<ChatResponse> findChatsUntilTarget(String id) {
+        Chat target = chatRepository.findById(id)
+                .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_NOT_FOUND));
+        return chatRepository.findChatsUntilTarget(target).stream()
+                .map(this::toDto)
+                .toList();
     }
 
     @Async

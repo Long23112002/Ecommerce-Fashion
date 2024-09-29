@@ -14,4 +14,6 @@ public interface ChatService {
     ChatResponse createChat(ChatRequest request);
 
     void markAllChatsAsSeen(String id, Long createBy);
+
+    List<ChatResponse> findChatsUntilTarget(String id);
 }

@@ -26,38 +26,44 @@ import java.util.List;
 @Api(tags = "ChatRoom", value = "Endpoints for chat room management")
 public class ChatRoomController {
 
-  final ChatRoomService chatRoomService;
-  final ChatService chatService;
+    final ChatRoomService chatRoomService;
+    final ChatService chatService;
 
-  @GetMapping
-  public List<ChatRoomResponse> findAllChatRoom() {
-    return chatRoomService.findAllChatRoom();
-  }
+    @GetMapping
+    public List<ChatRoomResponse> findAllChatRoom() {
+        return chatRoomService.findAllChatRoom();
+    }
 
-  @GetMapping("/user/{id}")
-  public String findIdChatRoomByUserId(@PathVariable("id") Long id) {
-    return chatRoomService.findIdChatRoomByUserId(id);
-  }
+    @GetMapping("/user/{id}")
+    public String findIdChatRoomByUserId(@PathVariable("id") Long id) {
+        return chatRoomService.findIdChatRoomByUserId(id);
+    }
 
-  @GetMapping("/chats/{id}")
-  public List<ChatResponse> findAllChatByIdChatRoom(@PathVariable("id") String id,
-                                                    @RequestParam(name = "p", defaultValue = "0") Integer p) {
-    return chatService.findAllChatsByRoomId(id, p);
-  }
+    @GetMapping("/chats/{id}")
+    public List<ChatResponse> findAllChatByIdChatRoom(@PathVariable("id") String id,
+                                                      @RequestParam(name = "p", defaultValue = "0") Integer p) {
+        return chatService.findAllChatsByRoomId(id, p);
+    }
 
-  @PatchMapping("/chats/{idRoom}/{idUser}")
-  public void seenAllChatByIdChatRoom(@PathVariable("idRoom") String idRoom,
-                                      @PathVariable("idUser") Long idUser) {
-    chatService.markAllChatsAsSeen(idRoom, idUser);
-  }
+    @PatchMapping("/chats/{idRoom}/{idUser}")
+    public void seenAllChatByIdChatRoom(@PathVariable("idRoom") String idRoom,
+                                        @PathVariable("idUser") Long idUser) {
+        chatService.markAllChatsAsSeen(idRoom, idUser);
+    }
 
-  @PostMapping
-  public ChatRoomResponse createChatRoom(@RequestBody ChatRoomRequest request) {
-    return chatRoomService.create(request);
-  }
+    @PostMapping
+    public ChatRoomResponse createChatRoom(@RequestBody ChatRoomRequest request) {
+        return chatRoomService.create(request);
+    }
 
-  @DeleteMapping("/{id}")
-  public void deleteRoomById(@PathVariable("id") String id) {
-    chatRoomService.delete(id);
-  }
+    @DeleteMapping("/{id}")
+    public void deleteRoomById(@PathVariable("id") String id) {
+        chatRoomService.delete(id);
+    }
+
+    @GetMapping("/chats/before-target/{id}")
+    public List<ChatResponse> findChatsUntilTarget(@PathVariable("id") String id) {
+        return chatService.findChatsUntilTarget(id);
+    }
+
 }

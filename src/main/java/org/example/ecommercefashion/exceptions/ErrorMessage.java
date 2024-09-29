@@ -28,6 +28,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   IMAGE_NOT_FOUND("Không tìm thấy Hình Ảnh"),
   ROLE_EXISTED("Vai Trò đã tồn tại"),
   EMAIL_NOT_VERIFIED("Email chưa được xác minh"),
+  CHAT_NOT_FOUND("Không tìm thấy chat"),
 
   WEBSOCKET_NOT_FOUND("Không tìm thấy Websocket"),
   USER_PERMISSION_DENIED("Người dùng không có quyền yêu cầu này"),

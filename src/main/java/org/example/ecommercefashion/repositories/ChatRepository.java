@@ -28,4 +28,10 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
     })
     Optional<Chat> findLastChatByIdChatRoom(@Param("id") String id);
 
+    @Aggregation(pipeline = {
+            "{ $match: { 'id_room': :#{#target_chat.idRoom}, 'create_at': { $gte: :#{#target_chat.createAt} } } }",
+            "{ $sort: { 'create_at' : 1 } }"
+    })
+    List<Chat> findChatsUntilTarget(@Param("target_chat") Chat targetChat);
+
 }

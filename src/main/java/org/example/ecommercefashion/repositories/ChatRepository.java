@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface ChatRepository extends MongoRepository<Chat, String> {
@@ -21,14 +22,14 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
             "{ $limit: :#{#limit} }",
             "{ $sort: { 'create_at' : 1 } }"
     })
-    List<Chat> findAllChatByIdChatRoom(@Param("id") String id, int offet, int limit);
+    List<Chat> findAllChatByIdChatRoom(String id, int offet, int limit);
 
     @Aggregation(pipeline = {
             "{ $match: { 'id_room' : :#{#id} } }",
             "{ $sort: { 'create_at' : -1 } }",
             "{ $limit: 1 }"
     })
-    Optional<Chat> findLastChatByIdChatRoom(@Param("id") String id);
+    Optional<Chat> findLastChatByIdChatRoom(String id);
 
     @Aggregation(pipeline = {
             "{ $match: { id_room: { $in: :#{#ids} } } }",
@@ -38,9 +39,14 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
     List<Chat> findAllLastChatByRoomIds(Collection<String> ids);
 
     @Aggregation(pipeline = {
-            "{ $match: { 'id_room': :#{#target_chat.idRoom}, 'create_at': { $gte: :#{#target_chat.createAt} } } }",
+            "{ $match: { 'id_room': :#{#targetChat.idRoom}, 'create_at': { $gte: :#{#targetChat.createAt} } } }",
             "{ $sort: { 'create_at' : 1 } }"
     })
-    List<Chat> findChatsUntilTarget(@Param("target_chat") Chat targetChat);
+    List<Chat> findChatsUntilTarget(Chat targetChat);
 
+
+    @Aggregation(pipeline = {
+            "{$match: {_id: {$in: :#{#ids}}}}"
+    })
+    List<Chat> findAllByIds(Collection<String> ids);
 }

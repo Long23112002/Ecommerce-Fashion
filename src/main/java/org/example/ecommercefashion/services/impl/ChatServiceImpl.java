@@ -43,6 +43,8 @@ public class ChatServiceImpl implements ChatService {
     private final MongoTemplate mongoTemplate;
     private final RoomSubscriptionService subscriptionService;
 
+    int limit = 15;
+
     @Override
     public ChatResponse createChat(ChatRequest request) {
         Chat chatEntity = FnCommon.copyProperties(Chat.class, request);
@@ -58,7 +60,6 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<ChatResponse> findAllChatsByRoomId(String roomId, int page) {
-        int limit = 15;
         int offset = page * limit;
         var responses = chatRepository.findAllChatByIdChatRoom(roomId, offset, limit);
         return toDtos(responses);
@@ -76,6 +77,7 @@ public class ChatServiceImpl implements ChatService {
         Chat target = chatRepository.findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_NOT_FOUND));
         var responses = chatRepository.findChatsUntilTarget(target);
+        int page = responses.size()/limit;
         return toDtos(responses);
     }
 
@@ -123,34 +125,33 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private ChatResponse toDto(Chat entity) {
-        ChatResponse response = FnCommon.copyProperties(ChatResponse.class, entity);
         User user = userService.findUserOrDefault(entity.getCreateBy());
-        response.setAvatar(user.getAvatar());
-        response.setNameCreateBy(user.getFullName());
-
         String idReply = entity.getIdReply();
-        if (idReply != null) {
-            chatRepository.findById(idReply)
-                    .ifPresent(reply -> {
-                        String nameCreateBy = userService.findUserOrDefault(reply.getCreateBy()).getFullName();
-                        response.setReply(
-                                ReplyResponse.builder()
-                                        .id(reply.getId())
-                                        .content(reply.getContent())
-                                        .createAt(reply.getCreateAt())
-                                        .createBy(reply.getCreateBy())
-                                        .nameCreateBy(nameCreateBy)
-                                        .build()
-                        );
-                    });
-        }
-        return response;
+        Chat reply = chatRepository.findById(idReply)
+                .orElse(null);
+        return buildChatResponse(entity, user, reply);
     }
 
     private List<ChatResponse> toDtos(Collection<Chat> entities) {
+
+        Set<String> idReplies = entities.stream()
+                .map(entity -> entity.getIdReply())
+                .collect(Collectors.toSet());
+
         Set<Long> idUsers = entities.stream()
                 .map(entity -> entity.getCreateBy())
                 .collect(Collectors.toSet());
+
+        Map<String, Chat> mapReplies =
+                chatRepository.findAllByIds(idReplies).stream()
+                        .map(chat -> {
+                            idUsers.add(chat.getCreateBy());
+                            return chat;
+                        })
+                        .collect(Collectors.toMap(
+                                chat -> chat.getId(),
+                                chat -> chat
+                        ));
 
         Map<Long, User> mapUsers =
                 userService.findAllEntityUserByIds(idUsers).stream()
@@ -161,32 +162,34 @@ public class ChatServiceImpl implements ChatService {
 
         return entities.stream()
                 .map(entity -> {
-                    ChatResponse response = FnCommon.copyProperties(ChatResponse.class, entity);
                     User user = mapUsers.get(entity.getCreateBy());
                     if (user == null) {
                         user = userService.getDeletedUser();
                     }
-                    response.setAvatar(user.getAvatar());
-                    response.setNameCreateBy(user.getFullName());
-
-                    String idReply = entity.getIdReply();
-                    if (idReply != null) {
-                        chatRepository.findById(idReply)
-                                .ifPresent(reply -> {
-                                    String nameCreateBy = userService.findUserOrDefault(reply.getCreateBy()).getFullName();
-                                    response.setReply(
-                                            ReplyResponse.builder()
-                                                    .id(reply.getId())
-                                                    .content(reply.getContent())
-                                                    .createAt(reply.getCreateAt())
-                                                    .createBy(reply.getCreateBy())
-                                                    .nameCreateBy(nameCreateBy)
-                                                    .build());
-                                });
-                    }
-                    return response;
+                    Chat reply = mapReplies.get(entity.getIdReply());
+                    return buildChatResponse(entity, user, reply);
                 })
                 .toList();
+    }
+
+    private ChatResponse buildChatResponse(Chat entity, User user, Chat reply) {
+        ChatResponse response = FnCommon.copyProperties(ChatResponse.class, entity);
+        response.setAvatar(user.getAvatar());
+        response.setNameCreateBy(user.getFullName());
+
+        if (reply != null) {
+            String nameCreateBy = userService.findUserOrDefault(reply.getCreateBy()).getFullName();
+            response.setReply(
+                    ReplyResponse.builder()
+                            .id(reply.getId())
+                            .content(reply.getContent())
+                            .createAt(reply.getCreateAt())
+                            .createBy(reply.getCreateBy())
+                            .nameCreateBy(nameCreateBy)
+                            .build()
+            );
+        }
+        return response;
     }
 
 }

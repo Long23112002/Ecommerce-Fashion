@@ -23,6 +23,6 @@ public interface ChatRoomRepository extends MongoRepository<ChatRoom, String> {
     List<ChatRoom> findAllChatRoom();
 
     @Query(value = "{ 'id_client' : :#{#id}, 'deleted': false }")
-    Optional<ChatRoom> findChatRoomByUserId(@Param("id") Long id);
+    Optional<ChatRoom> findChatRoomByUserId(Long id);
 
 }

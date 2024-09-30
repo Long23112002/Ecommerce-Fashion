@@ -162,6 +162,7 @@ public class UserServiceImpl implements UserService {
   public User getDeletedUser() {
     return User.builder()
             .fullName("Tài khoản đã bị xóa")
+            .avatar(avatarDefault())
             .deleted(true)
             .build();
   }

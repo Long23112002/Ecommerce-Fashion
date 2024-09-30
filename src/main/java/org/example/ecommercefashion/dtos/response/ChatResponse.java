@@ -30,4 +30,5 @@ public class ChatResponse {
   private String nameCreateBy;
 
   private ReplyResponse reply;
+
 }

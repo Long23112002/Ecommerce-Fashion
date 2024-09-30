@@ -192,7 +192,7 @@ public class ChatServiceImpl implements ChatService {
     private LoadMoreResponse<ChatResponse> toLoadMore(List<Chat> chats) {
         String idRoom = chats.get(0).getIdRoom();
         int limit = 15;
-        int offset = chats.size()-limit;
+        int offset = chats.size() - limit;
         int count = chatRepository.countByIdRoom(idRoom);
         return toLoadMore(idRoom, offset, limit, count, chats);
     }
@@ -221,12 +221,15 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private String generatePreviousLink(String apiBase, String idRoom, int offset, int limit) {
-        int previousOffset = offset - limit;
-        if (previousOffset > 0) {
-            return String.format("%s%s?offset=%d&limit=%d", apiBase, idRoom, previousOffset, limit);
+        if (offset > 0) {
+            int previousOffset = Math.max(0, offset - limit);
+            int previousLimit = Math.min(limit, offset);
+            return String.format("%s%s?offset=%d&limit=%d", apiBase, idRoom, previousOffset, previousLimit);
         }
         return null;
     }
+
+
 
 
 }

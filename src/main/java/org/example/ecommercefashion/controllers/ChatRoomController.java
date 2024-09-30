@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
+import org.example.ecommercefashion.dtos.response.LoadMoreResponse;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.example.ecommercefashion.services.ChatService;
 import org.springframework.data.repository.query.Param;
@@ -40,9 +41,12 @@ public class ChatRoomController {
     }
 
     @GetMapping("/chats/{id}")
-    public List<ChatResponse> findAllChatByIdChatRoom(@PathVariable("id") String id,
-                                                      @RequestParam(name = "p", defaultValue = "0") Integer p) {
-        return chatService.findAllChatsByRoomId(id, p);
+    public LoadMoreResponse<ChatResponse> findAllChatByIdChatRoom(
+            @PathVariable("id") String id,
+            @RequestParam(name = "offset", defaultValue = "0") Integer offset,
+            @RequestParam(name = "limit", defaultValue = "15") Integer limit
+    ) {
+        return chatService.findAllChatsByRoomId(id, offset, limit);
     }
 
     @PatchMapping("/chats/{idRoom}/{idUser}")
@@ -62,7 +66,7 @@ public class ChatRoomController {
     }
 
     @GetMapping("/chats/before-target/{id}")
-    public List<ChatResponse> findChatsUntilTarget(@PathVariable("id") String id) {
+    public LoadMoreResponse<ChatResponse> findChatsUntilTarget(@PathVariable("id") String id) {
         return chatService.findChatsUntilTarget(id);
     }
 

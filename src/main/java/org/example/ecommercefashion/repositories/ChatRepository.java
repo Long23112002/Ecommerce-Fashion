@@ -2,8 +2,11 @@ package org.example.ecommercefashion.repositories;
 
 import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.entities.Chat;
+import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.repository.Aggregation;
+import org.springframework.data.mongodb.repository.CountQuery;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -18,11 +21,11 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
     @Aggregation(pipeline = {
             "{ $match: { 'id_room' : :#{#id} } }",
             "{ $sort: { 'create_at' : -1 } }",
-            "{ $skip: :#{#offet} }",
+            "{ $skip: :#{#offset} }",
             "{ $limit: :#{#limit} }",
             "{ $sort: { 'create_at' : 1 } }"
     })
-    List<Chat> findAllChatByIdChatRoom(String id, int offet, int limit);
+    List<Chat> findAllChatByIdChatRoom(String id, int offset, int limit);
 
     @Aggregation(pipeline = {
             "{ $match: { 'id_room' : :#{#id} } }",
@@ -49,4 +52,6 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
             "{$match: {_id: {$in: :#{#ids}}}}"
     })
     List<Chat> findAllByIds(Collection<String> ids);
+
+    int countByIdRoom(String id);
 }

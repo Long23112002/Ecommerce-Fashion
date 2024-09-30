@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
 import java.util.List;
 
 @Data
@@ -17,6 +18,6 @@ public class LoadMoreResponse <T> {
 
     private String previous;
 
-    private List<T> results;
+    private Collection<T> results;
 
 }

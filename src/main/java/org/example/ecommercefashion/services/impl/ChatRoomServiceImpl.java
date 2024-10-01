@@ -4,10 +4,12 @@ import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.config.socket.WebSocketService;
+import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.dtos.response.ReplyResponse;
+import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Chat;
 import org.example.ecommercefashion.entities.ChatRoom;
 import org.example.ecommercefashion.entities.User;
@@ -18,6 +20,7 @@ import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.example.ecommercefashion.services.UserService;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -60,7 +63,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public String findIdChatRoomByUserId(Long id) {
-        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findChatRoomByUserId(id);
+        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findChatRoomByIdUser(id);
         if (chatRoomOptional.isPresent()) {
             return chatRoomOptional.get().getId();
         }
@@ -88,9 +91,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public void delete(String id) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(id));
-        Update update = new Update().set("deleted",true);
+        Update update = new Update().set("deleted", true);
         mongoTemplate.updateMulti(query, update, ChatRoom.class);
         webSocketService.responseRealtime("/admin", findAllChatRoom());
+    }
+
+    @Override
+    public List<ChatRoomResponse> findAllChatRoomByIdUsers(UserParam param) {
+        List<UserResponse> users = userService.getAllUsers(param, null).getData();
+        Set<Long> idUsers = users.stream()
+                .map(user -> user.getId())
+                .collect(Collectors.toSet());
+        List<ChatRoom> entities = chatRoomRepository.findChatRoomByUserIds(idUsers);
+        return toDtos(entities);
     }
 
     private void defaultCreateValue(ChatRoom entity) {
@@ -127,7 +140,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .collect(Collectors.toSet());
 
         Map<String, Chat> mapLastChat =
-                chatRepository.findAllLastChatByRoomIds(idRooms).stream()
+                chatRepository.findAllLastChatByIdRooms(idRooms).stream()
                         .collect(Collectors.toMap(
                                 chat -> chat.getIdRoom(),
                                 chat -> chat
@@ -145,14 +158,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     ChatRoomResponse response = FnCommon.copyProperties(ChatRoomResponse.class, entity);
 
                     Chat chat = mapLastChat.get(entity.getId());
-                    if(chat!=null){
+                    if (chat != null) {
                         response.setLastChatContent(chat.getContent());
                         response.setSeen(chat.getSeen());
                         response.setLastChatSendBy(chat.getCreateBy());
                     }
 
                     User user = mapUsers.get(entity.getIdClient());
-                    if(user==null) {
+                    if (user == null) {
                         user = userService.getDeletedUser();
                     }
                     response.setNameClient(user.getFullName());

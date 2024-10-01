@@ -2,12 +2,14 @@ package org.example.ecommercefashion.controllers;
 
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
 import org.example.ecommercefashion.dtos.response.LoadMoreResponse;
 import org.example.ecommercefashion.services.ChatRoomService;
 import org.example.ecommercefashion.services.ChatService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,6 +70,11 @@ public class ChatRoomController {
     @GetMapping("/chats/before-target/{id}")
     public LoadMoreResponse<ChatResponse> findChatsUntilTarget(@PathVariable("id") String id) {
         return chatService.findChatsUntilTarget(id);
+    }
+
+    @GetMapping("/users")
+    public List<ChatRoomResponse> findAllChatRoomByIdUsers(UserParam param) {
+        return chatRoomService.findAllChatRoomByIdUsers(param);
     }
 
 }

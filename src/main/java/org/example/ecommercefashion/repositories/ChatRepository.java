@@ -39,7 +39,7 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
             "{ $group: { _id: '$id_room', doc: { $last: '$$ROOT' } } }",
             "{ $replaceRoot: { newRoot: '$doc' } }"
     })
-    List<Chat> findAllLastChatByRoomIds(Collection<String> ids);
+    List<Chat> findAllLastChatByIdRooms(Collection<String> ids);
 
     @Aggregation(pipeline = {
             "{ $match: { 'id_room': :#{#targetChat.idRoom}, 'create_at': { $gte: :#{#targetChat.createAt} } } }",

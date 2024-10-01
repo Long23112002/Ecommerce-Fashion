@@ -212,9 +212,10 @@ public class ChatServiceImpl implements ChatService {
 
     private String generateNextLink(String apiBase, String idRoom, int offset, int limit, int totalChats) {
         totalChats--;
-        if (offset < totalChats) {
-            int nextOffset = offset + limit;
-            int nextLimit = Math.min(limit, totalChats - offset);
+        int nextIndex = limit + offset;
+        if (nextIndex <= totalChats) {
+            int nextOffset = Math.min(nextIndex, totalChats);
+            int nextLimit = Math.min(limit, totalChats - nextOffset + 1);
             return String.format("%s%s?offset=%d&limit=%d", apiBase, idRoom, nextOffset, nextLimit);
         }
         return null;
@@ -228,8 +229,6 @@ public class ChatServiceImpl implements ChatService {
         }
         return null;
     }
-
-
 
 
 }

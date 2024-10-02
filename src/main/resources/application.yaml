@@ -86,4 +86,17 @@ spring:
 server:
   port: ${PORT_SERVER}
 
+vnpay:
+  url: ${VNPAY_URL}
+  return:
+    url: ${RETURN_URL}
+  tmn:
+    code: ${TMN_CODE}
+  secret:
+    key: ${SECRET_KEY}
+  api:
+    url: ${VNPAY_API_URL}
+  version: ${VNPAY_VERSION}
+  command: ${COMMAND}
+
 

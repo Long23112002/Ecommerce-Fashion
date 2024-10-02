@@ -17,6 +17,7 @@ import org.example.ecommercefashion.entities.Permission;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.RoleRepository;
 import org.example.ecommercefashion.services.RoleService;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ public class RoleServiceImpl implements RoleService {
 
   private final EntityManager entityManager;
   private final RoleRepository roleRepository;
+  private final RefreshTokenRepository refreshTokenRepository;
 
   @Override
   public ResponsePage<Role, RoleResponse> filterRoles(String keyword, Pageable pageable) {
@@ -115,8 +117,10 @@ public class RoleServiceImpl implements RoleService {
       throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND);
     }
 
+
     for (User user : role.getUsers()) {
       user.getRoles().remove(role);
+      refreshTokenRepository.deleteAllByUserId(user.getId());
     }
     entityManager.remove(role);
     return MessageResponse.builder().message("Role deleted successfully").build();

@@ -80,6 +80,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional
     public ChatRoomResponse create(ChatRoomRequest request) {
+        boolean isChatRoomExist = findIdChatRoomByUserId(request.getIdClient()) != null;
+        if(isChatRoomExist){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_ALREADY_HAS_CHAT_ROOM);
+        }
         ChatRoom entity = FnCommon.copyProperties(ChatRoom.class, request);
         defaultCreateValue(entity);
         ChatRoom save = chatRoomRepository.save(entity);

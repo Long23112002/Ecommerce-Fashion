@@ -123,7 +123,7 @@ public class ChatServiceImpl implements ChatService {
 
     private ChatResponse toDto(Chat entity) {
         User user = userService.findUserOrDefault(entity.getCreateBy());
-        String idReply = entity.getIdReply();
+        String idReply = entity.getIdReply()+"";
         Chat reply = chatRepository.findById(idReply)
                 .orElse(null);
         return buildChatResponse(entity, user, reply);

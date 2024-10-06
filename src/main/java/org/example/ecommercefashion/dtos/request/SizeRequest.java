@@ -15,8 +15,8 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class SizeRequest {
 
-    @NotBlank(message = "Size name is not null")
-    @Size(max = 50, message = "Size name is between 1 and 50 characters")
+    @NotBlank(message = "Tên size không được trống")
+    @Size(max = 50, message = "Tên size phải từ 2 đến 50 ký tự")
     private String name;
 
 }

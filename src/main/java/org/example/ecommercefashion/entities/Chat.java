@@ -3,6 +3,7 @@ package org.example.ecommercefashion.entities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -21,17 +22,20 @@ public class Chat {
     private String content;
 
     @Field("seen")
+    @Indexed
     private Boolean seen;
 
     @Field("create_by")
     private Long createBy;
 
     @Field("create_at")
+    @Indexed
     private Date createAt;
 
     @Field("deleted")
     private Boolean deleted;
 
     @Field("id_room")
+    @Indexed
     private String idRoom;
 }

@@ -6,24 +6,29 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
+import org.example.ecommercefashion.dtos.request.OtpRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
-import org.example.ecommercefashion.dtos.response.MessageResponse;
-import org.example.ecommercefashion.dtos.response.ResponsePage;
-import org.example.ecommercefashion.dtos.response.RoleResponse;
-import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.dtos.response.*;
+import org.example.ecommercefashion.entities.EmailJob;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
+import org.example.ecommercefashion.services.OTPService;
 import org.example.ecommercefashion.services.UserService;
+import org.quartz.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,21 +44,56 @@ public class UserServiceImpl implements UserService {
 
   private final PasswordEncoder passwordEncoder;
 
+  private final RefreshTokenRepository refreshTokenRepository;
+
+  private final EmailJob emailJob;
+
+  private final OTPService otpService;
+
+  @Autowired private RedisTemplate<String, String> redisTemplate;
+
   @Override
   @Transactional
-  public UserResponse createUser(UserRequest userRequest) {
+  public UserResponse createUser(UserRequest userRequest) throws JobExecutionException {
+    // Lấy email từ request
+    String email = userRequest.getEmail();
+
+    String emailStatus = redisTemplate.opsForValue().get(email);
+
+    if (!"done".equals(emailStatus)) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_NOT_VERIFIED.val());
+    }
+
     validateEmail(userRequest.getEmail());
     validatePhone(userRequest.getPhoneNumber());
+
+    // Tạo đối tượng User
     User user = new User();
+
     if (userRequest.getAvatar() == null) {
       user.setAvatar(avatarDefault());
     }
+
     FnCommon.copyProperties(user, userRequest);
+    user.setIsVerified(true);
     user.setSlugEmail(userRequest.getEmail());
     user.setSlugFullName(userRequest.getFullName());
     user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+
     entityManager.persist(user);
+
     return mapEntityToResponse(user);
+  }
+
+  @Override
+  public void sendOtp(String email) throws JobExecutionException {
+    boolean exists = userRepository.existsByEmailAndDeleted(email, false);
+
+    if (exists) {
+      throw new ExceptionHandle(
+          HttpStatus.BAD_REQUEST, "Email " + email + " đã tồn tại trong hệ thống!");
+    }
+    sendEmailOtp(email);
   }
 
   @Override
@@ -83,8 +123,11 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public MessageResponse deleteUser(Long id) {
+
     User user = entityManager.find(User.class, id);
+
     if (user != null) {
+      refreshTokenRepository.deleteByUserId(user.getId());
       user.setDeleted(true);
       entityManager.merge(user);
     }
@@ -155,6 +198,21 @@ public class UserServiceImpl implements UserService {
     return MessageResponse.builder().message("Role assigned successfully").build();
   }
 
+  @Override
+  public void validEmail(OtpRequest otpRequest) {
+    Optional<OtpResponse> otpResponse = otpService.getOtp(otpRequest.getEmail());
+    if (otpResponse.isPresent()) {
+      if (!otpResponse.get().getOtp().equals(otpRequest.getOtp())) {
+        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.OTP_NOT_MATCH.val());
+      }
+    } else {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.OTP_EXPIRED.val());
+    }
+    otpService.deleteOtp(otpRequest.getEmail());
+    String email = otpRequest.getEmail();
+    redisTemplate.opsForValue().set(email, "done", 10, TimeUnit.MINUTES);
+  }
+
   private UserResponse mapEntityToResponse(User user) {
     UserResponse userResponse = new UserResponse();
     FnCommon.copyProperties(userResponse, user);
@@ -180,14 +238,18 @@ public class UserServiceImpl implements UserService {
   }
 
   private void validatePhone(String phoneNumber) {
-    if (userRepository.existsByPhoneNumberAndDeleted(phoneNumber , false)) {
+    if (userRepository.existsByPhoneNumberAndDeleted(phoneNumber, false)) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PHONE_EXISTED.val());
     }
   }
 
   private void validateEmail(String email) {
-    if (userRepository.existsByEmailAndDeleted(email , false)) {
+    if (userRepository.existsByEmailAndDeleted(email, false)) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_EXISTED.val());
     }
+  }
+
+  private void sendEmailOtp(String email) throws JobExecutionException {
+    emailJob.sendOtpEmail(email);
   }
 }

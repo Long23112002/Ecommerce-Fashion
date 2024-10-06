@@ -24,7 +24,7 @@ public class Role {
   @Column(name = "name", unique = true, nullable = false)
   private String name;
 
-  @ManyToMany(mappedBy = "roles")
+  @ManyToMany(mappedBy = "roles", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
   @JsonIgnore
   private Set<User> users;
 

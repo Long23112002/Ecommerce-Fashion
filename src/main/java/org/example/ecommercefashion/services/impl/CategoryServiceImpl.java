@@ -24,8 +24,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.text.Normalizer;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
 
 @Service
@@ -55,7 +59,17 @@ public class CategoryServiceImpl implements CategoryService {
         if (token != null) {
             JwtResponse jwt = JwtService.decodeToken(token);
             Category category = new Category();
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(category, request);
+
+            if(categoryRepository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
+            }
             Category parent = null;
             if(request.getParentId() != null){
                 Category categoryid = categoryRepository.findById(request.getParentId()).orElseThrow(
@@ -105,6 +119,15 @@ public class CategoryServiceImpl implements CategoryService {
             Category category = categoryRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
             );
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
+            if(categoryRepository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
+            }
             category.setUpdateBy(jwt.getUserId());
             category.setName(request.getName());
             Category parent = null;
@@ -155,4 +178,5 @@ public class CategoryServiceImpl implements CategoryService {
         categoryResponse.setSubCategories(subcategoryResponses);
         return categoryResponse;
     }
+
 }

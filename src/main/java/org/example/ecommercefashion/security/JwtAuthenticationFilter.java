@@ -1,19 +1,16 @@
 package org.example.ecommercefashion.security;
 
 import com.longnh.utils.JsonParser;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,9 +65,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
-      if (jwtService.isTokenValid(jwt, userDetails, jwtKey)) {
+      if (userDetails.isEnabled() && jwtService.isTokenValid(jwt, userDetails, jwtKey)) {
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-
 
         Set<GrantedAuthority> modifiableAuthorities = new HashSet<>(authorities);
 
@@ -79,8 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         modifiableAuthorities.addAll(permissions);
 
         UsernamePasswordAuthenticationToken authenticationToken =
-            new UsernamePasswordAuthenticationToken(
-                userDetails, null, modifiableAuthorities);
+            new UsernamePasswordAuthenticationToken(userDetails, null, modifiableAuthorities);
 
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
@@ -103,6 +98,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     response.getWriter().write(JsonParser.toJson(errorResponse));
   }
-
-
 }

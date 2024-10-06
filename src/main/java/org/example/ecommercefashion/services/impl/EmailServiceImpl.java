@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.ecommercefashion.schedule.EmailJob;
 import org.example.ecommercefashion.schedule.PromotionEmail;
+import org.example.ecommercefashion.schedule.PromotionExcelJob;
 import org.example.ecommercefashion.services.EmailService;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
@@ -14,7 +15,9 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -27,6 +30,7 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
     private final Scheduler scheduler;
+    private final PromotionExcelJob promotionExcelJob;
 
     @Override
     public void sendingOtpWithEmail(String email) throws Exception {
@@ -70,22 +74,6 @@ public class EmailServiceImpl implements EmailService {
 
         scheduler.scheduleJob(jobDetail, trigger);
 
-//        ExecutorService executorService = Executors.newFixedThreadPool(10);
-//
-//        for (String email : emailList) {
-//            // Gửi từng email trong một luồng riêng biệt
-//            executorService.submit(() -> {
-//                try {
-//                    sendEmail(email, subject, text);
-//                } catch (Exception e) {
-//                    System.err.println("Gửi email thất bại cho: " + email);
-//                    e.printStackTrace();
-//                }
-//            });
-//        }
-//
-//        Tắt ExecutorService sau khi các nhiệm vụ đã hoàn tất
-//        executorService.shutdown();
     }
 
     public String generateCronForOneDayBefore(Date promotionDate) {
@@ -107,5 +95,11 @@ public class EmailServiceImpl implements EmailService {
 
         // Tạo cron cho 8:20 AM trước 1 ngày
         return String.format("0 20 8 %s %s ? %s", day, month, year);
+    }
+
+
+    @Override
+    public void sendBulkMailFromExcel(MultipartFile file) throws IOException, SchedulerException {
+        promotionExcelJob.sendBulkMailFromExcel(file);
     }
 }

@@ -5,11 +5,13 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.CategoryParam;
 import org.example.ecommercefashion.dtos.request.CategoryRequest;
+import org.example.ecommercefashion.dtos.response.BrandResponse;
 import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
@@ -21,6 +23,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.text.Normalizer;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
 
 @Service
@@ -34,8 +43,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public ResponsePage<Category, CategoryResponse> filterCategory(CategoryParam param, Pageable pageable) {
-        Page<Category> CategoryResponsePage = categoryRepository.filterCategories(param, pageable);
-        return new ResponsePage<>(CategoryResponsePage, CategoryResponse.class);
+        Page<Category> CategoryPage = categoryRepository.filterCategories(param, pageable);
+        Page<CategoryResponse> categoryResponses = CategoryPage.map(category -> mapCategoryToCategoryResponse(category));
+        return new ResponsePage<>(categoryResponses);
+    }
+    @Override
+    public ResponsePage<Category, CategoryResponse> getAll(Pageable pageable){
+        Page<Category> categories = categoryRepository.findAll(pageable);
+        Page<CategoryResponse> categoryResponses = categories.map(category -> mapCategoryToCategoryResponse(category));
+        return new ResponsePage<>(categoryResponses);
     }
 
     @Override
@@ -43,7 +59,17 @@ public class CategoryServiceImpl implements CategoryService {
         if (token != null) {
             JwtResponse jwt = JwtService.decodeToken(token);
             Category category = new Category();
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(category, request);
+
+            if(categoryRepository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
+            }
             Category parent = null;
             if(request.getParentId() != null){
                 Category categoryid = categoryRepository.findById(request.getParentId()).orElseThrow(
@@ -65,6 +91,9 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     private UserResponse getInfoUser(Long id) {
+        if (id == null) {
+            return null;
+        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
@@ -79,15 +108,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
         );
-        CategoryResponse response = new CategoryResponse();
-        FnCommon.copyNonNullProperties(response, category);
-        if (category.getCreateBy() != null) {
-            response.setCreateBy(getInfoUser(category.getCreateBy()));
-        }
-        if (category.getUpdateBy() != null) {
-            response.setUpdateBy(getInfoUser(category.getUpdateBy()));
-        }
-        return response;
+
+        return mapCategoryToCategoryResponse(category);
     }
 
     @Override
@@ -97,8 +119,24 @@ public class CategoryServiceImpl implements CategoryService {
             Category category = categoryRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
             );
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
+            if(categoryRepository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
+            }
             category.setUpdateBy(jwt.getUserId());
-            FnCommon.copyNonNullProperties(category, request);
+            category.setName(request.getName());
+            Category parent = null;
+            if (request.getParentId() != null) {
+                Category parentCategory = categoryRepository.findById(request.getParentId())
+                        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND));
+                parent = parentCategory;
+            }
+            category.setParentCategory(parent);
             category = categoryRepository.save(category);
 
             CategoryResponse response = new CategoryResponse();
@@ -128,4 +166,17 @@ public class CategoryServiceImpl implements CategoryService {
             markAsDeleted(subCategory);
         }
     }
+    private CategoryResponse mapCategoryToCategoryResponse(Category category) {
+        CategoryResponse categoryResponse = new CategoryResponse();
+        FnCommon.copyNonNullProperties(categoryResponse, category);
+
+        categoryResponse.setCreateBy(getInfoUser(category.getCreateBy()));
+        categoryResponse.setUpdateBy(getInfoUser(category.getUpdateBy()));
+        List<CategoryResponse> subcategoryResponses = category.getSubCategories().stream()
+                                                    .map(this::mapCategoryToCategoryResponse)
+                                                    .collect(Collectors.toList());
+        categoryResponse.setSubCategories(subcategoryResponses);
+        return categoryResponse;
+    }
+
 }

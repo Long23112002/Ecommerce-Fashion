@@ -7,13 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,11 +26,22 @@ public class ProcessSend {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
-    @Column(name = "count_mail_sended")
-    private Long countSended;
-    @Column(name = "count_mail_unsended")
-    private Long countUnsended;
+    @Column(name = "count_mail_sent")
+    private Long countSent;
+    @Column(name = "count_mail_failed")
+    private Long countFailed;
     @Column(name = "size_process")
     private Long sizeProcess;
+
+    @ManyToOne(cascade = {
+            CascadeType.DETACH, CascadeType.MERGE,
+            CascadeType.PERSIST, CascadeType.REFRESH},
+            fetch = FetchType.LAZY)
+    @JoinColumn(name = "email_id")
+    private Email email;
+
+    @OneToMany(mappedBy = "processSend", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL)
+    private List<EmailSendLog> emailSendLogs;
 
 }

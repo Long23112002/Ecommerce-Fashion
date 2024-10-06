@@ -5,11 +5,13 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.OriginParam;
 import org.example.ecommercefashion.dtos.request.OriginRequest;
+import org.example.ecommercefashion.dtos.response.BrandResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.OriginResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.Origin;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
@@ -20,6 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+
+import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
 
 @Service
@@ -35,14 +41,24 @@ public class OriginServiceImpl implements OriginService{
     @Override
     public ResponsePage<Origin, OriginResponse> filterOrigin(OriginParam param, Pageable pageable){
         Page<Origin> originPage = repository.FilterOrigin(param,pageable);
-        return new ResponsePage<>(originPage,OriginResponse.class);
+        Page<OriginResponse> originResponsePage = originPage.map(origin -> mapSizeToSizeResponse(origin));
+        return new ResponsePage<>(originResponsePage);
     }
     @Override
     public OriginResponse add(OriginRequest request, String token) {
         if (token != null) {
             JwtResponse jwt = JwtService.decodeToken(token);
             Origin origin = new Origin();
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(origin,request);
+            if(repository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NAME_EXISTED);
+            }
             origin.setCreateBy(jwt.getUserId());
             origin = repository.save(origin);
             OriginResponse response = new OriginResponse();
@@ -74,7 +90,16 @@ public class OriginServiceImpl implements OriginService{
             Origin origin = repository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ORIGIN_NOT_FOUND)
             );
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
             FnCommon.copyNonNullProperties(origin,request);
+            if(repository.existsByName(normalizedCategoryName)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NAME_EXISTED);
+            }
             origin.setUpdateBy(jwt.getUserId());
             origin = repository.save(origin);
             OriginResponse response = new OriginResponse();
@@ -97,6 +122,9 @@ public class OriginServiceImpl implements OriginService{
         return MessageResponse.builder().message("Origin deleted successfully").build();
     }
     private UserResponse getInfoUser(Long id) {
+        if (id == null) {
+            return null;
+        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
@@ -104,5 +132,12 @@ public class OriginServiceImpl implements OriginService{
         FnCommon.copyNonNullProperties(userResponse, user);
         return userResponse;
 
+    }
+    private OriginResponse mapSizeToSizeResponse(Origin origin) {
+        OriginResponse originResponse = new OriginResponse();
+        FnCommon.copyNonNullProperties(originResponse, origin);
+        originResponse.setCreateBy(getInfoUser(origin.getCreateBy()));
+        originResponse.setUpdateBy(getInfoUser(origin.getUpdateBy()));
+        return originResponse;
     }
 }

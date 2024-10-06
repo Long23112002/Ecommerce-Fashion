@@ -41,8 +41,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
               + "where u.id = :id "
               + "and p.name like :permission",
       nativeQuery = true)
-  boolean isUserHasPermission(@Param("id") Long id, @Param("permission") String permission);
-
+  boolean isUserHasPermission(@Param("id") Long id,
+                              @Param("permission") String permission);
 
   boolean existsByEmailAndDeleted(String email , boolean deleted);
 

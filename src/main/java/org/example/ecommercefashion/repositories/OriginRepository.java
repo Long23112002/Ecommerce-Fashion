@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OriginRepository extends JpaRepository<Origin,Long> {
-    @Query("SELECT o from Origin o WHERE (:#{#param.name} is null or o.name like %:#{#param.name}%)")
+    @Query("SELECT o from Origin o WHERE (:#{#param.name} is null or LOWER(o.name) like LOWER(concat( '%',:#{#param.name},'%')))")
     Page<Origin> FilterOrigin (OriginParam param, Pageable pageable);
+
+    Boolean existsByName(String name);
 }

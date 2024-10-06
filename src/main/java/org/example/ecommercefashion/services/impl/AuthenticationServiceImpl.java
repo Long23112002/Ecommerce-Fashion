@@ -17,6 +17,7 @@ import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.AuthenticationService;
 import org.example.ecommercefashion.services.RefreshTokenService;
 import org.example.ecommercefashion.services.UserService;
+import org.quartz.JobExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -84,7 +85,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   @Transactional
-  public UserResponse signUp(UserRequest userRequest) {
+  public UserResponse signUp(UserRequest userRequest) throws JobExecutionException {
     return userService.createUser(userRequest);
   }
 

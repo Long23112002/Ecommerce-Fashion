@@ -12,6 +12,7 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.services.UserService;
+import org.quartz.JobExecutionException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,8 +27,15 @@ public class UserController {
 
   private final UserService userService;
 
+  public static void main(String[] args) {
+    String password = "12345678";
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    String encodedPassword = passwordEncoder.encode(password);
+    System.out.printf(encodedPassword);
+  }
+
   @PostMapping
-  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) {
+  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) throws JobExecutionException {
     return userService.createUser(userRequest);
   }
 
@@ -67,12 +75,5 @@ public class UserController {
   @PatchMapping("/assign-user-role")
   public void assignUserRole(@Valid @RequestBody UserRoleAssignRequest userRoleAssignRequest) {
     userService.assignUserRole(userRoleAssignRequest);
-  }
-
-  public static void main(String[] args) {
-    String password = "12345678";
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    String encodedPassword = passwordEncoder.encode(password);
-    System.out.printf(encodedPassword);
   }
 }

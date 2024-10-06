@@ -49,7 +49,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     final MongoTemplate mongoTemplate;
 
     @Override
-    @Cacheable("chatRooms")
     public List<ChatRoomResponse> findAllChatRoom() {
         var reponses = chatRoomRepository.findAllChatRoom();
         return toDtos(reponses);

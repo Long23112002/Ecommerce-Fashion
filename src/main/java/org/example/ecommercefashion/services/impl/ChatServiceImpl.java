@@ -23,6 +23,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Date;
@@ -44,6 +45,7 @@ public class ChatServiceImpl implements ChatService {
     private final RoomSubscriptionService subscriptionService;
 
     @Override
+    @Transactional
     public ChatResponse createChat(ChatRequest request) {
         Chat chatEntity = FnCommon.copyProperties(Chat.class, request);
         setDefaultChatValues(chatEntity);

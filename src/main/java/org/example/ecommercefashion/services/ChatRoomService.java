@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.services;
 
+import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChatRoomRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
 import org.example.ecommercefashion.dtos.response.ChatRoomResponse;
@@ -15,4 +16,5 @@ public interface ChatRoomService {
     Optional<Chat> findLastChatByIdChatRoom(String id);
     ChatRoomResponse create(ChatRoomRequest request);
     void delete(String id);
+    List<ChatRoomResponse> findAllChatRoomByIdUsers(UserParam param);
 }

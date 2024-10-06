@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface ChatRoomRepository extends MongoRepository<ChatRoom, String> {
@@ -23,6 +24,13 @@ public interface ChatRoomRepository extends MongoRepository<ChatRoom, String> {
     List<ChatRoom> findAllChatRoom();
 
     @Query(value = "{ 'id_client' : :#{#id}, 'deleted': false }")
-    Optional<ChatRoom> findChatRoomByUserId(@Param("id") Long id);
+    Optional<ChatRoom> findChatRoomByIdUser(Long id);
 
+    @Aggregation(pipeline = {
+            "{ '$lookup': { 'from': 'chat', 'localField': '_id', 'foreignField': 'id_room', 'as': 'chat' }}",
+            "{ '$match': { '$expr': { '$gt': [{ $size: '$chat' }, 0] }, 'deleted': false, 'id_client': { $in: :#{#idUsers}}} }",
+            "{ '$project': { '_id': 1, 'id_client': 1, 'create_at': 1, 'deleted': 1, 'chat': {'$arrayElemAt': ['$chat', -1]} } }",
+            "{ '$sort': { 'chat.seen': 1, 'chat.create_at': -1 }}"
+    })
+    List<ChatRoom> findChatRoomByUserIds(Set<Long> idUsers);
 }

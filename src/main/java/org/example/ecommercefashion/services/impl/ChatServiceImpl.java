@@ -3,7 +3,8 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
-import org.example.ecommercefashion.config.socket.RoomSubscriptionService;
+import org.example.ecommercefashion.config.socket.chat.RoomSubscriptionService;
+import org.example.ecommercefashion.config.socket.WebSocketDestination;
 import org.example.ecommercefashion.config.socket.WebSocketService;
 import org.example.ecommercefashion.dtos.request.ChatRequest;
 import org.example.ecommercefashion.dtos.response.ChatResponse;
@@ -53,7 +54,7 @@ public class ChatServiceImpl implements ChatService {
         ChatResponse chatResponse = toDto(savedChat);
 
         markAllChatsAsSeenAsync(request.getIdRoom());
-        webSocketService.responseRealtime("/room/" + request.getIdRoom(), chatResponse);
+        webSocketService.responseRealtime(WebSocketDestination.CHAT_ROOM.getDestinationWithSlash() + request.getIdRoom(), chatResponse);
 
         return chatResponse;
     }
@@ -69,7 +70,7 @@ public class ChatServiceImpl implements ChatService {
     public void markAllChatsAsSeen(String roomId, Long userId) {
         updateSeenStatus(roomId, userId);
         var chatRooms = chatRoomService.findAllChatRoom();
-        webSocketService.responseRealtime("/admin", chatRooms);
+        webSocketService.responseRealtime(WebSocketDestination.CHAT_ADMIN.getDestination(), chatRooms);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class ChatServiceImpl implements ChatService {
         var usersInRoom = subscriptionService.getUsersInRoom(roomId);
         updateSeenStatus(roomId, usersInRoom);
         var chatRooms = chatRoomService.findAllChatRoom();
-        webSocketService.responseRealtime("/admin", chatRooms);
+        webSocketService.responseRealtime(WebSocketDestination.CHAT_ADMIN.getDestination(), chatRooms);
     }
 
     private Update updateSeenStatus(String roomId, Long userId) {
@@ -125,7 +126,7 @@ public class ChatServiceImpl implements ChatService {
 
     private ChatResponse toDto(Chat entity) {
         User user = userService.findUserOrDefault(entity.getCreateBy());
-        String idReply = entity.getIdReply()+"";
+        String idReply = entity.getIdReply() + "";
         Chat reply = chatRepository.findById(idReply)
                 .orElse(null);
         return buildChatResponse(entity, user, reply);

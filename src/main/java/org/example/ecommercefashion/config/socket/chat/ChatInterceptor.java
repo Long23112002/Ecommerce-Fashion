@@ -1,7 +1,8 @@
-package org.example.ecommercefashion.config.socket;
+package org.example.ecommercefashion.config.socket.chat;
 
 import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.config.socket.WebSocketDestination;
 import org.example.ecommercefashion.contants.Permissions;
 import org.example.ecommercefashion.entities.ChatRoom;
 import org.example.ecommercefashion.entities.User;
@@ -21,7 +22,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class WebSocketSecurityInterceptor implements ChannelInterceptor {
+public class ChatInterceptor implements ChannelInterceptor {
 
     final JwtService jwtService;
     final ChatRoomRepository chatRoomRepository;
@@ -31,17 +32,14 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        String urlNotification = accessor.getDestination();
-        if (urlNotification != null && urlNotification.startsWith("/notification")) {
-            return message;
-        }
-        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+        StompCommand command = accessor.getCommand();
+        if (StompCommand.CONNECT.equals(command)) {
             handleConnect(accessor);
         }
-        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+        if (StompCommand.SUBSCRIBE.equals(command)) {
             handleSubcribe(accessor);
         }
-        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+        if (StompCommand.DISCONNECT.equals(command)) {
             handleDisConnect(accessor);
         }
 //        if (StompCommand.SEND.equals(accessor.getCommand())) {
@@ -62,10 +60,10 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
-        String url = accessor.getDestination();
-        if (url.startsWith("/admin")) {
+        String destination = accessor.getDestination();
+        if (destination.startsWith(WebSocketDestination.CHAT_ADMIN.getDestination())) {
             isUserHasPermission(accessor);
-        } else if (url.startsWith("/room/")) {
+        } else if (destination.startsWith(WebSocketDestination.CHAT_ROOM.getDestination())) {
             isUserInRoom(accessor);
         } else {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
@@ -118,12 +116,12 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     }
 
     private String getIdRoomFromDestination(StompHeaderAccessor accessor) {
-        String url = accessor.getDestination();
-        StringBuilder idRoom = new StringBuilder(url);
-        if (url.startsWith("/app/chat.sendMessage/")) {
+        String destination = accessor.getDestination();
+        StringBuilder idRoom = new StringBuilder(destination);
+        if (destination.startsWith("/app/chat.sendMessage/")) {
             idRoom.delete(0, "/app/chat.sendMessage/".length());
         } else {
-            idRoom.delete(0, "/room/".length());
+            idRoom.delete(0, WebSocketDestination.CHAT_ROOM.getDestinationWithSlash().length());
         }
         return idRoom.toString();
     }

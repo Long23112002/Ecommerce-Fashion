@@ -7,10 +7,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.persistence.Column;
 import javax.persistence.Id;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @NoArgsConstructor

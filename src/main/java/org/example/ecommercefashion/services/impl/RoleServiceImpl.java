@@ -16,9 +16,11 @@ import org.example.ecommercefashion.dtos.response.RoleResponse;
 import org.example.ecommercefashion.entities.Permission;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.RoleRepository;
+import org.example.ecommercefashion.services.NotificationService;
 import org.example.ecommercefashion.services.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,7 @@ public class RoleServiceImpl implements RoleService {
   private final EntityManager entityManager;
   private final RoleRepository roleRepository;
   private final RefreshTokenRepository refreshTokenRepository;
+  private final NotificationService notificationService;
 
   @Override
   public ResponsePage<Role, RoleResponse> filterRoles(String keyword, Pageable pageable) {
@@ -96,6 +99,7 @@ public class RoleServiceImpl implements RoleService {
 
     FnCommon.coppyNonNullProperties(role, roleRequest);
     role = entityManager.merge(role);
+    notificationService.sendNotificationAll(NotificationCode.PAYMENT_SUCCESS,id);
     return mapRoleToRoleResponse(role);
   }
 

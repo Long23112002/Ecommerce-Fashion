@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -43,6 +44,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
       nativeQuery = true)
   boolean isUserHasPermission(@Param("id") Long id,
                               @Param("permission") String permission);
+
+  @Query(
+      value =
+          "select u.* "
+              + "from users.user u "
+              + "join users.user_roles ur "
+              + "on ur.id_user = u.id "
+              + "join users.role r "
+              + "on r.id = ur.id_role "
+              + "join users.role_permission rp "
+              + "on rp.id_role = r.id "
+              + "join users.permission p "
+              + "on p.id = rp.id_permission "
+              + "where p.name like :permission ",
+      nativeQuery = true)
+  List<User> findAllUserByPermission(String permission);
 
   boolean existsByEmailAndDeleted(String email , boolean deleted);
 

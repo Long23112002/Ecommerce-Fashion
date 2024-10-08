@@ -5,6 +5,7 @@ import org.example.ecommercefashion.enums.notification.NotificationCode;
 
 public interface NotificationService {
 
-    void sendNotificationAll(NotificationCode notificationCode, Long createBy);
+    void sendNotificationAll(Long createBy, NotificationCode notificationCode, String... variables);
+    void sendNotificationAll(NotificationCode notificationCode, String... variables);
 
 }

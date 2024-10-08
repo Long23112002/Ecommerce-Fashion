@@ -51,8 +51,9 @@ public class CategoryServiceImpl implements CategoryService {
         Page<CategoryResponse> categoryResponses = CategoryPage.map(category -> mapCategoryToCategoryResponse(category));
         return new ResponsePage<>(categoryResponses);
     }
+
     @Override
-    public ResponsePage<Category, CategoryResponse> getAll(Pageable pageable){
+    public ResponsePage<Category, CategoryResponse> getAll(Pageable pageable) {
         Page<Category> categories = categoryRepository.findAll(pageable);
         Page<CategoryResponse> categoryResponses = categories.map(category -> mapCategoryToCategoryResponse(category));
         return new ResponsePage<>(categoryResponses);
@@ -71,11 +72,11 @@ public class CategoryServiceImpl implements CategoryService {
             }
             FnCommon.copyNonNullProperties(category, request);
 
-            if(categoryRepository.existsByName(normalizedCategoryName)){
+            if (categoryRepository.existsByName(normalizedCategoryName)) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
             }
             Category parent = null;
-            if(request.getParentId() != null){
+            if (request.getParentId() != null) {
                 Category categoryid = categoryRepository.findById(request.getParentId()).orElseThrow(
                         () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND));
                 parent = categoryid;
@@ -129,7 +130,7 @@ public class CategoryServiceImpl implements CategoryService {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to normalize string", e);
             }
-            if(categoryRepository.existsByName(normalizedCategoryName)){
+            if (categoryRepository.existsByName(normalizedCategoryName)) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
             }
             category.setUpdateBy(jwt.getUserId());
@@ -146,7 +147,7 @@ public class CategoryServiceImpl implements CategoryService {
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
 
-            notificationService.sendNotificationAll(NotificationCode.PAYMENT_SUCCESS,jwt.getUserId());
+            notificationService.sendNotificationAll(jwt.getUserId(), NotificationCode.CATEGORY_UPDATED, category.getName());
 
             return response;
         } else {
@@ -165,6 +166,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         return MessageResponse.builder().message("Category and related records deleted successfully").build();
     }
+
     private void markAsDeleted(Category category) {
         category.setDeleted(true);
 
@@ -172,6 +174,7 @@ public class CategoryServiceImpl implements CategoryService {
             markAsDeleted(subCategory);
         }
     }
+
     private CategoryResponse mapCategoryToCategoryResponse(Category category) {
         CategoryResponse categoryResponse = new CategoryResponse();
         FnCommon.copyNonNullProperties(categoryResponse, category);
@@ -179,8 +182,8 @@ public class CategoryServiceImpl implements CategoryService {
         categoryResponse.setCreateBy(getInfoUser(category.getCreateBy()));
         categoryResponse.setUpdateBy(getInfoUser(category.getUpdateBy()));
         List<CategoryResponse> subcategoryResponses = category.getSubCategories().stream()
-                                                    .map(this::mapCategoryToCategoryResponse)
-                                                    .collect(Collectors.toList());
+                .map(this::mapCategoryToCategoryResponse)
+                .collect(Collectors.toList());
         categoryResponse.setSubCategories(subcategoryResponses);
         return categoryResponse;
     }

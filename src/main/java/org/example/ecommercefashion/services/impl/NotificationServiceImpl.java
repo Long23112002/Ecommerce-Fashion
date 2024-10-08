@@ -26,40 +26,66 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
-  private final NotificationMessageRepository notificationMessageRepository;
-  private final WebSocketService webSocketService;
-  private final UserRepository userRepository;
+    private final NotificationMessageRepository notificationMessageRepository;
+    private final WebSocketService webSocketService;
+    private final UserRepository userRepository;
 
-  @Override
-  public void sendNotificationAll(NotificationCode notificationCode, Long createBy) {
-    List<Notification> entities = new ArrayList<>();
-    List<User> users = userRepository.findAllUserByPermission(notificationCode.getPermission());
-    Optional<User> optional = userRepository.findById(createBy);
-    if(optional.isPresent()){
-      User createByUser = optional.get();
-      for(User user : users){
-        Notification entity = Notification.builder()
+    @Override
+    public void sendNotificationAll(Long createBy, NotificationCode notificationCode, String... variables) {
+        List<Notification> entities = new ArrayList<>();
+        List<User> users = userRepository.findAllUserByPermission(notificationCode.getPermission());
+        Optional<User> optional = userRepository.findById(createBy);
+        if (optional.isPresent()) {
+            User createByUser = optional.get();
+            for (User user : users) {
+                String title = notificationCode.getDefaultTitle();
+                String content = notificationCode.getContentWithInfor(variables);
+                Long idReceiver = user.getId();
+                Notification entity = buildEntity(title, content, idReceiver);
+                entities.add(entity);
+                webSocketService.responseRealtime(WebSocketDestination.NOTIFICATION.getDestinationWithSlash() + entity.getIdReceiver(), toDto(entity, createByUser));
+            }
+            notificationMessageRepository.saveAll(entities);
+        }
+    }
+
+    @Override
+    public void sendNotificationAll(NotificationCode notificationCode, String... variables) {
+        List<Notification> entities = new ArrayList<>();
+        List<User> users = userRepository.findAllUserByPermission(notificationCode.getPermission());
+        for (User user : users) {
+            String title = notificationCode.getDefaultTitle();
+            String content = notificationCode.getContentWithInfor(variables);
+            Long idReceiver = user.getId();
+            Notification entity = buildEntity(title, content, idReceiver);
+            entities.add(entity);
+            webSocketService.responseRealtime(WebSocketDestination.NOTIFICATION.getDestinationWithSlash() + entity.getIdReceiver(), toDto(entity));
+        }
+        notificationMessageRepository.saveAll(entities);
+    }
+
+    private Notification buildEntity(String title, String content, Long idReceiver) {
+        return Notification.builder()
                 .id(UUID.randomUUID().toString())
-                .content(notificationCode.getDefaultContent())
-                .title(notificationCode.getDefaultTitle())
-                .idReceiver(user.getId())
-                .createBy(createBy)
+                .title(title)
+                .content(content)
+                .idReceiver(idReceiver)
                 .createAt(new Date())
                 .deleted(false)
                 .seen(false)
                 .build();
-        entities.add(entity);
-        webSocketService.responseRealtime(WebSocketDestination.NOTIFICATION.getDestinationWithSlash()+entity.getIdReceiver(), toDto(entity, createByUser));
-      }
-      notificationMessageRepository.saveAll(entities);
     }
-  }
 
-  private NotificationResponse toDto(Notification entity, User user) {
-    NotificationResponse response = FnCommon.copyProperties(NotificationResponse.class, entity);
-    response.setNameCreateBy(user.getFullName());
-    response.setAvatar(user.getAvatar());
-    return response;
-  }
+    private NotificationResponse toDto(Notification entity) {
+        NotificationResponse response = FnCommon.copyProperties(NotificationResponse.class, entity);
+        return response;
+    }
+
+    private NotificationResponse toDto(Notification entity, User user) {
+        NotificationResponse response = FnCommon.copyProperties(NotificationResponse.class, entity);
+        response.setNameCreateBy(user.getFullName());
+        response.setAvatar(user.getAvatar());
+        return response;
+    }
 
 }

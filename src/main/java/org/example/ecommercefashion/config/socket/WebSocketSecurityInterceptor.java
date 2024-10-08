@@ -89,7 +89,7 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         User user = decodeToUser(accessor);
         boolean isUserHasPermission =
                 userRepository.isUserHasPermission(user.getId(), Permissions.MESSAGE_CONSULT);
-        if (!user.getIsAdmin() || !isUserHasPermission) {
+        if (user.getIsAdmin() && !isUserHasPermission) {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.USER_PERMISSION_DENIED);
         }
     }

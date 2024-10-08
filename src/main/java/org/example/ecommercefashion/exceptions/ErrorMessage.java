@@ -28,12 +28,14 @@ public enum ErrorMessage implements BaseErrorMessage {
   IMAGE_NOT_FOUND("Không tìm thấy Hình Ảnh"),
   ROLE_EXISTED("Vai Trò đã tồn tại"),
   EMAIL_NOT_VERIFIED("Email chưa được xác minh"),
+  CHAT_NOT_FOUND("Không tìm thấy chat"),
 
   WEBSOCKET_NOT_FOUND("Không tìm thấy Websocket"),
   USER_PERMISSION_DENIED("Người dùng không có quyền yêu cầu này"),
   EMAIL_EXISTED("Email của bạn đã tồn tại trong hệ thống"),
   PHONE_EXISTED("Số điện thoại của bạn đã tồn tại trong hệ thống"),
   CHAT_ROOM_NOT_FOUND("Không tìm thấy phòng trò chuyện"),
+  USER_ALREADY_HAS_CHAT_ROOM("Người dùng đã tồn tại chat room"),
   TEMPLATE_NOT_FOUND("Không tìm thấy Mẫu"),
   OTP_NOT_MATCH("OTP không đúng vui lòng kiểm tra lại"),
   OTP_EXPIRED("OTP đã hết hạn");

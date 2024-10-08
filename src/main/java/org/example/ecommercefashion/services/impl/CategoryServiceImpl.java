@@ -14,11 +14,13 @@ import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.CategoryRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.CategoryService;
+import org.example.ecommercefashion.services.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -40,6 +42,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     private final JwtService JwtService;
+
+    private final NotificationService notificationService;
 
     @Override
     public ResponsePage<Category, CategoryResponse> filterCategory(CategoryParam param, Pageable pageable) {
@@ -141,6 +145,8 @@ public class CategoryServiceImpl implements CategoryService {
 
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
+
+            notificationService.sendNotificationAll(NotificationCode.PAYMENT_SUCCESS,jwt.getUserId());
 
             return response;
         } else {

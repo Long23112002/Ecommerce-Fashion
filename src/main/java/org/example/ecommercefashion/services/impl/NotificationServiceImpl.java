@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -33,21 +34,25 @@ public class NotificationServiceImpl implements NotificationService {
   public void sendNotificationAll(NotificationCode notificationCode, Long createBy) {
     List<Notification> entities = new ArrayList<>();
     List<User> users = userRepository.findAllUserByPermission(notificationCode.getPermission());
-    for(User user : users){
-      Notification entity = Notification.builder()
-              .id(UUID.randomUUID().toString())
-              .content(notificationCode.getDefaultContent())
-              .title(notificationCode.getDefaultTitle())
-              .idReceiver(user.getId())
-              .createBy(createBy)
-              .createAt(new Date())
-              .deleted(false)
-              .seen(false)
-              .build();
-      entities.add(entity);
-      webSocketService.responseRealtime(WebSocketDestination.NOTIFICATION.getDestinationWithSlash()+entity.getIdReceiver(), toDto(entity, user));
+    Optional<User> optional = userRepository.findById(createBy);
+    if(optional.isPresent()){
+      User createByUser = optional.get();
+      for(User user : users){
+        Notification entity = Notification.builder()
+                .id(UUID.randomUUID().toString())
+                .content(notificationCode.getDefaultContent())
+                .title(notificationCode.getDefaultTitle())
+                .idReceiver(user.getId())
+                .createBy(createBy)
+                .createAt(new Date())
+                .deleted(false)
+                .seen(false)
+                .build();
+        entities.add(entity);
+        webSocketService.responseRealtime(WebSocketDestination.NOTIFICATION.getDestinationWithSlash()+entity.getIdReceiver(), toDto(entity, createByUser));
+      }
+      notificationMessageRepository.saveAll(entities);
     }
-    notificationMessageRepository.saveAll(entities);
   }
 
   private NotificationResponse toDto(Notification entity, User user) {

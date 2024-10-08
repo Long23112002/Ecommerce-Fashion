@@ -48,17 +48,29 @@ public class NotificationInterceptor implements ChannelInterceptor {
         if (token.length() == 0 || user == null) {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
-        Long id = user.getUserId();
-        accessor.getSessionAttributes().put("idUser", id);
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
-        String url = accessor.getDestination();
-        if (url.startsWith(WebSocketDestination.NOTIFICATION.getDestination())) {
-
+        String destination = accessor.getDestination();
+        if (destination.startsWith(WebSocketDestination.NOTIFICATION.getDestination())) {
+            User user = decodeToUser(accessor);
+            String id = destination.replace(WebSocketDestination.NOTIFICATION.getDestinationWithSlash(),"");
+            if(!id.equals(user.getId().toString())){{
+                throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
+            }}
         } else {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
+    }
+
+    private User decodeToUser(StompHeaderAccessor accessor) {
+        String token = accessor.getFirstNativeHeader("Authorization");
+        Long idUser = jwtService.decodeToken(token).getUserId();
+        User user =
+                userRepository.findById(idUser)
+                        .orElseThrow(() ->
+                                new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.USER_NOT_FOUND));
+        return user;
     }
 
 }

@@ -99,7 +99,6 @@ public class RoleServiceImpl implements RoleService {
 
     FnCommon.coppyNonNullProperties(role, roleRequest);
     role = entityManager.merge(role);
-    notificationService.sendNotificationAll(NotificationCode.PAYMENT_SUCCESS,id);
     return mapRoleToRoleResponse(role);
   }
 

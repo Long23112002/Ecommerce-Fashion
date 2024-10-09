@@ -37,7 +37,7 @@ public enum NotificationCode {
 
     CATEGORY_UPDATED(
             "Cập nhật danh mục",
-            "Danh mục %s đã được cập nhật thành công.",
+            "Đã cập nhật lại danh mục id là: <b>%s</b> thành công.",
             Permissions.MESSAGE_CONSULT
     )
     ;
@@ -52,7 +52,7 @@ public enum NotificationCode {
         this.permission = permission;
     }
 
-    public String getContentWithInfor(String... variables) {
+    public String getContentWithInfor(Object... variables) {
         return String.format(this.defaultContent, variables);
     }
 }

@@ -63,7 +63,8 @@ public class ChatServiceImpl implements ChatService {
     public LoadMoreResponse<ChatResponse> findAllChatsByRoomId(String roomId, int offset, int limit) {
         var entities = chatRepository.findAllChatByIdChatRoom(roomId, offset, limit);
         int count = chatRepository.countByIdRoom(roomId);
-        return toLoadMore(roomId, offset, limit, count, entities);
+        var responses = toDtos(entities);
+        return new LoadMoreResponse().toLoadMore("/api/v1/chat_room/chats/", roomId, offset, limit, count, responses);
     }
 
     @Override
@@ -77,7 +78,8 @@ public class ChatServiceImpl implements ChatService {
     public LoadMoreResponse<ChatResponse> findChatsUntilTarget(String id) {
         Chat target = chatRepository.findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CHAT_NOT_FOUND));
-        var responses = chatRepository.findChatsUntilTarget(target);
+        var entities = chatRepository.findChatsUntilTarget(target);
+        var responses = toDtos(entities);
         return toLoadMore(responses);
     }
 
@@ -192,46 +194,12 @@ public class ChatServiceImpl implements ChatService {
         return response;
     }
 
-    private LoadMoreResponse<ChatResponse> toLoadMore(List<Chat> chats) {
-        String idRoom = chats.get(0).getIdRoom();
+    private LoadMoreResponse<ChatResponse> toLoadMore(List<ChatResponse> response) {
+        String idRoom = response.get(0).getIdRoom();
         int limit = 15;
-        int offset = chats.size() - limit;
+        int offset = response.size() - limit;
         int count = chatRepository.countByIdRoom(idRoom);
-        return toLoadMore(idRoom, offset, limit, count, chats);
+        return new LoadMoreResponse().toLoadMore("/api/v1/chat_room/chats/", idRoom, offset, limit, count, response);
     }
-
-    private LoadMoreResponse<ChatResponse> toLoadMore(String idRoom, int offset, int limit, int totalChats, List<Chat> chats) {
-        String apiBase = "/api/v1/chat_room/chats/";
-
-        String next = generateNextLink(apiBase, idRoom, offset, limit, totalChats);
-        String previous = generatePreviousLink(apiBase, idRoom, offset, limit);
-
-        return LoadMoreResponse.<ChatResponse>builder()
-                .results(toDtos(chats))
-                .next(next)
-                .previous(previous)
-                .build();
-    }
-
-    private String generateNextLink(String apiBase, String idRoom, int offset, int limit, int totalChats) {
-        totalChats--;
-        int nextIndex = limit + offset;
-        if (nextIndex <= totalChats) {
-            int nextOffset = Math.min(nextIndex, totalChats);
-            int nextLimit = Math.min(limit, totalChats - nextOffset + 1);
-            return String.format("%s%s?offset=%d&limit=%d", apiBase, idRoom, nextOffset, nextLimit);
-        }
-        return null;
-    }
-
-    private String generatePreviousLink(String apiBase, String idRoom, int offset, int limit) {
-        if (offset > 0) {
-            int previousOffset = Math.max(0, offset - limit);
-            int previousLimit = Math.min(limit, offset);
-            return String.format("%s%s?offset=%d&limit=%d", apiBase, idRoom, previousOffset, previousLimit);
-        }
-        return null;
-    }
-
 
 }

@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.Normalizer;
 
 import static org.example.ecommercefashion.annotations.normalized.normalizeString;
@@ -99,6 +100,7 @@ public class BrandServiceImpl implements BrandService {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NAME_EXISTED);
             }
             brand.setUpdateBy(jwt.getUserId());
+            brand.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             brand = brandRepository.save(brand);
             BrandResponse response = new BrandResponse();
             FnCommon.copyNonNullProperties(response, brand);

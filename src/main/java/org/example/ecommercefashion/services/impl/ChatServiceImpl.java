@@ -64,7 +64,7 @@ public class ChatServiceImpl implements ChatService {
         var entities = chatRepository.findAllChatByIdChatRoom(roomId, offset, limit);
         int count = chatRepository.countByIdRoom(roomId);
         var responses = toDtos(entities);
-        return new LoadMoreResponse().toLoadMore("/api/v1/chat_room/chats/", roomId, offset, limit, count, responses);
+        return new LoadMoreResponse("/api/v1/chat_room/chats/", roomId, offset, limit, count, responses);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class ChatServiceImpl implements ChatService {
         int limit = 15;
         int offset = response.size() - limit;
         int count = chatRepository.countByIdRoom(idRoom);
-        return new LoadMoreResponse().toLoadMore("/api/v1/chat_room/chats/", idRoom, offset, limit, count, response);
+        return new LoadMoreResponse("/api/v1/chat_room/chats/", idRoom, offset, limit, count, response);
     }
 
 }

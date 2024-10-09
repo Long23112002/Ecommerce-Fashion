@@ -147,7 +147,10 @@ public class CategoryServiceImpl implements CategoryService {
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
 
-            notificationService.sendNotificationAll(jwt.getUserId(), NotificationCode.CATEGORY_UPDATED, category.getId());
+            notificationService.sendNotificationAll(
+                    jwt.getUserId(),
+                    NotificationCode.CATEGORY_UPDATED,
+                    category.getId());
 
             return response;
         } else {

@@ -20,15 +20,10 @@ public class LoadMoreResponse<T> {
 
     private Collection<T> results;
 
-    public LoadMoreResponse<T> toLoadMore(String apiBase, Object id, int offset, int limit, int totalChats, List<T> response) {
-        String next = generateNextLink(apiBase, id, offset, limit, totalChats);
-        String previous = generatePreviousLink(apiBase, id, offset, limit);
-
-        return LoadMoreResponse.<T>builder()
-                .results(response)
-                .next(next)
-                .previous(previous)
-                .build();
+    public LoadMoreResponse(String apiBase, Object id, int offset, int limit, int totalChats, List<T> response) {
+        this.next = generateNextLink(apiBase, id, offset, limit, totalChats);
+        this.previous = generatePreviousLink(apiBase, id, offset, limit);
+        this.results = response;
     }
 
     private String generateNextLink(String apiBase, Object id, int offset, int limit, int total) {

@@ -43,7 +43,7 @@ public class NotificationServiceImpl implements NotificationService {
         var entities = notificationRepository.findAllNotificationsByUserId(id, offset, limit);
         int count = notificationRepository.countByIdReceiver(id);
         var response = toDtos(entities);
-        return new LoadMoreResponse().toLoadMore("/api/v1/notification/user/",id, offset, limit, count, response);
+        return new LoadMoreResponse("/api/v1/notification/user/",id, offset, limit, count, response);
     }
 
     @Override

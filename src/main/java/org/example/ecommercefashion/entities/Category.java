@@ -76,4 +76,8 @@ public class Category {
         this.lever = level;
         return this.lever;
     }
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL)
+    private List<Product> products;
 }

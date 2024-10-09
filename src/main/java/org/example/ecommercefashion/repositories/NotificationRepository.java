@@ -5,4 +5,4 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface NotificationMessageRepository extends MongoRepository<Notification, String> {}
+public interface NotificationRepository extends MongoRepository<Notification, String> {}

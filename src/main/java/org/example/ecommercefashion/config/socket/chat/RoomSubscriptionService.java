@@ -1,4 +1,4 @@
-package org.example.ecommercefashion.config.socket;
+package org.example.ecommercefashion.config.socket.chat;
 
 import org.springframework.stereotype.Service;
 

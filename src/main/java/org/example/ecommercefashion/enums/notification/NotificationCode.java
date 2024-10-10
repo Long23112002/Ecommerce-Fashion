@@ -5,6 +5,16 @@ import org.example.ecommercefashion.contants.Permissions;
 
 @Getter
 public enum NotificationCode {
+
+    //NOTE: CÁCH FORMAT ENUM
+    //      TÊN ENUM PHẢI VIẾT HOA VÀ CAMEL_CASE VÀ CÓ Ý NGHĨA RÕ RÀNG
+    //      THAM SỐ ĐẦU TIÊN: TÊN TITLE -> SẼ HIỆN THỊ Ở TOAST KHI CÓ THÔNG BÁO MỚI
+    //      THAM SỐ THỨ HAI: NỘI DỤNG CỦA THÔNG BÁO -> SẼ HIỂN THỊ Ở TRONG BOX NOTIFICATION FRONTEND
+    //                       "%s" LÀ NHỮNG NƠI ĐƯỢC THAY THẾ CHO BIẾN. CÓ THỂ VÔ HẠN SỐ LẦN %s
+    //                       LƯU Ý: NẾU SỬ DỤNG %s BAO NHIÊN LẦN THÌ KHI GỌI HÀM SERVICE NHỚ VIẾT ĐỦ CÁC THAM SỐ VỚI SỐ %s
+    //                       CÓ THỂ IN ĐẬM BẰNG CÁCH CHO VÀO <b></b> HOẶC CHỮ NGHIÊNG BẰNG <i></i>
+    //      THAM SỐ THỨ BA: PERMISSION SẼ ĐƯỢC GỬI -> PERMISSION LÀ MESSAGE_COUNT THÌ SẼ GỬI CHO NHỮNG USER CÓ PERMISSION MESSAGE_COUNT
+
     ORDER_PLACED(
             "Đặt hàng thành công",
             "Đơn hàng %s của khách hàng %s đã được đặt thành công",
@@ -39,6 +49,12 @@ public enum NotificationCode {
             "Cập nhật danh mục",
             "Đã cập nhật lại danh mục id là: <b>%s</b> thành công.",
             Permissions.MESSAGE_CONSULT
+    ),
+
+    GREETING_NOTIFICATION(
+            "Xin chào",
+            "Chào mừng <b>%s</b> đã đến với cửa hàng.",
+            null
     )
     ;
 

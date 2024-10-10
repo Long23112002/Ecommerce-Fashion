@@ -169,4 +169,16 @@ public class JwtService {
     jwtResponse.setSub(claims.getSubject());
     return jwtResponse;
   }
+
+  public Long getIdUserByToken(String token) {
+    if (token != null) {
+      if (token.startsWith("Bearer ")) {
+        token = token.substring("Bearer ".length());
+      }
+      JwtResponse jwtResponse = decodeToken(token);
+      return jwtResponse.getUserId();
+    }
+    throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_TOKEN_NOT_FOUND);
+  }
+
 }

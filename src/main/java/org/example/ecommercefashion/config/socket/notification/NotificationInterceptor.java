@@ -25,9 +25,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class NotificationInterceptor implements ChannelInterceptor {
 
-    final JwtService jwtService;
-    final ChatRoomRepository chatRoomRepository;
-    final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
+    private final NotificationSubscriptionService subscriptionService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -39,15 +39,20 @@ public class NotificationInterceptor implements ChannelInterceptor {
         if (StompCommand.SUBSCRIBE.equals(command)) {
             handleSubcribe(accessor);
         }
+        if (StompCommand.DISCONNECT.equals(command)) {
+            handleDisConnect(accessor);
+        }
         return message;
     }
 
     private void handleConnect(StompHeaderAccessor accessor) {
-        String token = accessor.getFirstNativeHeader("Authorization") + "";
-        var user = jwtService.decodeToken(token);
-        if (token.length() == 0 || user == null) {
-            throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
-        }
+            String token = accessor.getFirstNativeHeader("Authorization") + "";
+            var user = jwtService.decodeToken(token);
+            if (token.length() == 0 || user == null) {
+                throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
+            }
+            Long id = user.getUserId();
+            accessor.getSessionAttributes().put("idUserNoti", id);
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
@@ -58,8 +63,24 @@ public class NotificationInterceptor implements ChannelInterceptor {
             if(!id.equals(user.getId().toString())){{
                 throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
             }}
-        } else {
-            throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
+            subscriptionService.addUser(user.getId());
+            System.out.println(id+"_SUBSCRIBE_TO_NOTIFICATION");
+        }
+//        else {
+//            throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
+//        }
+    }
+
+    private void handleDisConnect(StompHeaderAccessor accessor) {
+        try {
+            Optional.ofNullable(accessor.getSessionAttributes().get("idUserNoti"))
+                    .ifPresent(object -> {
+                        System.out.println(object.toString()+"_DISCONNECT_FROM_CHAT_ROOM");
+                        Long idUser = Long.valueOf(object.toString());
+                        subscriptionService.removeUser(idUser);
+                    });
+        } catch (NumberFormatException e) {
+            throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND);
         }
     }
 

@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,6 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
             category.setParentCategory(parent);
             category.setLever(category.calculateLevel());
             category.setCreateBy(jwt.getUserId());
+            category.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             category = categoryRepository.save(category);
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);

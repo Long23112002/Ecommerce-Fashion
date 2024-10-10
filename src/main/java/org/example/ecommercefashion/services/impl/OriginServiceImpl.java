@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.annotations.normalized;
 import org.example.ecommercefashion.dtos.filter.OriginParam;
 import org.example.ecommercefashion.dtos.request.OriginRequest;
 import org.example.ecommercefashion.dtos.response.BrandResponse;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 
 import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
@@ -101,6 +103,7 @@ public class OriginServiceImpl implements OriginService{
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NAME_EXISTED);
             }
             origin.setUpdateBy(jwt.getUserId());
+            origin.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             origin = repository.save(origin);
             OriginResponse response = new OriginResponse();
             FnCommon.copyNonNullProperties(response,origin);

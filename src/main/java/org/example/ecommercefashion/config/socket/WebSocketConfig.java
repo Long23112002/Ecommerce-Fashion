@@ -3,6 +3,7 @@ package org.example.ecommercefashion.config.socket;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.config.socket.chat.ChatInterceptor;
+import org.example.ecommercefashion.config.socket.notification.NotificationInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -13,7 +14,8 @@ import org.springframework.web.socket.config.annotation.*;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final WebSocketInterceptor webSocketInterceptor;
+    private final ChatInterceptor chatInterceptor;
+    private final NotificationInterceptor notificationInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -37,7 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(webSocketInterceptor);
+        registration.interceptors(chatInterceptor, notificationInterceptor);
     }
 
 }

@@ -51,7 +51,7 @@ public enum NotificationCode {
             Permissions.MESSAGE_CONSULT
     ),
 
-    PRIVATE_NOTIFICATION(
+    GREETING_NOTIFICATION(
             "Xin chào",
             "Chào mừng <b>%s</b> đã đến với cửa hàng.",
             null

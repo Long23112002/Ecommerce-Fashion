@@ -5,6 +5,7 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.config.socket.WebSocketDestination;
 import org.example.ecommercefashion.config.socket.WebSocketService;
+import org.example.ecommercefashion.config.socket.notification.NotificationSubscriptionService;
 import org.example.ecommercefashion.dtos.response.LoadMoreResponse;
 import org.example.ecommercefashion.dtos.response.NotificationResponse;
 import org.example.ecommercefashion.entities.Notification;
@@ -46,6 +47,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserService userService;
     private final MongoTemplate mongoTemplate;
     private final JwtService jwtService;
+    private final NotificationSubscriptionService subscriptionService;
 
     @Override
     public LoadMoreResponse<NotificationResponse> findAllNotificationsByUserId(Long id, int offset, int limit) {
@@ -133,22 +135,19 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void sendNotificationAll(Long createBy, NotificationCode notificationCode, Object... variables) {
-        // TODO: gửi tất cả cho TẤT CẢ user
-        // OPTIMIZE: Tạo room chứa những người đang connect đến notification
-        //           socket realtime cho những người đang connect
-        //           những người không connect thì không cần real time
-        // TODO: Nếu xong notification room thì sửa lại luôn realtime những con service ở dưới để cho hiệu năng tốt nhất
+        User createByUser = getUserById(createBy);
+        Set<Long> ids = subscriptionService.getAllSubscribedUsers();
+        List<User> users = userService.findAllEntityUserByIds(ids);
+        List<Notification> notifications = buildAndSendNotifications(users, notificationCode, createByUser, variables);
+        notificationRepository.saveAll(notifications);
     }
 
     @Override
     public void sendNotificationToUsersWithPermission(Long createBy, NotificationCode notificationCode, Object... variables) {
-        Optional<User> createByUserOptional = userRepository.findById(createBy);
-        if (createByUserOptional.isPresent()) {
-            User createByUser = createByUserOptional.get();
-            List<User> users = userRepository.findAllUserByPermission(notificationCode.getPermission());
-            List<Notification> notifications = buildAndSendNotifications(users, notificationCode, createByUser, variables);
-            notificationRepository.saveAll(notifications);
-        }
+        User createByUser = getUserById(createBy);
+        List<User> users = userRepository.findAllUserByPermission(notificationCode.getPermission());
+        List<Notification> notifications = buildAndSendNotifications(users, notificationCode, createByUser, variables);
+        notificationRepository.saveAll(notifications);
     }
 
     @Override
@@ -162,10 +161,11 @@ public class NotificationServiceImpl implements NotificationService {
         }
         notificationRepository.saveAll(entities);
     }
+
     @Override
     public void sendNotificationToUser(Long createBy, Long idReceiver, NotificationCode notificationCode, Object... variables) {
         User createByUser = getUserById(createBy);
-        User receiver = getUserById(idReceiver);
+        getUserById(idReceiver);
         Notification notification = buildNotification(createBy, idReceiver, notificationCode, variables);
         notificationRepository.save(notification);
         sendRealtimeNotification(notification, createByUser);
@@ -190,9 +190,11 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private void sendRealtimeNotification(Notification notification, User createByUser) {
-        String destination = WebSocketDestination.NOTIFICATION.getDestinationWithSlash() + notification.getIdReceiver();
-        NotificationResponse response = createByUser == null ? toDto(notification) : toDto(notification, createByUser);
-        webSocketService.responseRealtime(destination, response);
+        if(subscriptionService.contains(createByUser.getId())){
+            String destination = WebSocketDestination.NOTIFICATION.getDestinationWithSlash() + notification.getIdReceiver();
+            NotificationResponse response = createByUser == null ? toDto(notification) : toDto(notification, createByUser);
+            webSocketService.responseRealtime(destination, response);
+        }
     }
 
     private Notification buildEntity(String title, String content, Long idReceiver, Long createBy) {

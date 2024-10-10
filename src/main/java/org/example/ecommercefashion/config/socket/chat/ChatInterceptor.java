@@ -24,10 +24,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ChatInterceptor implements ChannelInterceptor {
 
-    final JwtService jwtService;
-    final ChatRoomRepository chatRoomRepository;
-    final UserRepository userRepository;
-    final RoomSubscriptionService subscriptionService;
+    private final JwtService jwtService;
+    private final ChatRoomRepository chatRoomRepository;
+    private final UserRepository userRepository;
+    private final RoomSubscriptionService subscriptionService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -55,8 +55,7 @@ public class ChatInterceptor implements ChannelInterceptor {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
         Long id = user.getUserId();
-        accessor.getSessionAttributes().put("idUser", id);
-        System.out.println(id.toString()+"_CONNECT");
+        accessor.getSessionAttributes().put("idUserChat", id);
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
@@ -65,16 +64,17 @@ public class ChatInterceptor implements ChannelInterceptor {
             isUserHasPermission(accessor);
         } else if (destination.startsWith(WebSocketDestination.CHAT_ROOM.getDestination())) {
             isUserInRoom(accessor);
-        } else {
-            throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
+//        else {
+//            throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
+//        }
     }
 
     private void handleDisConnect(StompHeaderAccessor accessor) {
         try {
-            Optional.ofNullable(accessor.getSessionAttributes().get("idUser"))
+            Optional.ofNullable(accessor.getSessionAttributes().get("idUserChat"))
                     .ifPresent(object -> {
-                        System.out.println(object.toString()+"_DISCONNECT");
+                        System.out.println(object.toString() + "_DISCONNECT_FROM_CHAT_ROOM");
                         Long idUser = Long.valueOf(object.toString());
                         subscriptionService.removeUserFromAnyRooms(idUser);
                     });
@@ -103,6 +103,7 @@ public class ChatInterceptor implements ChannelInterceptor {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
         subscriptionService.addUserToRoom(idRoom, user.getId());
+        System.out.println(user.getId()+"_SUBSCRIBE_TO_NOTIFICATION");
     }
 
     private User decodeToUser(StompHeaderAccessor accessor) {

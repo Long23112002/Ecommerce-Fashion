@@ -16,8 +16,13 @@ import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.NotificationService;
 import org.example.ecommercefashion.services.UserService;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,13 +42,56 @@ public class NotificationServiceImpl implements NotificationService {
     private final WebSocketService webSocketService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final MongoTemplate mongoTemplate;
 
     @Override
     public LoadMoreResponse<NotificationResponse> findAllNotificationsByUserId(Long id, int offset, int limit) {
         var entities = notificationRepository.findAllNotificationsByUserId(id, offset, limit);
         int count = notificationRepository.countByIdReceiver(id);
         var response = toDtos(entities);
-        return new LoadMoreResponse("/api/v1/notification/user/",id, offset, limit, count, response);
+        return new LoadMoreResponse("/api/v1/notification/user/", id, offset, limit, count, response);
+    }
+
+    @Override
+    public LoadMoreResponse<NotificationResponse> findAllUnSeenNotificationByIdUser(Long id, Integer offset, Integer limit) {
+        var entities = notificationRepository.findAllUnSeenNotificationByIdUser(id, offset, limit);
+        int count = notificationRepository.countByIdReceiverAndSeenIsFalse(id);
+        var response = toDtos(entities);
+        return new LoadMoreResponse("/api/v1/notification/user/", id, offset, limit, count, response);
+    }
+
+    @Override
+    @Transactional
+    public List<NotificationResponse> markSeenAll(Long idReceiver) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("id_receiver").is(idReceiver));
+
+        List<Notification> entities = mongoTemplate.find(query, Notification.class);
+
+        Update update = new Update();
+        update.set("seen", true);
+        mongoTemplate.updateMulti(query, update, Notification.class);
+
+        var responses = toSeenDtos(entities);
+
+        return responses;
+    }
+
+    @Override
+    @Transactional
+    public List<NotificationResponse> markSeenById(String idNoti) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(idNoti));
+
+        List<Notification> entities = mongoTemplate.find(query, Notification.class);
+
+        Update update = new Update();
+        update.set("seen", true);
+        mongoTemplate.updateMulti(query, update, Notification.class);
+
+        var responses = toSeenDtos(entities);
+
+        return responses;
     }
 
     @Override
@@ -156,6 +204,15 @@ public class NotificationServiceImpl implements NotificationService {
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+    }
+
+    private List<NotificationResponse> toSeenDtos (List<Notification> entities) {
+        return toDtos(entities).stream()
+                .map(entity -> {
+                    entity.setSeen(true);
+                    return entity;
+                })
+                .toList();
     }
 
 }

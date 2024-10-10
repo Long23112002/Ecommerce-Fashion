@@ -17,5 +17,16 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     })
     List<Notification> findAllNotificationsByUserId(Long id, int offset, int limit);
 
+    @Aggregation(pipeline = {
+            "{ $match: { 'id_receiver' : :#{#id}, 'seen': false } }",
+            "{ $sort: { 'create_at' : -1 } }",
+            "{ $skip: :#{#offset} }",
+            "{ $limit: :#{#limit} }"
+    })
+    List<Notification> findAllUnSeenNotificationByIdUser(Long id, Integer offset, Integer limit);
+
+    int countByIdReceiverAndSeenIsFalse(Long id);
+
     int countByIdReceiver(Long id);
+
 }

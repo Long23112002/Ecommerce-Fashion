@@ -27,17 +27,27 @@ public class Notification {
     private String content;
 
     @Field("id_receiver")
+    @Indexed
     private Long idReceiver;
 
     @Field("seen")
+    @Indexed
     private Boolean seen;
 
     @Field("create_by")
     private Long createBy;
 
     @Field("create_at")
+    @Indexed
     private Date createAt;
 
+    @Field("update_by")
+    private Long updateBy;
+
+    @Field("update_at")
+    private Date updateAt;
+
     @Field("deleted")
+    @Indexed
     private Boolean deleted;
 }

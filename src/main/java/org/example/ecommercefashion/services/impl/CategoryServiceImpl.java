@@ -149,11 +149,6 @@ public class CategoryServiceImpl implements CategoryService {
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
 
-            notificationService.sendNotificationAll(
-                    jwt.getUserId(),
-                    NotificationCode.CATEGORY_UPDATED,
-                    category.getId());
-
             return response;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN);

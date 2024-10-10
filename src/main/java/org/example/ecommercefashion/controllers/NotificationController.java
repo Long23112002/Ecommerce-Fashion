@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.response.LoadMoreResponse;
 import org.example.ecommercefashion.dtos.response.NotificationResponse;
 import org.example.ecommercefashion.services.NotificationService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,12 +43,20 @@ public class NotificationController {
     }
 
     @PatchMapping("/seen/user/{id}")
-    public List<NotificationResponse> markSeenAllByIdUser(@PathVariable("id") Long id ) {
-        return notificationService.markSeenAll(id);
+    public List<NotificationResponse> markSeenAllByIdUser(@RequestHeader("Authorization") String token,
+                                                          @PathVariable("id") Long id) {
+        return notificationService.markSeenAll(id, token);
     }
 
     @PatchMapping("/seen/{id}")
-    public List<NotificationResponse> markSeenById(@PathVariable("id") String id) {
-        return notificationService.markSeenById(id);
+    public List<NotificationResponse> markSeenById(@RequestHeader("Authorization") String token,
+                                                   @PathVariable("id") String id) {
+        return notificationService.markSeenById(id, token);
+    }
+
+    @DeleteMapping("/{id}")
+    public NotificationResponse deleteById(@RequestHeader("Authorization") String token,
+                                           @PathVariable("id") String id) {
+        return notificationService.deleteById(id, token);
     }
 }

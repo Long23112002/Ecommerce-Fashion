@@ -16,6 +16,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   USER_NOT_FOUND("Không tìm thấy Người Dùng"),
   ROLE_ALREADY_ASSIGNED("Vai Trò đã được gán"),
   JWT_EXPIRED("JWT đã hết hạn"),
+  ACCESS_TOKEN_NOT_FOUND("Không tìm thấy access token"),
   REFRESH_TOKEN_NOT_FOUND("Không tìm thấy mã thông báo làm mới"),
   BAD_CREDENTIAL("Thông tin xác thực không chính xác"),
   INVALID_REFRESH_TOKEN("Mã thông báo làm mới không hợp lệ"),

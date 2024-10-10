@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
     @Aggregation(pipeline = {
-            "{ $match: { 'id_receiver' : :#{#id} } }",
+            "{ $match: { 'id_receiver' : :#{#id}, 'deleted': false } }",
             "{ $sort: { 'create_at' : -1 } }",
             "{ $skip: :#{#offset} }",
             "{ $limit: :#{#limit} }"
@@ -18,15 +18,15 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     List<Notification> findAllNotificationsByUserId(Long id, int offset, int limit);
 
     @Aggregation(pipeline = {
-            "{ $match: { 'id_receiver' : :#{#id}, 'seen': false } }",
+            "{ $match: { 'id_receiver' : :#{#id}, 'seen': false, 'deleted': false } }",
             "{ $sort: { 'create_at' : -1 } }",
             "{ $skip: :#{#offset} }",
             "{ $limit: :#{#limit} }"
     })
     List<Notification> findAllUnSeenNotificationByIdUser(Long id, Integer offset, Integer limit);
 
-    int countByIdReceiverAndSeenIsFalse(Long id);
+    int countByIdReceiverAndSeenIsFalseAndDeletedIsFalse(Long id);
 
-    int countByIdReceiver(Long id);
+    int countByIdReceiverAndDeletedIsFalse(Long id);
 
 }

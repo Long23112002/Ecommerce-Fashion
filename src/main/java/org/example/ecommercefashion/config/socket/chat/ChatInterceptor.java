@@ -55,7 +55,7 @@ public class ChatInterceptor implements ChannelInterceptor {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
         Long id = user.getUserId();
-        accessor.getSessionAttributes().put("idUserChat", id);
+        accessor.getSessionAttributes().put("idUser", id);
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
@@ -72,7 +72,7 @@ public class ChatInterceptor implements ChannelInterceptor {
 
     private void handleDisConnect(StompHeaderAccessor accessor) {
         try {
-            Optional.ofNullable(accessor.getSessionAttributes().get("idUserChat"))
+            Optional.ofNullable(accessor.getSessionAttributes().get("idUser"))
                     .ifPresent(object -> {
                         System.out.println(object.toString() + "_DISCONNECT_FROM_CHAT_ROOM");
                         Long idUser = Long.valueOf(object.toString());

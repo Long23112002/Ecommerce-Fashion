@@ -52,7 +52,7 @@ public class NotificationInterceptor implements ChannelInterceptor {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
         }
         Long id = user.getUserId();
-        accessor.getSessionAttributes().put("idUserNoti", id);
+        accessor.getSessionAttributes().put("idUser", id);
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
@@ -74,9 +74,10 @@ public class NotificationInterceptor implements ChannelInterceptor {
     }
 
     private void handleDisConnect(StompHeaderAccessor accessor) {
-        //FIXME: LỖI KHI DISCONNECT CHAT THÌ CŨNG BỊ DISCONNECT NOTIFICATION KHIẾN CHO BUG REMOVE USER
+//        FIXME: LỖI KHI DISCONNECT CHAT THÌ CŨNG BỊ DISCONNECT NOTIFICATION KHIẾN CHO BUG REMOVE USER
+//        TODO: SAU KHI FIX XONG THÌ UNCOMMENT NotificationServiceImpl
         try {
-            Optional.ofNullable(accessor.getSessionAttributes().get("idUserNoti"))
+            Optional.ofNullable(accessor.getSessionAttributes().get("idUser"))
                     .ifPresent(object -> {
                         System.out.println(object.toString() + "_DISCONNECT_FROM_CHAT_ROOM");
                         Long idUser = Long.valueOf(object.toString());

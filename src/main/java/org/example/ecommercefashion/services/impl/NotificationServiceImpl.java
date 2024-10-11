@@ -190,11 +190,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private void sendRealtimeNotification(Notification notification, User createByUser) {
-        if(subscriptionService.contains(notification.getIdReceiver())){
+//        NOTE: KHÔNG ĐƯỢC MỞ CHO TỚI KHI FIX ĐƯỢC HANDLE DISCONNECT WEBSOCKET
+//        if(subscriptionService.contains(notification.getIdReceiver())){
             String destination = WebSocketDestination.NOTIFICATION.getDestinationWithSlash() + notification.getIdReceiver();
             NotificationResponse response = createByUser == null ? toDto(notification) : toDto(notification, createByUser);
             webSocketService.responseRealtime(destination, response);
-        }
+//        }
     }
 
     private Notification buildEntity(String title, String content, Long idReceiver, Long createBy) {

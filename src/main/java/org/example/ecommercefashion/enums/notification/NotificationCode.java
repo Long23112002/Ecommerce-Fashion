@@ -55,6 +55,12 @@ public enum NotificationCode {
             "Xin chào",
             "Chào mừng <b>%s</b> đã đến với cửa hàng.",
             null
+    ),
+
+    TEST(
+            "Test",
+            "User: <b>%s</b> vừa test.",
+            Permissions.MESSAGE_CONSULT
     )
     ;
 

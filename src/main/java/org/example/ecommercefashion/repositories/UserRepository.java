@@ -47,7 +47,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   @Query(
       value =
-          "select u.* "
+          "select distinct u.* "
               + "from users.user u "
               + "join users.user_roles ur "
               + "on ur.id_user = u.id "

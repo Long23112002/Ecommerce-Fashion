@@ -46,25 +46,27 @@ public class NotificationInterceptor implements ChannelInterceptor {
     }
 
     private void handleConnect(StompHeaderAccessor accessor) {
-            String token = accessor.getFirstNativeHeader("Authorization") + "";
-            var user = jwtService.decodeToken(token);
-            if (token.length() == 0 || user == null) {
-                throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
-            }
-            Long id = user.getUserId();
-            accessor.getSessionAttributes().put("idUserNoti", id);
+        String token = accessor.getFirstNativeHeader("Authorization") + "";
+        var user = jwtService.decodeToken(token);
+        if (token.length() == 0 || user == null) {
+            throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
+        }
+        Long id = user.getUserId();
+        accessor.getSessionAttributes().put("idUserNoti", id);
     }
 
     private void handleSubcribe(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
         if (destination.startsWith(WebSocketDestination.NOTIFICATION.getDestination())) {
             User user = decodeToUser(accessor);
-            String id = destination.replace(WebSocketDestination.NOTIFICATION.getDestinationWithSlash(),"");
-            if(!id.equals(user.getId().toString())){{
-                throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
-            }}
+            String id = destination.replace(WebSocketDestination.NOTIFICATION.getDestinationWithSlash(), "");
+            if (!id.equals(user.getId().toString())) {
+                {
+                    throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
+                }
+            }
             subscriptionService.addUser(user.getId());
-            System.out.println(id+"_SUBSCRIBE_TO_NOTIFICATION");
+            System.out.println(id + "_SUBSCRIBE_TO_NOTIFICATION");
         }
 //        else {
 //            throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED);
@@ -72,10 +74,11 @@ public class NotificationInterceptor implements ChannelInterceptor {
     }
 
     private void handleDisConnect(StompHeaderAccessor accessor) {
+        //FIXME: LỖI KHI DISCONNECT CHAT THÌ CŨNG BỊ DISCONNECT NOTIFICATION KHIẾN CHO BUG REMOVE USER
         try {
             Optional.ofNullable(accessor.getSessionAttributes().get("idUserNoti"))
                     .ifPresent(object -> {
-                        System.out.println(object.toString()+"_DISCONNECT_FROM_CHAT_ROOM");
+                        System.out.println(object.toString() + "_DISCONNECT_FROM_CHAT_ROOM");
                         Long idUser = Long.valueOf(object.toString());
                         subscriptionService.removeUser(idUser);
                     });

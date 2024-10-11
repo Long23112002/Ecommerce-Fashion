@@ -190,7 +190,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private void sendRealtimeNotification(Notification notification, User createByUser) {
-        if(subscriptionService.contains(createByUser.getId())){
+        if(subscriptionService.contains(notification.getIdReceiver())){
             String destination = WebSocketDestination.NOTIFICATION.getDestinationWithSlash() + notification.getIdReceiver();
             NotificationResponse response = createByUser == null ? toDto(notification) : toDto(notification, createByUser);
             webSocketService.responseRealtime(destination, response);

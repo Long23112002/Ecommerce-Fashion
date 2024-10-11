@@ -136,8 +136,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendNotificationAll(Long createBy, NotificationCode notificationCode, Object... variables) {
         User createByUser = getUserById(createBy);
-        Set<Long> ids = subscriptionService.getAllSubscribedUsers();
-        List<User> users = userService.findAllEntityUserByIds(ids);
+        List<User> users = userRepository.findAll();
         List<Notification> notifications = buildAndSendNotifications(users, notificationCode, createByUser, variables);
         notificationRepository.saveAll(notifications);
     }

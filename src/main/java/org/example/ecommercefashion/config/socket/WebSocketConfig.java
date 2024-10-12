@@ -2,7 +2,8 @@ package org.example.ecommercefashion.config.socket;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.ecommercefashion.config.socket.chat.ChatInterceptor;
+import org.example.ecommercefashion.config.socket.notification.NotificationInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -13,8 +14,8 @@ import org.springframework.web.socket.config.annotation.*;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final WebSocketSecurityInterceptor securityInterceptor;
-    private final WebSocketReceiveInterceptor receiveInterceptor;
+    private final ChatInterceptor chatInterceptor;
+    private final NotificationInterceptor notificationInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -29,17 +30,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
-        registry.enableSimpleBroker("/room", "/admin" , "/notification");
+        registry.enableSimpleBroker(
+                WebSocketDestination.CHAT_ROOM.getDestination(),
+                WebSocketDestination.CHAT_ADMIN.getDestination(),
+                WebSocketDestination.NOTIFICATION.getDestination()
+        );
     }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(securityInterceptor);
-    }
-
-    @Override
-    public void configureClientOutboundChannel(ChannelRegistration registration) {
-        registration.interceptors(receiveInterceptor);
+        registration.interceptors(chatInterceptor, notificationInterceptor);
     }
 
 }

@@ -11,20 +11,16 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChatRoomResponse {
+public class ReplyResponse {
 
     private String id;
 
-    private Long idClient;
+    private String content;
 
-    private String nameClient;
+    private Long createBy;
 
-    private String avatar;
+    private String nameCreateBy;
 
-    private Boolean seen;
-
-    private String lastChatContent;
-
-    private Long lastChatSendBy;
+    private Date createAt;
 
 }

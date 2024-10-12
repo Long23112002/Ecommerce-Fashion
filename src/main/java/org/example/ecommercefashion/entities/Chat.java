@@ -38,4 +38,7 @@ public class Chat {
     @Field("id_room")
     @Indexed
     private String idRoom;
+
+    @Field("id_reply")
+    private String idReply;
 }

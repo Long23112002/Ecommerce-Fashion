@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.ecommercefashion.enums.promotion.StatusPromotionEnum;
 import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 
@@ -54,6 +55,7 @@ public class Promotion {
     @Type(type = "pgsql_enum")
     private StatusPromotionEnum statusPromotionEnum;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createdAt;

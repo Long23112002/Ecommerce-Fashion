@@ -26,7 +26,7 @@ public class PromotionResponse {
 
     private TypePromotionEnum typePromotionEnum;
 
-    private Double value;
+    private String value;
 
     private StatusPromotionEnum statusPromotionEnum;
 
@@ -41,4 +41,5 @@ public class PromotionResponse {
     private UserResponse updatedBy;
 
     private Boolean deleted;
+
 }

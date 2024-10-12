@@ -39,7 +39,11 @@ public enum ErrorMessage implements BaseErrorMessage {
   USER_ALREADY_HAS_CHAT_ROOM("Người dùng đã tồn tại chat room"),
   TEMPLATE_NOT_FOUND("Không tìm thấy Mẫu"),
   OTP_NOT_MATCH("OTP không đúng vui lòng kiểm tra lại"),
-  OTP_EXPIRED("OTP đã hết hạn");
+  OTP_EXPIRED("OTP đã hết hạn"),
+  PROMOTION_NOT_FOUND("Không tìm thấy khuyến mãi"),
+  PROMOTION_PERCENTAGE_WRONG_FORMAT("Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
+  ;
 
   public String val;
 

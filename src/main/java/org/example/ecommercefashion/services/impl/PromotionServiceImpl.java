@@ -54,6 +54,13 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public ResponsePage<Promotion, PromotionResponse> getPromotionPage(PromotionParam param, Pageable pageable) {
+        if (param.getStartDate() == null) {
+            param.setStartDate("1970-01-01");
+        }
+
+        if (param.getEndDate() == null) {
+            param.setEndDate("9999-12-31");
+        }
         Page<Promotion> promotionPage = promotionRepository.filterPromotion(param, pageable);
         Page<PromotionResponse> promotionResponsePage = promotionPage.map(this::mapPromotionToPromotionResponse);
         return new ResponsePage<>(promotionResponsePage);

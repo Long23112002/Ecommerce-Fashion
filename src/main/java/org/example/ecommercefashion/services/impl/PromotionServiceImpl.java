@@ -175,6 +175,10 @@ public class PromotionServiceImpl implements PromotionService {
     private static void setPromotionStatus(Promotion promotion) {
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
+        if(promotion.getEndDate().before(promotion.getStartDate())){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_START_DATE_OR_END_DATE_WRONG);
+        }
+
         if (now.before(promotion.getStartDate())) {
             promotion.setStatusPromotionEnum(StatusPromotionEnum.UPCOMING);
         } else if (now.after(promotion.getEndDate())) {

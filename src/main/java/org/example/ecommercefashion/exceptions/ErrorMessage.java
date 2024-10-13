@@ -43,6 +43,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   PROMOTION_NOT_FOUND("Không tìm thấy khuyến mãi"),
   PROMOTION_PERCENTAGE_WRONG_FORMAT("Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
   PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
+  PROMOTION_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   ;
 
   public String val;

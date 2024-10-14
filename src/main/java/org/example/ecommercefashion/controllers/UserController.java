@@ -1,7 +1,6 @@
 package org.example.ecommercefashion.controllers;
 
 import io.swagger.annotations.Api;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.UserParam;
@@ -35,7 +34,8 @@ public class UserController {
   }
 
   @PostMapping
-  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest) throws JobExecutionException {
+  public UserResponse createUser(@Valid @RequestBody UserRequest userRequest)
+      throws JobExecutionException {
     return userService.createUser(userRequest);
   }
 

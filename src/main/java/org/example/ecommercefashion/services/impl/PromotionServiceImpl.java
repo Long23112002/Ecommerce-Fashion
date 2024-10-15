@@ -172,7 +172,7 @@ public class PromotionServiceImpl implements PromotionService {
         return promotionResponse;
     }
 
-    private static void setPromotionStatus(Promotion promotion) {
+    public static void setPromotionStatus(Promotion promotion) {
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
         if(promotion.getEndDate().before(promotion.getStartDate())){

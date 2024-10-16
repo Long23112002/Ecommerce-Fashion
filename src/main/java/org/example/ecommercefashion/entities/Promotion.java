@@ -34,7 +34,7 @@ public class Promotion {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "start_date", updatable = false)
+    @Column(name = "start_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp startDate;
 

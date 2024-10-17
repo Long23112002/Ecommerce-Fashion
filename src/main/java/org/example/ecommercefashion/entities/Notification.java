@@ -1,30 +1,53 @@
 package org.example.ecommercefashion.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.Id;
-import javax.persistence.Transient;
-import java.util.Map;
+import java.util.Date;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Document(collection = "notification")
 public class Notification {
+    @Id
+    private String id;
 
-  @Transient public static final String SEQUENCE = "notification";
+    @Field("title")
+    private String title;
 
-  @Id private String id;
+    @Field("content")
+    private String content;
 
-  @JsonIgnore private Map<String, Object> metaData;
+    @Field("id_receiver")
+    @Indexed
+    private Long idReceiver;
 
-  private String type;
+    @Field("seen")
+    @Indexed
+    private Boolean seen;
 
-  private Map<String, Object> data;
+    @Field("create_by")
+    private Long createBy;
 
-  private String title;
+    @Field("create_at")
+    @Indexed
+    private Date createAt;
 
-  private String content;
+    @Field("update_by")
+    private Long updateBy;
 
-  private Long createdAt;
+    @Field("update_at")
+    private Date updateAt;
+
+    @Field("deleted")
+    @Indexed
+    private Boolean deleted;
 }

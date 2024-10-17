@@ -1,0 +1,2 @@
+ALTER TABLE products.product ALTER COLUMN create_at TYPE timestamp without time zone USING create_at::timestamp without time zone;
+ALTER TABLE products.product ALTER COLUMN update_at TYPE timestamp without time zone USING update_at::timestamp without time zone;

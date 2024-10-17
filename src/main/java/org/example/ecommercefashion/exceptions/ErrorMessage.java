@@ -38,7 +38,12 @@ public enum ErrorMessage implements BaseErrorMessage {
   USER_ALREADY_HAS_CHAT_ROOM("Người dùng đã tồn tại chat room"),
   TEMPLATE_NOT_FOUND("Không tìm thấy Mẫu"),
   OTP_NOT_MATCH("OTP không đúng vui lòng kiểm tra lại"),
-  OTP_EXPIRED("OTP đã hết hạn");
+  OTP_EXPIRED("OTP đã hết hạn"),
+  PRODUCT_NAME_EXISTED("Tên Sản Phẩm Đã Tồn Tại"),
+  PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
+  ERROR_WHEN_CREATE("Lỗi khi tạo"),
+  ;
+
 
   public String val;
 

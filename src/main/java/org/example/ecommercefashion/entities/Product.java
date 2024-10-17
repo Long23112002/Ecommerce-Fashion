@@ -12,6 +12,7 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -49,15 +50,23 @@ public class Product {
     @Column(nullable = false)
     private Boolean deleted = false;
 
+    @PrePersist
+    public void generateCode(){
+        if(this.code == null || this.code.isEmpty()){
+            this.code = UUID.randomUUID().toString();
+        }
+    }
+
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private List<ProductDetail> productDetails;
 
-    @ManyToOne(cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH},
-            fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_brand")
+    @ManyToOne
+//            (cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH},
+//            fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_brand", nullable = false)
     private Brand brand;
 
     @ManyToOne(cascade = {

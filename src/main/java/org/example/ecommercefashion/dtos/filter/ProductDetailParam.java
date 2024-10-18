@@ -4,13 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductDetailParam {
-    private String productName;
-    private String sizeName;
-    private String colorName;
-    private Double price;
+    private String keyword;
+    private Double minPrice;
+    private Double maxPrice;
+    private Timestamp startDate;
+    private Timestamp endDate;
 
 }

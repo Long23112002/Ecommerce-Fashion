@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.ProductDetailParam;
 import org.example.ecommercefashion.dtos.request.ProductDetailRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
+import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ProductDetailResponse;
 import org.example.ecommercefashion.dtos.response.ProductResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
@@ -24,6 +25,7 @@ import org.example.ecommercefashion.repositories.SizeRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.ProductDetailService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -72,7 +74,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             detail.setCreateBy(jwtResponse.getUserId());
             detail = productDetailRepository.save(detail);
 
-            ProductDetailResponse response = mapDetailToProductDetail(detail);
+            ProductDetailResponse response = mapDetailToResponse(detail);
             return response;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ERROR_WHEN_CREATE);
@@ -83,7 +85,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     public ProductDetailResponse getProductDetailById(Long id) {
         ProductDetail detail = productDetailRepository.findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
-        ProductDetailResponse response = mapDetailToProductDetail(detail);
+        ProductDetailResponse response = mapDetailToResponse(detail);
         return response;
     }
 
@@ -110,7 +112,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             detail.setUpdateBy(jwtResponse.getUserId());
             detail = productDetailRepository.save(detail);
 
-            ProductDetailResponse response = mapDetailToProductDetail(detail);
+            ProductDetailResponse response = mapDetailToResponse(detail);
             return response;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ERROR_WHEN_CREATE);
@@ -119,13 +121,21 @@ public class ProductDetailServiceImpl implements ProductDetailService {
 
     @Override
     public ResponsePage<ProductDetail, ProductDetailResponse> getAllPage(Pageable pageable, ProductDetailParam productDetailParam) {
+        Page<ProductDetail> productDetailPage = productDetailRepository.filterProductDetail(productDetailParam, pageable);
+        Page<ProductDetailResponse> responses = productDetailPage.map(detail -> mapDetailToResponse(detail));
+        return new ResponsePage<>(responses);
+    }
+
+    @Override
+    public MessageResponse delete(Long id) {
         return null;
     }
 
-    ProductDetailResponse mapDetailToProductDetail(ProductDetail detail) {
+    ProductDetailResponse mapDetailToResponse(ProductDetail detail) {
         ProductDetailResponse response = new ProductDetailResponse();
         FnCommon.copyNonNullProperties(response, detail);
         response.setCreateBy(getInfoUser(detail.getCreateBy()));
+        response.setUpdateBy(getInfoUser(detail.getUpdateBy()));
         response.setColorName(detail.getColor().getName());
         response.setSizeName(detail.getSize().getName());
 

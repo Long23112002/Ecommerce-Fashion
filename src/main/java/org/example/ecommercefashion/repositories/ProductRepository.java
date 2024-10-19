@@ -21,13 +21,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "            JOIN products.origin o ON p.id_origin = o.id " +
             "WHERE "+
             "(CAST(:#{#param.keyword} AS text) IS NULL " +
-            "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%'))) " +
+            "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
             "OR LOWER(p.code) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
             "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
             "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
             "OR LOWER(m.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
             "OR LOWER(c.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
-            "OR LOWER(o.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
+            "OR LOWER(o.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%'))) " +
 //            "AND (:#{#param.startDate} IS NULL OR p.create_at >= :#{#param.startDate}) " +
 //            "AND (:#{#param.endDate} IS NULL OR p.create_at <= :#{#param.endDate})" +
             "AND p.deleted = false ",

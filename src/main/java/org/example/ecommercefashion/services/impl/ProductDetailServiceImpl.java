@@ -83,10 +83,16 @@ public class ProductDetailServiceImpl implements ProductDetailService {
 
     @Override
     public ProductDetailResponse getProductDetailById(Long id) {
-        ProductDetail detail = productDetailRepository.findById(id)
-                .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
-        ProductDetailResponse response = mapDetailToResponse(detail);
-        return response;
+        try {
+            ProductDetail detail = productDetailRepository.findById(id)
+                    .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
+            Color color = detail.getColor();
+            ProductDetailResponse response = mapDetailToResponse(detail);
+            return response;
+
+        } catch (Exception e) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_WAS_DISABLE + "màu " );
+        }
     }
 
     @Override

@@ -66,7 +66,6 @@ public class ProductServiceImpl implements ProductService {
         response.setOriginName(product.getOrigin().getName());
         response.setCreatedAt(product.getCreateAt());
         response.setCreatedBy(getInfoUser(idUser));
-        response.setUpdatedBy(getInfoUser(idUser));
 
         return response;
     }
@@ -142,6 +141,7 @@ public class ProductServiceImpl implements ProductService {
 
             ProductResponse productResponse = mapProductToResponse(product);
             productResponse.setUpdatedAt(product.getUpdateAt());
+            productResponse.setUpdatedBy(getInfoUser(product.getUpdateBy()));
 
             FnCommon.copyNonNullProperties(productResponse, product);
             return productResponse;
@@ -154,8 +154,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
-
-        return mapProductToResponse(product);
+        ProductResponse response = mapProductToResponse(product);
+        if (product.getUpdateAt() != null) {
+            response.setUpdatedAt(product.getUpdateAt());
+        }
+        if (product.getUpdateBy() != null) {
+            response.setUpdatedBy(getInfoUser(product.getUpdateBy()));
+        }
+        return response;
     }
 
     @Override

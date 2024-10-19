@@ -42,7 +42,9 @@ public enum ErrorMessage implements BaseErrorMessage {
   OTP_EXPIRED("OTP đã hết hạn"),
   PRODUCT_NAME_EXISTED("Tên Sản Phẩm Đã Tồn Tại"),
   PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
+  PRODUCT_WAS_DISABLE("Sản Phẩm bị ẩn với"),
   ERROR_WHEN_CREATE("Lỗi khi tạo"),
+
   ;
 
 

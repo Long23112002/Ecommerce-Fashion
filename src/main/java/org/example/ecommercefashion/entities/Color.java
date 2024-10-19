@@ -22,6 +22,7 @@ import java.util.List;
 @Table(name = "color",schema = "products")
 @Entity
 @Where(clause = "deleted = false")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Color {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,8 +50,4 @@ public class Color {
     @Column(name = "deleted")
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy = "color", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
-    @JsonIgnoreProperties(value = "productDetails")
-    private List<ProductDetail> productDetails;
 }

@@ -47,7 +47,4 @@ public class Material {
     @Column(name = "deleted")
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy = "material", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
-    private List<Product> products;
 }

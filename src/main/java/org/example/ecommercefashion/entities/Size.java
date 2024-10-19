@@ -21,6 +21,7 @@ import java.util.List;
 @Table(name = "size",schema = "products")
 @Entity
 @Where(clause = "deleted = false")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Size {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,8 +49,4 @@ public class Size {
     @Column(name = "deleted")
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy = "size", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
-    @JsonIgnoreProperties(value = "productDetails")
-    private List<ProductDetail> productDetails;
 }

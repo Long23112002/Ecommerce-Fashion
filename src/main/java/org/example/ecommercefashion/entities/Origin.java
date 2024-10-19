@@ -47,7 +47,4 @@ public class Origin {
     @Column(nullable = false)
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy = "origin", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
-    private List<Product> products;
 }

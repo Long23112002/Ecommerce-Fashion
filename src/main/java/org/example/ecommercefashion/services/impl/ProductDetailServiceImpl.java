@@ -16,6 +16,7 @@ import org.example.ecommercefashion.entities.Product;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Size;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.entities.value.UserValue;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ColorRepository;
@@ -41,9 +42,6 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     private final JwtService jwtService;
 
     private UserResponse getInfoUser(Long id) {
-        if (id == null) {
-            return null;
-        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
@@ -53,13 +51,20 @@ public class ProductDetailServiceImpl implements ProductDetailService {
 
     }
 
+    private UserValue getInfoUserValue(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() ->
+                new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
+        );
+        UserValue userValue = new UserValue();
+        FnCommon.copyNonNullProperties(userValue, user);
+        return userValue;
+
+    }
+
     @Override
     public ProductDetailResponse createProductDetail(ProductDetailRequest request, String token) {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
-
-            ProductDetail detail = new ProductDetail();
-            FnCommon.copyNonNullProperties(detail, request);
 
             Product product = productRepository.findById(request.getIdProduct())
                     .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
@@ -68,6 +73,8 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             Color color = colorRepository.findById(request.getIdColor())
                     .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NOT_FOUND));
 
+            ProductDetail detail = new ProductDetail();
+            FnCommon.copyNonNullProperties(detail, request);
             detail.setProduct(product);
             detail.setSize(size);
             detail.setColor(color);
@@ -86,13 +93,25 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         try {
             ProductDetail detail = productDetailRepository.findById(id)
                     .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
-            Color color = detail.getColor();
             ProductDetailResponse response = mapDetailToResponse(detail);
             return response;
-
         } catch (Exception e) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_WAS_DISABLE + "màu " );
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_WAS_DISABLE);
         }
+    }
+
+    @Override
+    public ProductDetail detail(Long id) {
+        ProductDetail productDetail = findById(id);
+        productDetail.setCreateByUser(getInfoUserValue(productDetail.getCreateBy()));
+        productDetail.setUpdateByUser(getInfoUserValue(productDetail.getUpdateBy()));
+        return productDetail;
+    }
+
+
+    private ProductDetail findById(Long id) {
+        return productDetailRepository.findById(id)
+                .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
     }
 
     @Override
@@ -100,8 +119,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
 
-            ProductDetail detail = productDetailRepository.findById(id)
-                    .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
+            ProductDetail detail = findById(id);
             FnCommon.copyNonNullProperties(detail, request);
 
             Product product = productRepository.findById(request.getIdProduct())
@@ -132,9 +150,16 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         return new ResponsePage<>(responses);
     }
 
+
     @Override
     public MessageResponse delete(Long id) {
-        return null;
+        ProductDetail detail = productDetailRepository.findById(id).orElseThrow(
+                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PRODUCT_NOT_FOUND)
+        );
+        detail.setDeleted(true);
+        productDetailRepository.save(detail);
+
+        return MessageResponse.builder().message("Product Detail deleted successfully").build();
     }
 
     ProductDetailResponse mapDetailToResponse(ProductDetail detail) {
@@ -157,6 +182,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
                 .createdAt(product.getCreateAt())
                 .updatedAt(product.getUpdateAt())
                 .createdBy(getInfoUser(product.getCreateBy()))
+                .deleted(product.getDeleted())
                 .brandName(product.getBrand().getName())
                 .categoryName(product.getCategory().getName())
                 .materialName(product.getMaterial().getName())

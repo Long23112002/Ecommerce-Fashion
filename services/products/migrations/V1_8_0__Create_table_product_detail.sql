@@ -1,11 +1,11 @@
 CREATE TABLE products.product_detail
 (
     id        BIGSERIAL PRIMARY KEY,
-    price     FLOAT,
+    price     DOUBLE PRECISION,
     quantity     INTEGER,
     images JSON,
-    create_at TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    create_at TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     create_by BIGINT NOT NULL ,
     update_by BIGINT,
     deleted   BOOLEAN DEFAULT FALSE,

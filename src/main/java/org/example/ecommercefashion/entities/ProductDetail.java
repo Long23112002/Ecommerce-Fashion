@@ -1,11 +1,14 @@
 package org.example.ecommercefashion.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.ecommercefashion.entities.value.UserValue;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -47,8 +50,14 @@ public class ProductDetail {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateAt;
 
-    @Column(name = "create_by",updatable = false)
+    @Column(name = "create_by", updatable = false)
     private Long createBy;
+
+    @Transient
+    private UserValue createByUser;
+
+    @Transient
+    private UserValue updateByUser;
 
     @Column(name = "update_by")
     private Long updateBy;
@@ -61,6 +70,7 @@ public class ProductDetail {
             CascadeType.PERSIST, CascadeType.REFRESH},
             fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
+    @JsonBackReference
     @JoinColumn(name = "id_product")
     private Product product;
     @ManyToOne(cascade = {
@@ -68,11 +78,13 @@ public class ProductDetail {
             CascadeType.PERSIST, CascadeType.REFRESH},
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_size")
+    @JsonBackReference
     private Size size;
     @ManyToOne(cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH},
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_color")
+    @JsonBackReference
     private Color color;
 }

@@ -1,6 +1,8 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,5 +51,6 @@ public class Color {
 
     @OneToMany(mappedBy = "color", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
+    @JsonIgnoreProperties(value = "productDetails")
     private List<ProductDetail> productDetails;
 }

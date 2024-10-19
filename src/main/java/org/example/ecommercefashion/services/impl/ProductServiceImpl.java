@@ -31,6 +31,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
+import static org.example.ecommercefashion.annotations.normalized.normalizeString;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -118,7 +122,14 @@ public class ProductServiceImpl implements ProductService {
             Product product = productRepository.findById(id)
                     .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
 
-            if (productRepository.existsByNameIgnoreCase(request.getName().trim())) {
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
+//            FnCommon.copyNonNullProperties(product, request);
+            if (brandRepository.existsByName(normalizedCategoryName)) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NAME_EXISTED);
             }
 
@@ -132,6 +143,7 @@ public class ProductServiceImpl implements ProductService {
                     () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NOT_FOUND));
 
             FnCommon.copyNonNullProperties(product, request);
+            product.setDescription(request.getDescription());
             product.setUpdateBy(jwtResponse.getUserId());
             product.setBrand(brand);
             product.setCategory(category);

@@ -37,11 +37,15 @@ public class ProductDetailController {
         return ResponseEntity.ok(service.createProductDetail(request, token));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductDetailResponse> getById(@PathVariable Long id){
-        return ResponseEntity.ok(service.getProductDetailById(id));
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<ProductDetailResponse> getById(@PathVariable Long id){
+//        return ResponseEntity.ok(service.getProductDetailById(id));
+//    }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDetail> detail(@PathVariable Long id){
+        return ResponseEntity.ok(service.detail(id));
+    }
     @PutMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<ProductDetailResponse> updateProductDetail(

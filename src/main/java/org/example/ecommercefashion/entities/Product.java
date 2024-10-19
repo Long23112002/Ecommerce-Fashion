@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -59,6 +60,7 @@ public class Product {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
+    @JsonIgnoreProperties(value = "product")
     private List<ProductDetail> productDetails;
 
     @ManyToOne

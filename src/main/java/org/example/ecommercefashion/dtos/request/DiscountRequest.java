@@ -4,10 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.ecommercefashion.annotations.EnumPattern;
+import org.example.ecommercefashion.entities.Condition;
 import org.example.ecommercefashion.enums.StatusDiscount;
 import org.example.ecommercefashion.enums.TypeDiscount;
-import org.example.ecommercefashion.model.Condition;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

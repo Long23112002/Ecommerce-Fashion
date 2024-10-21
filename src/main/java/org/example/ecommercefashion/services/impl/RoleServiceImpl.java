@@ -15,8 +15,12 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.RoleResponse;
 import org.example.ecommercefashion.entities.Permission;
 import org.example.ecommercefashion.entities.Role;
+import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.RoleRepository;
+import org.example.ecommercefashion.services.NotificationService;
 import org.example.ecommercefashion.services.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +38,8 @@ public class RoleServiceImpl implements RoleService {
 
   private final EntityManager entityManager;
   private final RoleRepository roleRepository;
+  private final RefreshTokenRepository refreshTokenRepository;
+  private final NotificationService notificationService;
 
   @Override
   public ResponsePage<Role, RoleResponse> filterRoles(String keyword, Pageable pageable) {
@@ -113,9 +119,16 @@ public class RoleServiceImpl implements RoleService {
     if (role == null) {
       throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND);
     }
+
+
+    for (User user : role.getUsers()) {
+      user.getRoles().remove(role);
+      refreshTokenRepository.deleteAllByUserId(user.getId());
+    }
     entityManager.remove(role);
-    return MessageResponse.builder().message("Role delete successfully").build();
+    return MessageResponse.builder().message("Role deleted successfully").build();
   }
+
 
   private RoleResponse mapRoleToRoleResponse(Role role) {
     RoleResponse roleResponse = new RoleResponse();

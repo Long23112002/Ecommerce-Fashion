@@ -13,9 +13,9 @@ Create TABLE discounts.discount
     start_date TIMESTAMP,
     end_date TIMESTAMP,
     discount_status discount_status_enum NOT NULL,
-    create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     create_by BIGINT NOT NULL,
     update_by BIGINT,
-    deleted BOOLEAN default FALSE;
+    deleted BOOLEAN NOT NULL default FALSE;
 )

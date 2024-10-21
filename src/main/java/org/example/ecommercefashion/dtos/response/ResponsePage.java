@@ -1,7 +1,5 @@
 package org.example.ecommercefashion.dtos.response;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +7,9 @@ import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -34,6 +35,12 @@ public class ResponsePage<T, S> {
     data = page.getContent();
     metaData = new MetaData(page);
   }
+
+  public ResponsePage(List<S> data, Page<T> page) {
+    this.data = data;
+    this.metaData = new MetaData(page);
+  }
+
 
   public ResponsePage(Pageable page, Long total, List<T> listInput, Class<S> s) {
     ModelMapper mapper = new ModelMapper();

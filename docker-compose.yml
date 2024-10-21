@@ -1,0 +1,28 @@
+version: '2'
+services:
+  ecommerce-fashion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ecommerce-fashion
+    env_file:
+      - .env
+    ports:
+      - "8888:8888"
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    container_name: ecommerce-fashion
+    volumes:
+      - /opt/global:/opt/global/
+    mem_limit: 1G
+    restart: always
+    networks:
+      - longnh
+
+networks:
+  longnh:
+    driver: bridge

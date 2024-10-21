@@ -7,7 +7,6 @@ import org.example.ecommercefashion.dtos.filter.ProductParam;
 import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
-import org.example.ecommercefashion.dtos.response.ProductResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Brand;
@@ -15,7 +14,9 @@ import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.Material;
 import org.example.ecommercefashion.entities.Origin;
 import org.example.ecommercefashion.entities.Product;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.entities.value.UserValue;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.BrandRepository;
@@ -47,9 +48,6 @@ public class ProductServiceImpl implements ProductService {
     private final OriginRepository originRepository;
 
     private UserResponse getInfoUser(Long id) {
-        if (id == null) {
-            return null;
-        }
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
         );
@@ -58,31 +56,41 @@ public class ProductServiceImpl implements ProductService {
         return userResponse;
     }
 
-    private ProductResponse mapProductToResponse(Product product) {
-        Long idUser = product.getCreateBy();
+    private UserValue getInfoUserValue(Long id) {
+        User user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+        UserValue userValue = new UserValue();
+        FnCommon.copyNonNullProperties(userValue, user);
+        return userValue;
+    }
 
-        ProductResponse response = new ProductResponse();
-        FnCommon.copyNonNullProperties(response, product);
-
-        response.setBrandName(product.getBrand().getName());
-        response.setCategoryName(product.getCategory().getName());
-        response.setMaterialName(product.getMaterial().getName());
-        response.setOriginName(product.getOrigin().getName());
-        response.setCreatedAt(product.getCreateAt());
-        response.setCreatedBy(getInfoUser(idUser));
-
-        return response;
+    private Product findById(Long id) {
+        return productRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
     }
 
     @Override
-    public ResponsePage<Product, ProductResponse> filterProduct(ProductParam param, Pageable pageable) {
+    public ResponsePage<Product, Product> filterProduct(ProductParam param, Pageable pageable) {
         Page<Product> productPage = productRepository.filterProduct(param, pageable);
-        Page<ProductResponse> responses = productPage.map(product -> mapProductToResponse(product));
+        Page<Product> responses = productPage.map(product -> {
+            if (product.getCreateBy() != null) {
+                product.setCreateByUser(getInfoUserValue(product.getCreateBy()));
+            }
+            if (product.getUpdateBy() != null) {
+                product.setUpdateByUser(getInfoUserValue(product.getUpdateBy()));
+            }
+            return product;
+        });
         return new ResponsePage<>(responses);
     }
 
     @Override
-    public ProductResponse createProduct(ProductRequest request, String token) {
+    public Product createProduct(ProductRequest request, String token) {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
 
@@ -106,17 +114,18 @@ public class ProductServiceImpl implements ProductService {
             productCreate.setCategory(category);
             productCreate.setMaterial(material);
             productCreate.setOrigin(origin);
+
+            productCreate.setCreateByUser(getInfoUserValue(jwtResponse.getUserId()));
             productRepository.save(productCreate);
 
-            ProductResponse productResponse = mapProductToResponse(productCreate);
-            return productResponse;
+            return productCreate;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 
     @Override
-    public ProductResponse updateProduct(Long id, ProductRequest request, String token) {
+    public Product updateProduct(Long id, ProductRequest request, String token) {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
             Product product = productRepository.findById(id)
@@ -128,7 +137,6 @@ public class ProductServiceImpl implements ProductService {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to normalize string", e);
             }
-//            FnCommon.copyNonNullProperties(product, request);
             if (brandRepository.existsByName(normalizedCategoryName)) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NAME_EXISTED);
             }
@@ -149,50 +157,36 @@ public class ProductServiceImpl implements ProductService {
             product.setCategory(category);
             product.setMaterial(material);
             product.setOrigin(origin);
+
+            product.setCreateByUser(getInfoUserValue(product.getCreateBy()));
+            product.setUpdateByUser(getInfoUserValue(jwtResponse.getUserId()));
             productRepository.save(product);
 
-            ProductResponse productResponse = mapProductToResponse(product);
-            productResponse.setUpdatedAt(product.getUpdateAt());
-            productResponse.setUpdatedBy(getInfoUser(product.getUpdateBy()));
-
-            FnCommon.copyNonNullProperties(productResponse, product);
-            return productResponse;
+            return product;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 
     @Override
-    public ProductResponse getProductById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
-        ProductResponse response = mapProductToResponse(product);
-        if (product.getUpdateAt() != null) {
-            response.setUpdatedAt(product.getUpdateAt());
+    public Product getProductById(Long id) {
+        Product product = findById(id);
+        if (product.getCreateBy() != null) {
+            product.setCreateByUser(getInfoUserValue(product.getCreateBy()));
         }
         if (product.getUpdateBy() != null) {
-            response.setUpdatedBy(getInfoUser(product.getUpdateBy()));
+            product.setUpdateByUser(getInfoUserValue(product.getUpdateBy()));
         }
-        return response;
+        return product;
     }
 
     @Override
     public MessageResponse updateStatus(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
-        StringBuilder string = new StringBuilder();
-        if (product.getDeleted() == true) {
-            product.setDeleted(false);
-            string.append("Cập nhật  ");
-        } else {
-            product.setDeleted(true);
-            string.append("Xóa ");
-        }
-        ;
+        Product product = findById(id);
+        product.setDeleted(true);
         productRepository.save(product);
-        return MessageResponse.builder()
-                .message(string + "sản phẩm " + product.getName() + " thành công.")
-                .build();
+
+        return MessageResponse.builder().message("Product deleted successfully").build();
 
     }
 

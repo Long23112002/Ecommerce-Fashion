@@ -9,12 +9,9 @@ import org.example.ecommercefashion.entities.ProductDetail;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductDetailService {
-    ProductDetailResponse createProductDetail(ProductDetailRequest request, String token);
-    ProductDetailResponse getProductDetailById(Long id);
-    ProductDetailResponse updateProductDetail(Long id, ProductDetailRequest request, String token);
-    ResponsePage<ProductDetail,ProductDetailResponse> getAllPage(Pageable pageable, ProductDetailParam productDetailParam);
-
+    ProductDetail createProductDetail(ProductDetailRequest request, String token);
+    ProductDetail updateProductDetail(Long id, ProductDetailRequest request, String token);
+    ResponsePage<ProductDetail,ProductDetail> getAllPage(Pageable pageable, ProductDetailParam productDetailParam);
     MessageResponse delete(Long id);
-
     ProductDetail detail(Long id);
 }

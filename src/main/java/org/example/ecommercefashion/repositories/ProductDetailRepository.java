@@ -15,6 +15,9 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
 
     @Query("SELECT p FROM ProductDetail p "
             + "WHERE "
+            + "(:#{#param.keyword} IS NULL OR p.size.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+            + " OR p.color.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+            + " OR p.product.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%')) AND "
             + "(:#{#param.idColor} IS NULL OR p.color.id = :#{#param.idColor}) AND "
             + "(:#{#param.idProduct} IS NULL OR p.product.id = :#{#param.idProduct}) AND "
             + "(:#{#param.minPrice} IS NULL OR (p.price IS NOT NULL AND p.price >= :#{#param.minPrice})) AND "

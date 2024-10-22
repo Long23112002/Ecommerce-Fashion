@@ -159,7 +159,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             detail.setImages(request.getImages());
             detail.setUpdateBy(jwtResponse.getUserId());
 
-            detail.setCreateByUser(detail.getCreateByUser());
+            detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
             detail.setUpdateByUser(getInfoUserValue(jwtResponse.getUserId()));
             detail = productDetailRepository.save(detail);
 

@@ -28,7 +28,7 @@ public class ProductDetailController {
     private final ProductDetailService service;
     @PostMapping
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<ProductDetailResponse> createProductDetail(
+    public ResponseEntity<ProductDetail> createProductDetail(
             @RequestBody @Valid ProductDetailRequest request,
             @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
@@ -37,18 +37,13 @@ public class ProductDetailController {
         return ResponseEntity.ok(service.createProductDetail(request, token));
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ProductDetailResponse> getById(@PathVariable Long id){
-//        return ResponseEntity.ok(service.getProductDetailById(id));
-//    }
-
     @GetMapping("/{id}")
     public ResponseEntity<ProductDetail> detail(@PathVariable Long id){
         return ResponseEntity.ok(service.detail(id));
     }
     @PutMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<ProductDetailResponse> updateProductDetail(
+    public ResponseEntity<ProductDetail> updateProductDetail(
             @PathVariable Long id,
             @RequestBody @Valid ProductDetailRequest request,
             @RequestHeader("Authorization") String token) {
@@ -59,7 +54,7 @@ public class ProductDetailController {
     }
 
     @GetMapping
-    public ResponsePage<ProductDetail, ProductDetailResponse> getAll(ProductDetailParam param, Pageable pageable) {
+    public ResponsePage<ProductDetail, ProductDetail> getAll(ProductDetailParam param, Pageable pageable) {
         return service.getAllPage(pageable, param);
     }
 

@@ -11,26 +11,21 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Boolean existsByNameIgnoreCase(String name);
+    @Query("SELECT p FROM Product p "
+            + "WHERE "
+            + "(:#{#param.keyword} IS NULL OR p.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+            + " OR p.code LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+            + " OR p.description LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+            + " OR p.brand.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%')"
+            + " OR p.origin.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+            + " OR p.category.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+            + " OR p.material.name LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%')) AND "
+            + "(:#{#param.idBrand} IS NULL OR p.brand.id = :#{#param.idBrand}) AND "
+            + "(:#{#param.idOrigin} IS NULL OR p.origin.id = :#{#param.idOrigin}) AND "
+            + "(:#{#param.idCategory} IS NULL OR p.category.id = :#{#param.idCategory}) AND "
+            + "(:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial}) ")
 
-    @Query(value = "SELECT p.id, p.code , p.name , p.description ,p.create_at, p.update_at , p.create_by , p.update_by ,p.deleted, " +
-            "p.id_brand, p.id_origin, p.id_material, p.id_category" +
-            "            FROM products.product p " +
-            "            JOIN products.brand b ON p.id_brand = b.id " +
-            "            JOIN products.category c ON p.id_category = c.id " +
-            "            JOIN products.material m ON p.id_material = m.id " +
-            "            JOIN products.origin o ON p.id_origin = o.id " +
-            "WHERE "+
-            "(CAST(:#{#param.keyword} AS text) IS NULL " +
-            "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
-            "OR LOWER(p.code) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
-            "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
-            "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
-            "OR LOWER(m.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
-            "OR LOWER(c.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%')) " +
-            "OR LOWER(o.name) LIKE LOWER(CONCAT('%', :#{#param.keyword}, '%'))) " +
-//            "AND (:#{#param.startDate} IS NULL OR p.create_at >= :#{#param.startDate}) " +
-//            "AND (:#{#param.endDate} IS NULL OR p.create_at <= :#{#param.endDate})" +
-            "AND p.deleted = false ",
-            nativeQuery = true)
     Page<Product> filterProduct(ProductParam param, Pageable pageable);
+
+
 }

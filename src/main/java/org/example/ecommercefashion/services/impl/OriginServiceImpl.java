@@ -17,6 +17,7 @@ import org.example.ecommercefashion.entities.Origin;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OriginRepository;
+import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.OriginService;
 import org.springframework.data.domain.Page;
@@ -39,6 +40,8 @@ public class OriginServiceImpl implements OriginService{
     private final UserRepository userRepository;
 
     private final org.example.ecommercefashion.security.JwtService JwtService;
+
+    private final ProductRepository productRepository;
 
     @Override
     public ResponsePage<Origin, OriginResponse> filterOrigin(OriginParam param, Pageable pageable){
@@ -118,6 +121,10 @@ public class OriginServiceImpl implements OriginService{
         Origin origin = repository.findById(id).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ORIGIN_NOT_FOUND)
         );
+
+        if(productRepository.existsByOrigin(origin)){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_HAS_PRODUCT);
+        }
 
         origin.setDeleted(true);
         repository.save(origin);

@@ -1,6 +1,10 @@
 package org.example.ecommercefashion.repositories;
 
 import org.example.ecommercefashion.dtos.filter.ProductParam;
+import org.example.ecommercefashion.entities.Brand;
+import org.example.ecommercefashion.entities.Category;
+import org.example.ecommercefashion.entities.Material;
+import org.example.ecommercefashion.entities.Origin;
 import org.example.ecommercefashion.entities.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +30,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             + "(:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial}) ")
 
     Page<Product> filterProduct(ProductParam param, Pageable pageable);
+
+    Boolean existsByMaterial(Material material);
+
+    Boolean existsByBrand(Brand brand);
+
+    Boolean existsByCategory(Category category);
+
+    Boolean existsByOrigin(Origin origin);
 
 
 }

@@ -48,6 +48,12 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
   PRODUCT_WAS_DISABLE("Sản Phẩm bị ẩn "),
   ERROR_WHEN_CREATE("Lỗi khi tạo"),
+  COLOR_HAS_PRODUCT_DETAIL("Màu sắc đang thuộc về 1 chi tiết sản phẩm"),
+  SIZE_HAS_PRODUCT_DETAIL("Size đang thuộc về 1 chi tiết sản phẩm"),
+  MATERIAL_HAS_PRODUCT_DETAIL("Chất liệu đang thuộc về 1 chi tiết sản phẩm"),
+  BRAND_HAS_PRODUCT("Thương hiệu đang thuộc về 1 chi tiết sản phẩm"),
+  CATEGORY_HAS_PRODUCT("Danh mục đang thuộc về 1 chi tiết sản phẩm"),
+  ORIGIN_HAS_PRODUCT("Xuất xứ sản phẩm đang thuộc về 1 chi tiết sản phẩm")
   ;
 
   public String val;

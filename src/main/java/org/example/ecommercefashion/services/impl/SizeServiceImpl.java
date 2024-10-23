@@ -12,6 +12,7 @@ import org.example.ecommercefashion.entities.Size;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.SizeRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
@@ -33,6 +34,8 @@ public class SizeServiceImpl implements SizeService {
     private final UserRepository userRepository;
 
     private final JwtService jwtService;
+
+    private final ProductDetailRepository productDetailRepository;
 
     private UserResponse getInforUser(Long id) {
         if (id == null) {
@@ -114,6 +117,9 @@ public class SizeServiceImpl implements SizeService {
             Size size = sizeRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
             });
+            if(productDetailRepository.existsBySize(size)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SIZE_HAS_PRODUCT_DETAIL);
+            }
             size.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             size.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             size.setDeleted(true);

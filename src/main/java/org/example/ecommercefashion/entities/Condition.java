@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +16,8 @@ import javax.persistence.ManyToOne;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+
 public class Condition {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     private Long productDetailId;
 
@@ -29,19 +27,4 @@ public class Condition {
 
     private Long brandId;
 
-    @ManyToOne
-    @JoinColumn(name = "productDetailId", referencedColumnName = "id", insertable = false, updatable = false)
-    private ProductDetail productDetail;
-
-    @ManyToOne
-    @JoinColumn(name = "productId", referencedColumnName = "id", insertable = false, updatable = false)
-    private Product product;
-
-    @ManyToOne
-    @JoinColumn(name = "categoryId", referencedColumnName = "id", insertable = false, updatable = false)
-    private Category category;
-
-    @ManyToOne
-    @JoinColumn(name = "brandId", referencedColumnName = "id", insertable = false, updatable = false)
-    private Brand brand;
 }

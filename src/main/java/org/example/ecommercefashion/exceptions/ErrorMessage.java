@@ -3,6 +3,8 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+  DISCOUNT_CONDITION_NOT_MET("Không đủ điều kiện để sử dụng Voucher"),
+  VOUCHER_ALREADY_USED("Voucher đã được sử dụng"),
   VOUCHER_NOT_FOUND("Không Tìm thấy voucher"),
   DISCOUNT_NOT_FOUND("Không tìm thấy mã giảm giá"),
   CATEGORY_NAME_EXISTED("Tên Danh Mục Đã Tồn Tại"),

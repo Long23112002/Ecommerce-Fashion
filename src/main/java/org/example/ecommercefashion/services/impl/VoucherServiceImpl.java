@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 
@@ -101,7 +102,7 @@ public class VoucherServiceImpl implements VoucherServise {
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.VOUCHER_NOT_FOUND)
             );
 
-            voucher.setUpdateBy(jwt.getUserId());
+
             FnCommon.copyNonNullProperties(voucher, request);
 
             if (request.getDiscountId() != null) {
@@ -110,6 +111,8 @@ public class VoucherServiceImpl implements VoucherServise {
                 );
                 voucher.setDiscount(discount);
             }
+            voucher.setUpdateBy(jwt.getUserId());
+            voucher.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             voucher = voucherRepository.save(voucher);
 
             VoucherResponse response = new VoucherResponse();

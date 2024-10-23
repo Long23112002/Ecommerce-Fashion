@@ -18,4 +18,6 @@ public interface DiscountService {
     DiscountResponse update(DiscountRequest request, Long id, String token);
 
     MessageResponse deleted(Long id);
+
+    double calulateDiscount(Long voucherId, double originalPrice,String token);
 }

@@ -1,0 +1,17 @@
+CREATE TYPE types AS ENUM ('PERCENTAGE_DISCOUNT','AMOUNT_DISCOUNT');
+CREATE TYPE status AS ENUM ('UPCOMING', 'ACTIVE', 'ENDED');
+
+CREATE TABLE promotions.promotion
+(
+    id BIGSERIAL PRIMARY KEY,
+    start_date TIMESTAMPTZ NOT NULL,
+    end_date TIMESTAMPTZ NOT NULL,
+    type types NOT NULL,
+    value DOUBLE PRECISION NOT NULL,
+    status status NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ,
+    created_by BIGINT NOT NULL,
+    updated_by BIGINT,
+    deleted BOOLEAN DEFAULT FALSE
+);

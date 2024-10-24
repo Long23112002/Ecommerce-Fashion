@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 public class SizeRequest {
 
     @NotBlank(message = "Tên size không được trống")
-    @Size(max = 50, message = "Tên size phải từ 2 đến 50 ký tự")
+    @Size(max = 50, message = "Tên size phải từ 1 đến 50 ký tự")
     private String name;
 
 }

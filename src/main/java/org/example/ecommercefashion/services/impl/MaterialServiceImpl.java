@@ -13,6 +13,7 @@ import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.MaterialRepository;
+import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.MaterialService;
@@ -33,6 +34,8 @@ public class MaterialServiceImpl implements MaterialService {
     private final UserRepository userRepository;
 
     private final JwtService jwtService;
+
+    private final ProductRepository productRepository;
 
     private UserResponse getInforUser(Long id) {
         if (id == null) {
@@ -116,6 +119,9 @@ public class MaterialServiceImpl implements MaterialService {
             Material material = materialRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.MATERIAL_NOT_FOUND);
             });
+            if(productRepository.existsByMaterial(material)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.MATERIAL_HAS_PRODUCT_DETAIL);
+            }
             material.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             material.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             material.setDeleted(true);

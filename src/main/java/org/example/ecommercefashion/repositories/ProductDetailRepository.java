@@ -22,7 +22,8 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
             + "(:#{#param.idProduct} IS NULL OR p.product.id = :#{#param.idProduct}) AND "
             + "(:#{#param.minPrice} IS NULL OR (p.price IS NOT NULL AND p.price >= :#{#param.minPrice})) AND "
             + "(:#{#param.maxPrice} IS NULL OR p.price <= :#{#param.maxPrice}) AND "
-            + "(:#{#param.idSize} IS NULL OR p.size.id = :#{#param.idSize})")
+            + "(:#{#param.idSize} IS NULL OR p.size.id = :#{#param.idSize})"
+            + "ORDER BY p.id DESC ")
     Page<ProductDetail> filterProductDetail(ProductDetailParam param, Pageable pageable);
 
     Boolean existsByColor(Color color);

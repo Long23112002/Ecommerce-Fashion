@@ -27,7 +27,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             + "(:#{#param.idBrand} IS NULL OR p.brand.id = :#{#param.idBrand}) AND "
             + "(:#{#param.idOrigin} IS NULL OR p.origin.id = :#{#param.idOrigin}) AND "
             + "(:#{#param.idCategory} IS NULL OR p.category.id = :#{#param.idCategory}) AND "
-            + "(:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial}) ")
+            + "(:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial}) "
+            + "ORDER BY p.id DESC ")
 
     Page<Product> filterProduct(ProductParam param, Pageable pageable);
 

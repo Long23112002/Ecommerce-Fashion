@@ -14,6 +14,7 @@ import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ColorRepository;
+import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.ColorService;
@@ -36,6 +37,8 @@ public class ColorServiceImpl implements ColorService {
     private final JwtService jwtService;
 
     private final NotificationService notificationService;
+
+    private final ProductDetailRepository productDetailRepository;
 
     private UserResponse getInforUser(Long id) {
         if (id == null) {
@@ -119,6 +122,9 @@ public class ColorServiceImpl implements ColorService {
             Color color = colorRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.COLOR_NOT_FOUND);
             });
+            if(productDetailRepository.existsByColor(color)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.COLOR_HAS_PRODUCT_DETAIL);
+            }
             color.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             color.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             color.setDeleted(true);

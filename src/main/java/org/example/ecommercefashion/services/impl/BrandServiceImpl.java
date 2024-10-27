@@ -11,6 +11,7 @@ import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.BrandRepository;
+import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.BrandService;
@@ -33,6 +34,8 @@ public class BrandServiceImpl implements BrandService {
     private final UserRepository userRepository;
 
     private final JwtService JwtService;
+
+    private final ProductRepository productRepository;
 
     @Override
     public ResponsePage<Brand, BrandResponse> filterCategory(BrandParam param, Pageable pageable) {
@@ -116,6 +119,10 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = brandRepository.findById(id).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.BRAND_NOT_FOUND)
         );
+
+        if(productRepository.existsByBrand(brand)){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_HAS_PRODUCT);
+        }
 
         brand.setDeleted(true);
         brandRepository.save(brand);

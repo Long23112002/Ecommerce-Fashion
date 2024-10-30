@@ -30,7 +30,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "product", schema = "products")
 @Where(clause = "deleted = false")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -108,7 +108,7 @@ public class Product {
             },
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_material")
-    @JsonBackReference("category-product")
+    @JsonBackReference("material-product")
     @Fetch(FetchMode.JOIN)
     private Material material;
 

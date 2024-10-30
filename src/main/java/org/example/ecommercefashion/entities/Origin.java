@@ -3,6 +3,7 @@ package org.example.ecommercefashion.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Data
@@ -47,4 +49,8 @@ public class Origin {
 
     @Column(nullable = false)
     private Boolean deleted = false;
+
+    @OneToMany(mappedBy= "origin")
+    @JsonManagedReference("origin-product")
+    private List<Product> products;
 }

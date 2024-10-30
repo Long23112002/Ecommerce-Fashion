@@ -2,6 +2,7 @@ package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,4 +50,7 @@ public class Material {
     @Column(name = "deleted")
     private Boolean deleted = false;
 
+    @OneToMany(mappedBy= "material")
+    @JsonManagedReference("material-product")
+    private List<Product> products;
 }

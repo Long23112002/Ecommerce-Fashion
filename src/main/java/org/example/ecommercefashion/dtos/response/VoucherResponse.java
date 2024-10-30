@@ -15,7 +15,7 @@ public class VoucherResponse {
 
     private Long id;
 
-    private UUID code;
+    private String code;
 
     private Timestamp createAt;
 

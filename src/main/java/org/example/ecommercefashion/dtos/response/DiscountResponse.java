@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 public class DiscountResponse {
     private Long id;
-    private UUID code;
+    private String code;
     private String name;
     private Condition condition;
     private TypeDiscount type;

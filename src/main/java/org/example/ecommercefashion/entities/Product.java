@@ -64,6 +64,7 @@ public class Product {
 
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+  @JsonManagedReference
   private List<ProductDetail> productDetails;
 
   @ManyToOne(
@@ -73,6 +74,7 @@ public class Product {
       },
       fetch = FetchType.LAZY)
   @JoinColumn(name = "id_brand", nullable = false)
+  @JsonIgnore
   @JsonBackReference
   private Brand brand;
 
@@ -83,6 +85,7 @@ public class Product {
       },
       fetch = FetchType.LAZY)
   @JoinColumn(name = "id_origin")
+  @JsonIgnore
   @JsonBackReference
   private Origin origin;
 
@@ -93,6 +96,7 @@ public class Product {
       },
       fetch = FetchType.LAZY)
   @JoinColumn(name = "id_material")
+  @JsonIgnore
   @JsonBackReference
   private Material material;
 

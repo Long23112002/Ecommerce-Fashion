@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,12 +20,12 @@ import javax.persistence.ManyToOne;
 
 public class Condition {
 
-    private Long productDetailId;
+    private List<Long> productDetailId;
 
-    private Long productId;
+    private List<Long> productId;
 
-    private Long categoryId;
+    private List<Long> categoryId;
 
-    private Long brandId;
+    private List<Long> brandId;
 
 }

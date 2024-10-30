@@ -6,7 +6,11 @@ import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Discount;
+import org.example.ecommercefashion.entities.ProductDetail;
+import org.example.ecommercefashion.entities.Voucher;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface DiscountService {
     ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam param, Pageable pageable);
@@ -19,5 +23,5 @@ public interface DiscountService {
 
     MessageResponse deleted(Long id);
 
-    double calulateDiscount(Long voucherId, double originalPrice,String token);
+    List<Discount> getVoucher(List<ProductDetail> detailList);
 }

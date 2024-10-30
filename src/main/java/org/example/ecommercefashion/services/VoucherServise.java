@@ -19,4 +19,6 @@ public interface VoucherServise {
     VoucherResponse update(VoucherRequest request, Long id, String token);
 
     MessageResponse deleted(Long id);
+
+    Voucher getVoucherByCode(String voucherCode);
 }

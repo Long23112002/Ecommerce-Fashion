@@ -8,6 +8,7 @@ import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Discount;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.services.DiscountService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 
 @RestController
@@ -73,6 +75,11 @@ public class DiscountController {
     public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id){
         MessageResponse messageResponse = discountService.deleted(id);
         return ResponseEntity.ok(messageResponse);
+    }
+    @PostMapping("/getvoucher")
+    public ResponseEntity<List<Discount>> getvoucher(@RequestBody List<ProductDetail> detailList){
+        List<Discount> validDiscounts = discountService.getVoucher(detailList);
+        return ResponseEntity.ok(validDiscounts);
     }
 
 }

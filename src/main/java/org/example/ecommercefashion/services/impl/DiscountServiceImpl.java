@@ -37,7 +37,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -69,8 +71,8 @@ public class DiscountServiceImpl implements DiscountService {
         if (token != null) {
             JwtResponse jwt = jwtService.decodeToken(token);
             Discount discount = new Discount();
+            validateDiscountCondition(request.getCondition());
             FnCommon.copyNonNullProperties(discount, request);
-            discount.setCode(UUID.randomUUID());
             discount.setCreateBy(jwt.getUserId());
             discount = discountRepository.save(discount);
             DiscountResponse discountResponse = new DiscountResponse();
@@ -113,7 +115,7 @@ public class DiscountServiceImpl implements DiscountService {
             Discount discount = discountRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND)
             );
-
+            validateDiscountCondition(discount.getCondition());
             FnCommon.copyNonNullProperties(discount, request);
 
             discount.setUpdateBy(jwt.getUserId());
@@ -141,79 +143,71 @@ public class DiscountServiceImpl implements DiscountService {
 
         return MessageResponse.builder().message("discount deleted successfully").build();
     }
+
+    // ở frontend sẽ call api getAllDiscount-thoa man dieu kiện
+    // api sẽ cần truyền những sản phẩm đã chọn @BodyRequest
+    // method sẽ lấy tất cả discount trong data
+    // lặp từng discount
+    // kiểu tra điểu kiện -> những sản phẩm đã chọn có thỏa mãn discount không
+    // true -> cho vào list return
+    // return list
     @Override
-    public double calulateDiscount(Long voucherId, double originalPrice, String token) {
-        JwtResponse jwt = jwtService.decodeToken(token);
+    public List<Discount> getVoucher(List<ProductDetail> detailList) {
+        List<Discount> allDiscounts = discountRepository.findAll();
+        List<Discount> validDiscounts = allDiscounts.stream()
+                .filter(discount -> {
+                    Condition condition = discount.getCondition();
+                    return detailList.stream().anyMatch(detail -> {
+                        boolean isProductDetail = condition.getProductDetailId() != null
+                                && condition.getProductDetailId().stream().anyMatch(id -> id.equals(detail.getId()));
 
-        Voucher voucher = voucherRepository.findById(voucherId).orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.VOUCHER_NOT_FOUND)
-        );
+                        boolean isProduct = condition.getProductId() != null
+                                && condition.getProductId().stream().anyMatch(id -> id.equals(detail.getProduct().getId()));
 
-        if (voucher.getUsedAt() != null) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.VOUCHER_ALREADY_USED);
-        }
+                        boolean isCategory = condition.getCategoryId() != null
+                                && detail.getProduct().getCategory() != null
+                                && condition.getCategoryId().stream().anyMatch(id -> id.equals(detail.getProduct().getCategory().getId()));
 
-        Discount discount = discountRepository.findById(voucher.getDiscount().getId()).orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_NOT_FOUND)
-        );
+                        boolean isBrand = condition.getBrandId() != null
+                                && detail.getProduct().getBrand() != null
+                                && condition.getBrandId().stream().anyMatch(id -> id.equals(detail.getProduct().getBrand().getId()));
 
-        Condition condition = discount.getCondition();
-        boolean discountApplied = false;
-        if (condition != null) {
-            if (!discountApplied && condition.getProductDetailId() != null) {
-                if (productDetailRepository.findById(condition.getProductDetailId()).orElse(null) != null) {
-                    discountApplied = true;
-                }
-            }
+                        return isProductDetail || isProduct || isCategory || isBrand;
+                   });
+                })
+                .collect(Collectors.toList());
 
-            if (!discountApplied && condition.getProductId() != null) {
-                if (productRepository.findById(condition.getProductId()).orElse(null) != null) {
-                    discountApplied = true;
-                }
-            }
-
-            if (!discountApplied && condition.getCategoryId() != null) {
-                if (categoryRepository.findById(condition.getCategoryId()).orElse(null) != null) {
-                    discountApplied = true;
-                }
-            }
-
-            if (!discountApplied && condition.getBrandId() != null) {
-                if (brandRepository.findById(condition.getBrandId()).orElse(null) != null) {
-                    discountApplied = true;
-                }
-            }
-
-            if (!discountApplied) {
-                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_CONDITION_NOT_MET);
-            }
-        }
-
-
-        // Tính toán giá trị giảm giá dựa trên loại giảm giá (phần trăm hoặc cố định)
-        double discountAmount;
-        if (discount.getType() == TypeDiscount.PERCENTAGE) {
-            // Tính phần trăm giảm giá
-            discountAmount = originalPrice * (discount.getValue() / 100);
-        } else {
-            // Giảm giá cố định
-            discountAmount = discount.getValue();
-        }
-
-        // Đảm bảo giá trị giảm giá không vượt quá giá trị tối đa (nếu có)
-        if (discount.getMaxValue() != null && discountAmount > discount.getMaxValue()) {
-            discountAmount = discount.getMaxValue();
-        }
-
-        // Tính toán giá cuối cùng sau khi áp dụng giảm giá
-        double finalPrice = originalPrice - discountAmount;
-
-
-        voucher.setUsedBy(jwt.getUserId());
-        voucher.setUsedAt(new Timestamp(System.currentTimeMillis()));
-
-        voucherRepository.save(voucher);
-
-        return finalPrice;
+        return validDiscounts;
     }
+    public void validateDiscountCondition(Condition condition){
+        if (condition.getProductId() != null && !condition.getProductId().isEmpty()) {
+            for (Long productId : condition.getProductId()) {
+                if (!productRepository.existsById(productId)) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Product ID " + productId + " không tồn tại");
+                }
+            }
+        }
+        if (condition.getProductDetailId() != null && !condition.getProductDetailId().isEmpty()) {
+            for (Long productDetailId: condition.getProductDetailId()) {
+                if (!productDetailRepository.existsById(productDetailId)) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "ProductDetailId ID " + productDetailId + " không tồn tại");
+                }
+            }
+        }
+        if (condition.getCategoryId() != null && !condition.getCategoryId().isEmpty()) {
+            for (Long categoryId: condition.getCategoryId()) {
+                if (!categoryRepository.existsById(categoryId)) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Category ID " + categoryId + " không tồn tại");
+                }
+            }
+        }
+        if (condition.getBrandId() != null && !condition.getBrandId().isEmpty()) {
+            for (Long brandId: condition.getBrandId()) {
+                if (!brandRepository.existsById(brandId)) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Brand ID " + brandId + " không tồn tại");
+                }
+            }
+        }
+    }
+
 }

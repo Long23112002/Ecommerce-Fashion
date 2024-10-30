@@ -18,8 +18,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiscountRequest {
-    private UUID code;
-
     @Valid
     @NotNull(message = "condition cannot be null")
     private Condition condition;

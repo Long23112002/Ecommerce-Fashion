@@ -51,7 +51,6 @@ public class VoucherServiceImpl implements VoucherServise {
             JwtResponse jwt = JwtService.decodeToken(token);
             Voucher voucher = new Voucher();
             FnCommon.copyNonNullProperties(voucher, request);
-            voucher.setCode(UUID.randomUUID());
 
             Discount discount = discountRepository.findById(request.getDiscountId()).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND));
@@ -133,5 +132,11 @@ public class VoucherServiceImpl implements VoucherServise {
         voucherRepository.save(voucher);
 
         return MessageResponse.builder().message("Voucher deleted successfully").build();
+    }
+    @Override
+    public Voucher getVoucherByCode(String voucherCode) {
+        return voucherRepository.findByCode(voucherCode).orElseThrow(
+                () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.VOUCHER_NOT_FOUND)
+        );
     }
 }

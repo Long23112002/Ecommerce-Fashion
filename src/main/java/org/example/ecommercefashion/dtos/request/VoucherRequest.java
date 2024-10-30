@@ -14,8 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VoucherRequest {
-    private UUID code;
-
     @NotNull(message = "ID discount giá không được để trống")
     private Long discountId;
 }

@@ -26,6 +26,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.sql.Timestamp;
 import java.util.List;
@@ -48,10 +49,8 @@ public class Discount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code", updatable = false)
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID code;
+    @Column(name = "code")
+    private String code;
 
     @Column(name = "name")
     private String name;
@@ -105,4 +104,11 @@ public class Discount {
     @OneToMany(mappedBy = "discount")
     @JsonIgnoreProperties("discount")
     private List<Voucher> voucher;
+
+    @PrePersist
+    public void generateCode() {
+        if (this.code == null || this.code.isEmpty()) {
+            this.code = UUID.randomUUID().toString();
+        }
+    }
 }

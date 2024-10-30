@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Long> {
     @Query("select d from Discount d where (:#{#param.type} IS NULL OR d.type = :#{#param.type}) " +
@@ -18,4 +20,5 @@ public interface DiscountRepository extends JpaRepository<Discount, Long> {
             "and (:#{#param.status} is NULL OR d.name LIKE %:#{#param.name}%)")
     Page<Discount> getFilterDiscountPage(@Param("param")DiscountParam param,
                                          Pageable pageable);
+
 }

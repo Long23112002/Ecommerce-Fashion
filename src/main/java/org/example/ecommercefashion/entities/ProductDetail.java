@@ -70,6 +70,7 @@ public class ProductDetail {
       fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"productDetails"})
   @JoinColumn(name = "id_product")
+  @JsonBackReference
   private Product product;
 
   @ManyToOne(

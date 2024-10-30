@@ -158,18 +158,14 @@ public class DiscountServiceImpl implements DiscountService {
                 .filter(discount -> {
                     Condition condition = discount.getCondition();
                     return detailList.stream().anyMatch(detail -> {
-                        boolean isProductDetail = condition.getProductDetailId() != null
-                                && condition.getProductDetailId().stream().anyMatch(id -> id.equals(detail.getId()));
+                        boolean isProductDetail = condition.getProductDetailId().stream().anyMatch(id -> id.equals(detail.getId()));
 
-                        boolean isProduct = condition.getProductId() != null
-                                && condition.getProductId().stream().anyMatch(id -> id.equals(detail.getProduct().getId()));
+                        boolean isProduct =  condition.getProductId().stream().anyMatch(id -> id.equals(detail.getProduct().getId()));
 
-                        boolean isCategory = condition.getCategoryId() != null
-                                && detail.getProduct().getCategory() != null
+                        boolean isCategory =  detail.getProduct().getCategory() != null
                                 && condition.getCategoryId().stream().anyMatch(id -> id.equals(detail.getProduct().getCategory().getId()));
 
-                        boolean isBrand = condition.getBrandId() != null
-                                && detail.getProduct().getBrand() != null
+                        boolean isBrand =  detail.getProduct().getBrand() != null
                                 && condition.getBrandId().stream().anyMatch(id -> id.equals(detail.getProduct().getBrand().getId()));
 
                         return isProductDetail || isProduct || isCategory || isBrand;

@@ -69,8 +69,10 @@ public class ProductDetail {
       cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
       fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"productDetails"})
+//  @JsonBackReference
+  @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_product")
-  @JsonBackReference
+  @JsonBackReference("product-productDetail")
   private Product product;
 
   @ManyToOne(

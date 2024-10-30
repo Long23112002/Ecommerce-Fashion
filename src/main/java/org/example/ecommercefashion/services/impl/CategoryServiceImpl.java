@@ -17,6 +17,7 @@ import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.CategoryRepository;
+import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.CategoryService;
@@ -45,6 +46,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final JwtService JwtService;
 
     private final NotificationService notificationService;
+
+    private final ProductRepository productRepository;
 
     @Override
     public ResponsePage<Category, CategoryResponse> filterCategory(CategoryParam param, Pageable pageable) {
@@ -160,6 +163,9 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
         );
+        if(productRepository.existsByCategory(category)){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_HAS_PRODUCT);
+        }
         markAsDeleted(category);
 
         categoryRepository.save(category);

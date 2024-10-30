@@ -24,13 +24,13 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponsePage<Product, ProductResponse> getAll(ProductParam param, Pageable pageable) {
+    public ResponsePage<Product, Product> getAll(ProductParam param, Pageable pageable) {
         return productService.filterProduct(param, pageable);
     }
 
     @PostMapping
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request,
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request,
                                                          @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
@@ -40,7 +40,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id,
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id,
                                                          @Valid @RequestBody ProductRequest request,
                                                          @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
@@ -51,10 +51,10 @@ public class ProductController {
 
     @GetMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<ProductResponse> getById(@PathVariable Long id) {
-        ProductResponse response = productService.getProductById(id);
-        if (response != null) {
-            return ResponseEntity.ok(response);
+    public ResponseEntity<Product> getById(@PathVariable Long id) {
+        Product product = productService.getProductById(id);
+        if (product != null) {
+            return ResponseEntity.ok(product);
         } else {
             return null;
         }

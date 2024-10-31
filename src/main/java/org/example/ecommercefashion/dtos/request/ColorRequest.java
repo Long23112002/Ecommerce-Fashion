@@ -22,4 +22,6 @@ public class ColorRequest {
     @Size(min = 2, max = 50, message = "Tên màu phải từ 2 đến 50 ký tự")
     private String name;
 
+    @NotBlank(message = "Mã màu không được trống")
+    private String code;
 }

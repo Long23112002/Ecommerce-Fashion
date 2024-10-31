@@ -1,8 +1,12 @@
 package org.example.ecommercefashion.config.promotion;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Promotion;
+import org.example.ecommercefashion.enums.promotion.StatusPromotionEnum;
+import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
 import org.example.ecommercefashion.repositories.ProcessSendRepository;
+import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.PromotionRepository;
 import org.example.ecommercefashion.services.impl.PromotionServiceImpl;
 import org.slf4j.LoggerFactory;
@@ -22,24 +26,67 @@ public class SheducledPromotion {
 
     private final PromotionRepository promotionRepository;
 
+    private final ProductDetailRepository productDetailRepository;
+
     @Scheduled(cron = "0 * * * * *")
     @Transactional
-    public void updatePromotionStatuses() {
-        int page = 0;
-        int size = 100;
+    public synchronized void updatePromotionStatuses() {
+        int promotionPageNumber = 0;
+        int promotionPageSize = 100;
+        int productDetailPageSize = 100;
 
-        boolean hasNextPage = true;
-        while (hasNextPage) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
+        boolean hasMorePromotions = true;
+        while (hasMorePromotions) {
+            Pageable promotionPageable = PageRequest.of(promotionPageNumber, promotionPageSize);
+            Page<Promotion> promotionPage = promotionRepository.findAll(promotionPageable);
             List<Promotion> promotionsToUpdate = promotionPage.getContent();
 
             for (Promotion promotion : promotionsToUpdate) {
                 PromotionServiceImpl.setPromotionStatus(promotion);
+
+                boolean hasMoreProductDetails = true;
+                int productDetailPageNumber = 0;
+
+                while (hasMoreProductDetails) {
+                    Pageable productDetailPageable = PageRequest.of(productDetailPageNumber, productDetailPageSize);
+                    Page<ProductDetail> productDetailPage = productDetailRepository.findByPromotionId(
+                            promotion.getId(), productDetailPageable);
+                    List<ProductDetail> productDetails = productDetailPage.getContent();
+
+                    for (ProductDetail productDetail : productDetails) {
+                        if (promotion.getStatusPromotionEnum() == StatusPromotionEnum.ACTIVE) {
+                            double discountedPrice;
+                            if (promotion.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
+                                discountedPrice = productDetail.getPrice() * (1 - promotion.getValue() / 100.0);
+                            } else if (promotion.getTypePromotionEnum() == TypePromotionEnum.AMOUNT_DISCOUNT) {
+                                discountedPrice = productDetail.getPrice() - promotion.getValue();
+                            } else {
+                                discountedPrice = productDetail.getPrice();
+                            }
+
+                            productDetail.setPrice(Math.max(discountedPrice, 0));
+
+                        } else if (promotion.getStatusPromotionEnum() == StatusPromotionEnum.ENDED) {
+                            double originalPrice;
+                            if (promotion.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
+                                originalPrice = productDetail.getPrice() / (1 - promotion.getValue() / 100.0);
+                            } else if (promotion.getTypePromotionEnum() == TypePromotionEnum.AMOUNT_DISCOUNT) {
+                                originalPrice = productDetail.getPrice() + promotion.getValue();
+                            } else {
+                                originalPrice = productDetail.getPrice();
+                            }
+
+                            productDetail.setPrice(originalPrice);
+                        }
+                    }
+                    productDetailRepository.saveAll(productDetails);
+                    hasMoreProductDetails = productDetailPage.hasNext();
+                    productDetailPageNumber++;
+                }
             }
             promotionRepository.saveAll(promotionsToUpdate);
-            hasNextPage = promotionPage.hasNext();
-            page++;
+            hasMorePromotions = promotionPage.hasNext();
+            promotionPageNumber++;
         }
     }
 }

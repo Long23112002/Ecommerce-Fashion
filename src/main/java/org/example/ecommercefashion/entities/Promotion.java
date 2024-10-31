@@ -1,25 +1,35 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.ecommercefashion.enums.promotion.StatusPromotionEnum;
 import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -72,4 +82,16 @@ public class Promotion {
 
     @Column(name = "deleted")
     private Boolean deleted = false;
+
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "promotion_product_detail",
+            schema = "promotions",
+            joinColumns = @JoinColumn(name = "id_promotion"),
+            inverseJoinColumns = @JoinColumn(name = "id_product_detail")
+    )
+    @Fetch(FetchMode.JOIN)
+    @BatchSize(size = 100)
+    @JsonManagedReference
+    private List<ProductDetail> productDetailList;
 }

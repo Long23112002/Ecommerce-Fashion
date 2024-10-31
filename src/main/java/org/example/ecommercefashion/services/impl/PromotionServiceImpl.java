@@ -9,12 +9,14 @@ import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.PromotionResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Promotion;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.enums.promotion.StatusPromotionEnum;
 import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.PromotionRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
@@ -26,6 +28,8 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +40,8 @@ public class PromotionServiceImpl implements PromotionService {
     private final UserRepository userRepository;
 
     private final JwtService jwtService;
+
+    private final ProductDetailRepository productDetailRepository;
 
     private final DecimalFormat decimalFormat = new DecimalFormat("#,###");
 
@@ -87,6 +93,13 @@ public class PromotionServiceImpl implements PromotionService {
                 if (promotionRequest.getValue() < 1000) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_AMOUNT_WRONG_FORMAT);
                 }
+            }
+
+            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotions(
+                    promotionRequest.getStartDate(), promotionRequest.getEndDate());
+
+            if (!overlappingPromotions.isEmpty()) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_DATE_OVERLAP);
             }
 
             Promotion promotion = new Promotion();
@@ -175,7 +188,7 @@ public class PromotionServiceImpl implements PromotionService {
     public static void setPromotionStatus(Promotion promotion) {
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
-        if(promotion.getEndDate().before(promotion.getStartDate())){
+        if (promotion.getEndDate().before(promotion.getStartDate())) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_START_DATE_OR_END_DATE_WRONG);
         }
 
@@ -185,6 +198,52 @@ public class PromotionServiceImpl implements PromotionService {
             promotion.setStatusPromotionEnum(StatusPromotionEnum.ENDED);
         } else {
             promotion.setStatusPromotionEnum(StatusPromotionEnum.ACTIVE);
+        }
+    }
+
+    @Override
+    public PromotionResponse addProductDetailsToPromotion(Long promotionId, List<Long> productDetailIds, String token) {
+        if (token != null) {
+            JwtResponse jwtResponse = jwtService.decodeToken(token);
+
+            Promotion promotion = promotionRepository.findById(promotionId).orElseThrow(() ->
+                    new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PROMOTION_NOT_FOUND)
+            );
+
+            if (productDetailIds == null || productDetailIds.isEmpty()) {
+                promotion.getProductDetailList().clear();
+
+                promotion.setUpdatedBy(jwtResponse.getUserId());
+                promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                promotionRepository.save(promotion);
+                return mapPromotionToPromotionResponse(promotion);
+            }
+
+            List<ProductDetail> productDetails = productDetailRepository.findAllById(productDetailIds);
+
+            List<Long> foundIds = productDetails.stream()
+                    .map(ProductDetail::getId)
+                    .toList();
+
+            List<Long> notFoundIds = productDetailIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+            if (!notFoundIds.isEmpty()) {
+                throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PRODUCT_DETAIL_NOT_FOUND);
+            }
+
+            promotion.getProductDetailList().clear();
+
+            promotion.getProductDetailList().addAll(productDetails);
+
+            promotion.setUpdatedBy(jwtResponse.getUserId());
+            promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+            promotionRepository.save(promotion);
+
+            return mapPromotionToPromotionResponse(promotion);
+        } else {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
 

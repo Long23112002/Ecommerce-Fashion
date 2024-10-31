@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProductDetailRepository extends JpaRepository<ProductDetail, Long> {
     Boolean existsProductDetailByColorAndProductAndSize(Product product, Color color, Size size);
@@ -29,5 +30,8 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
     Boolean existsByColor(Color color);
 
     Boolean existsBySize(Size size);
+
+    @Query("SELECT pd FROM ProductDetail pd JOIN pd.promotionList p WHERE p.id = :promotionId")
+    Page<ProductDetail> findByPromotionId(@Param("promotionId") Long promotionId, Pageable pageable);
 
 }

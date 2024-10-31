@@ -14,7 +14,6 @@ import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.Material;
 import org.example.ecommercefashion.entities.Origin;
 import org.example.ecommercefashion.entities.Product;
-import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.entities.value.UserValue;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
@@ -33,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Random;
 
 import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final MaterialRepository materialRepository;
     private final OriginRepository originRepository;
-
+    private static int counter = 1;
     private UserResponse getInfoUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() ->
                 new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
@@ -114,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
             productCreate.setCategory(category);
             productCreate.setMaterial(material);
             productCreate.setOrigin(origin);
-
+            productCreate.setCode(generateProductCode());
             productCreate.setCreateByUser(getInfoUserValue(jwtResponse.getUserId()));
             productRepository.save(productCreate);
 
@@ -122,6 +122,16 @@ public class ProductServiceImpl implements ProductService {
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
+    }
+
+    public String generateProductCode() {
+        String productCode;
+        do {
+            productCode = "PD" + counter;
+            counter++;
+        } while (productRepository.existsByCode(productCode));
+
+        return productCode;
     }
 
     @Override

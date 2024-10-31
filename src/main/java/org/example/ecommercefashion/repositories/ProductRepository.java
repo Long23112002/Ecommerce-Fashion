@@ -19,11 +19,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             + "WHERE "
             + "(lower(:#{#param.keyword}) IS NULL OR lower(p.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
             + " OR lower(p.code) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR p.description LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR p.brand.name LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')"
-            + " OR p.origin.name LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR p.category.name LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR p.material.name LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')) AND "
+            + " OR lower(p.description) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
+            + " OR lower(p.brand.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')"
+            + " OR lower(p.origin.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
+            + " OR lower(p.category.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
+            + " OR lower(p.material.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')) AND "
             + "(:#{#param.idBrand} IS NULL OR p.brand.id = :#{#param.idBrand}) AND "
             + "(:#{#param.idOrigin} IS NULL OR p.origin.id = :#{#param.idOrigin}) AND "
             + "(:#{#param.idCategory} IS NULL OR p.category.id = :#{#param.idCategory}) AND "
@@ -40,5 +40,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Boolean existsByOrigin(Origin origin);
 
-
+    Boolean existsByCode(String code);
 }

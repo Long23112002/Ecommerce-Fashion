@@ -1,10 +1,8 @@
 package org.example.ecommercefashion.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +17,6 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -65,12 +62,12 @@ public class Product {
     @Column(nullable = false)
     private Boolean deleted = false;
 
-    @PrePersist
-    public void generateCode() {
-        if (this.code == null || this.code.isEmpty()) {
-            this.code = UUID.randomUUID().toString();
-        }
-    }
+//    @PrePersist
+//    public void generateCode() {
+//        if (this.code == null || this.code.isEmpty()) {
+//            this.code = UUID.randomUUID().toString();
+//        }
+//    }
 
 //    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

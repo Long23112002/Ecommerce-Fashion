@@ -29,7 +29,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             + "(:#{#param.idCategory} IS NULL OR p.category.id = :#{#param.idCategory}) AND "
             + "(:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial}) "
             + "ORDER BY p.id DESC ")
-
     Page<Product> filterProduct(ProductParam param, Pageable pageable);
 
     Boolean existsByMaterial(Material material);

@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.enums.promotion.StatusPromotionEnum;
 import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -41,5 +43,7 @@ public class PromotionResponse {
     private UserResponse updatedBy;
 
     private Boolean deleted;
+
+    private List<ProductDetail> productDetailList;
 
 }

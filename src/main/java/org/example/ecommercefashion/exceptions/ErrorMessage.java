@@ -53,7 +53,11 @@ public enum ErrorMessage implements BaseErrorMessage {
   MATERIAL_HAS_PRODUCT_DETAIL("Chất liệu đang thuộc về 1 chi tiết sản phẩm"),
   BRAND_HAS_PRODUCT("Thương hiệu đang thuộc về 1 chi tiết sản phẩm"),
   CATEGORY_HAS_PRODUCT("Danh mục đang thuộc về 1 chi tiết sản phẩm"),
-  ORIGIN_HAS_PRODUCT("Xuất xứ sản phẩm đang thuộc về 1 chi tiết sản phẩm")
+  ORIGIN_HAS_PRODUCT("Xuất xứ sản phẩm đang thuộc về 1 chi tiết sản phẩm"),
+  CODE_COLOR_EXIST("Mã màu đã tồn tại"),
+  PRODUCT_DETAIL_NOT_FOUND("Sản phẩm chi tiết không tồn tại"),
+  PRODUCT_DETAIL_IDS_EMPTY("ID sản phẩm chi tiết trống"),
+  PROMOTION_DATE_OVERLAP("Không được tạo đợt giảm giá có khoảng thời gian chồng nhau"),
   ;
 
   public String val;

@@ -55,28 +55,25 @@ public class SheducledPromotion {
 
                     for (ProductDetail productDetail : productDetails) {
                         if (promotion.getStatusPromotionEnum() == StatusPromotionEnum.ACTIVE) {
+                            if (productDetail.getOriginPrice() == null) {
+                                productDetail.setOriginPrice(productDetail.getPrice());
+                            }
+
                             double discountedPrice;
                             if (promotion.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
-                                discountedPrice = productDetail.getPrice() * (1 - promotion.getValue() / 100.0);
+                                discountedPrice = productDetail.getOriginPrice() * (1 - promotion.getValue() / 100.0);
                             } else if (promotion.getTypePromotionEnum() == TypePromotionEnum.AMOUNT_DISCOUNT) {
-                                discountedPrice = productDetail.getPrice() - promotion.getValue();
+                                discountedPrice = productDetail.getOriginPrice() - promotion.getValue();
                             } else {
-                                discountedPrice = productDetail.getPrice();
+                                discountedPrice = productDetail.getOriginPrice();
                             }
 
                             productDetail.setPrice(Math.max(discountedPrice, 0));
-
                         } else if (promotion.getStatusPromotionEnum() == StatusPromotionEnum.ENDED) {
-                            double originalPrice;
-                            if (promotion.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
-                                originalPrice = productDetail.getPrice() / (1 - promotion.getValue() / 100.0);
-                            } else if (promotion.getTypePromotionEnum() == TypePromotionEnum.AMOUNT_DISCOUNT) {
-                                originalPrice = productDetail.getPrice() + promotion.getValue();
-                            } else {
-                                originalPrice = productDetail.getPrice();
+                            if (productDetail.getOriginPrice() != null) {
+                                productDetail.setPrice(productDetail.getOriginPrice());
+                                 productDetail.setOriginPrice(null);
                             }
-
-                            productDetail.setPrice(originalPrice);
                         }
                     }
                     productDetailRepository.saveAll(productDetails);

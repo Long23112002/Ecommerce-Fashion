@@ -28,4 +28,6 @@ public class ProductDetailResponse {
     private ProductResponse product;
     private String sizeName;
     private String colorName;
+
+    private Double originPrice;
 }

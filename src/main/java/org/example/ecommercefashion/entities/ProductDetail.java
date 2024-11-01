@@ -36,6 +36,9 @@ public class ProductDetail {
   @Column(name = "price")
   private Double price;
 
+  @Column(name = "origin_price")
+  private Double originPrice;
+
   @Column(name = "quantity")
   private Integer quantity;
 

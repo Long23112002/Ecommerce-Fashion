@@ -103,6 +103,7 @@ public class PermissionServiceImpl implements PermissionService {
     PermissionResponse permissionResponse = new PermissionResponse();
     permissionResponse.setId(permission.getId());
     permissionResponse.setName(permission.getName());
+    permissionResponse.setDescription(permission.getDescription());
     return permissionResponse;
   }
 }

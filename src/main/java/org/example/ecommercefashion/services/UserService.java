@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services;
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.OtpRequest;
+import org.example.ecommercefashion.dtos.request.UserInfoUpdateRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -22,6 +23,8 @@ public interface UserService {
   UserResponse createUser(UserRequest userRequest) throws JobExecutionException;
 
   UserResponse updateUser(Long id, UserRequest userRequest);
+
+  UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest);
 
   MessageResponse deleteUser(Long id);
 

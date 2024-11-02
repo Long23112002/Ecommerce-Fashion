@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.ProductParam;
 import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
-import org.example.ecommercefashion.dtos.response.ProductResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Product;
 import org.example.ecommercefashion.services.ProductService;
@@ -31,7 +30,7 @@ public class ProductController {
     @PostMapping
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request,
-                                                         @RequestHeader("Authorization") String token) {
+                                                 @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -41,8 +40,8 @@ public class ProductController {
     @PutMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<Product> updateProduct(@PathVariable Long id,
-                                                         @Valid @RequestBody ProductRequest request,
-                                                         @RequestHeader("Authorization") String token) {
+                                                 @Valid @RequestBody ProductRequest request,
+                                                 @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -52,12 +51,7 @@ public class ProductController {
     @GetMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<Product> getById(@PathVariable Long id) {
-        Product product = productService.getProductById(id);
-        if (product != null) {
-            return ResponseEntity.ok(product);
-        } else {
-            return null;
-        }
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
     @DeleteMapping("/{id}")

@@ -31,6 +31,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductDetailServiceImpl implements ProductDetailService {
@@ -114,6 +116,11 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             productDetail.setUpdateByUser(getInfoUserValue(productDetail.getUpdateBy()));
         }
         return productDetail;
+    }
+
+    @Override
+    public List<ProductDetail> getDetailByIdProduct(Long idProduct) {
+        return productDetailRepository.getDetailByIdProduct(idProduct);
     }
 
     private ProductDetail findById(Long id) {

@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface ProductDetailRepository extends JpaRepository<ProductDetail, Long> {
     Boolean existsProductDetailByColorAndProductAndSize(Product product, Color color, Size size);
 
@@ -34,4 +36,10 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
     @Query("SELECT pd FROM ProductDetail pd JOIN pd.promotionList p WHERE p.id = :promotionId")
     Page<ProductDetail> findByPromotionId(@Param("promotionId") Long promotionId, Pageable pageable);
 
+    @Query("SELECT pd " +
+            "FROM Product p " +
+            "JOIN ProductDetail pd ON p.id = pd.product.id " +
+            "WHERE p.id = :idProduct " +
+            "GROUP BY p.id, pd.id")
+    List<ProductDetail> getDetailByIdProduct(Long idProduct);
 }

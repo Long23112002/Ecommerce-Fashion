@@ -19,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/product-detail")
@@ -63,5 +64,10 @@ public class ProductDetailController {
     public ResponseEntity<MessageResponse> deleteProduct(@PathVariable Long id) {
         MessageResponse messageResponse = service.delete(id);
         return ResponseEntity.ok(messageResponse);
+    }
+
+    @GetMapping("/product/{id}")
+    public ResponseEntity<List<ProductDetail>> getDetailByIdProduct(@PathVariable Long id){
+        return ResponseEntity.ok(service.getDetailByIdProduct(id));
     }
 }

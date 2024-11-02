@@ -114,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
             productCreate.setCategory(category);
             productCreate.setMaterial(material);
             productCreate.setOrigin(origin);
-            productCreate.setCode(generateProductCode());
+//            productCreate.setCode(generateProductCode());
             productCreate.setCreateByUser(getInfoUserValue(jwtResponse.getUserId()));
             productRepository.save(productCreate);
 

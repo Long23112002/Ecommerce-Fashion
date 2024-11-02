@@ -17,7 +17,6 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -30,9 +29,11 @@ import java.util.UUID;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
+//    @SequenceGenerator(name = "product_seq", sequenceName = "product_seq", allocationSize = 1)
     private Long id;
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, nullable = false)
     private String code;
 
     @Column(name = "name")
@@ -68,6 +69,10 @@ public class Product {
 //            this.code = UUID.randomUUID().toString();
 //        }
 //    }
+    @PrePersist
+    private void generateProductCode() {
+        this.code = "PD" + this.id;
+    }
 
 //    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

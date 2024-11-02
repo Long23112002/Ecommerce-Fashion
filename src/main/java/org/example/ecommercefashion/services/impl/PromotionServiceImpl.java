@@ -232,6 +232,8 @@ public class PromotionServiceImpl implements PromotionService {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PRODUCT_DETAIL_NOT_FOUND);
             }
 
+            productDetails.forEach(productDetail -> productDetail.setOriginPrice(null));
+
             promotion.getProductDetailList().clear();
 
             promotion.getProductDetailList().addAll(productDetails);

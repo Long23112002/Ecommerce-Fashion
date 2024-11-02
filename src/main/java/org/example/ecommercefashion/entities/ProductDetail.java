@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.ecommercefashion.entities.value.UserValue;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -34,6 +35,9 @@ public class ProductDetail {
 
   @Column(name = "price")
   private Double price;
+
+  @Column(name = "origin_price")
+  private Double originPrice;
 
   @Column(name = "quantity")
   private Integer quantity;
@@ -69,6 +73,8 @@ public class ProductDetail {
       cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
       fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"productDetails"})
+//  @JsonBackReference
+  @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_product")
   private Product product;
 
@@ -91,4 +97,10 @@ public class ProductDetail {
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_color")
   private Color color;
+
+  @ManyToMany(mappedBy = "productDetailList", fetch = FetchType.LAZY)
+  @JsonBackReference
+  @BatchSize(size = 100)
+  private List<Promotion> promotionList;
+
 }

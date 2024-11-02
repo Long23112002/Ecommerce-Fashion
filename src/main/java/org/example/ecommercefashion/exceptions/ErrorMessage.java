@@ -41,13 +41,25 @@ public enum ErrorMessage implements BaseErrorMessage {
   TEMPLATE_NOT_FOUND("Không tìm thấy Mẫu"),
   OTP_NOT_MATCH("OTP không đúng vui lòng kiểm tra lại"),
   OTP_EXPIRED("OTP đã hết hạn"),
+  PROMOTION_NOT_FOUND("Không tìm thấy khuyến mãi"),
+  PROMOTION_PERCENTAGE_WRONG_FORMAT("Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
+  PROMOTION_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   PRODUCT_NAME_EXISTED("Tên Sản Phẩm Đã Tồn Tại"),
   PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
   PRODUCT_WAS_DISABLE("Sản Phẩm bị ẩn "),
   ERROR_WHEN_CREATE("Lỗi khi tạo"),
-
+  COLOR_HAS_PRODUCT_DETAIL("Màu sắc đang thuộc về 1 chi tiết sản phẩm"),
+  SIZE_HAS_PRODUCT_DETAIL("Size đang thuộc về 1 chi tiết sản phẩm"),
+  MATERIAL_HAS_PRODUCT_DETAIL("Chất liệu đang thuộc về 1 chi tiết sản phẩm"),
+  BRAND_HAS_PRODUCT("Thương hiệu đang thuộc về 1 chi tiết sản phẩm"),
+  CATEGORY_HAS_PRODUCT("Danh mục đang thuộc về 1 chi tiết sản phẩm"),
+  ORIGIN_HAS_PRODUCT("Xuất xứ sản phẩm đang thuộc về 1 chi tiết sản phẩm"),
+  CODE_COLOR_EXIST("Mã màu đã tồn tại"),
+  PRODUCT_DETAIL_NOT_FOUND("Sản phẩm chi tiết không tồn tại"),
+  PRODUCT_DETAIL_IDS_EMPTY("ID sản phẩm chi tiết trống"),
+  PROMOTION_DATE_OVERLAP("Không được tạo đợt giảm giá có khoảng thời gian chồng nhau"),
   ;
-
 
   public String val;
 

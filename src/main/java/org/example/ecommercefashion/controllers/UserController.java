@@ -7,6 +7,7 @@ import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
+import org.example.ecommercefashion.dtos.request.UserInfoUpdateRequest;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.User;
@@ -45,6 +46,12 @@ public class UserController {
     return userService.updateUser(id, userRequest);
   }
 
+  @PutMapping("/update-info/{id}")
+  public UserResponse updateUser(
+          @PathVariable Long id, @Valid @RequestBody UserInfoUpdateRequest userUpdateRequest) {
+    return userService.updateUser(id, userUpdateRequest);
+  }
+
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ROLE_ADMIN')")
   public void deleteUser(@PathVariable Long id) {
@@ -62,7 +69,7 @@ public class UserController {
     userService.assignRoleAdmin(email);
   }
 
-  @PatchMapping("/change-password")
+  @PutMapping("/change-password")
   public void changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
     userService.changePassword(changePasswordRequest);
   }

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
 import org.example.ecommercefashion.dtos.request.OtpRequest;
+import org.example.ecommercefashion.dtos.request.UserInfoUpdateRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
 import org.example.ecommercefashion.dtos.response.*;
@@ -130,6 +131,22 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
+  public UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest) {
+    User user = entityManager.find(User.class, id);
+    if(user==null) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
+    }
+    if(userUpdateRequest.getAvatar()==null) {
+      userUpdateRequest.setAvatar(user.getAvatar());
+    }
+    FnCommon.copyProperties(user, userUpdateRequest);
+    user.setSlugFullName(userUpdateRequest.getFullName());
+    entityManager.merge(user);
+    return mapEntityToResponse(user);
+  }
+
+  @Override
+  @Transactional
   public MessageResponse deleteUser(Long id) {
 
     User user = entityManager.find(User.class, id);
@@ -181,12 +198,17 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest) {
     User user =
         Optional.ofNullable(userRepository.findByEmail(changePasswordRequest.getEmail()))
             .orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
     String currentPassword = user.getPassword();
+    if(!passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), currentPassword)){
+      throw new ExceptionHandle(
+              HttpStatus.BAD_REQUEST, ErrorMessage.PASSWORD_DO_NOT_MATCH);
+    }
     if (passwordEncoder.matches(changePasswordRequest.getNewPassword(), currentPassword)) {
       throw new ExceptionHandle(
           HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_SAME_NEW_PASSWORD.val());

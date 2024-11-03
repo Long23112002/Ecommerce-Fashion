@@ -16,5 +16,5 @@ public interface ProductDetailService {
     ResponsePage<ProductDetail,ProductDetail> getAllPage(Pageable pageable, ProductDetailParam productDetailParam);
     MessageResponse delete(Long id);
     ProductDetail detail(Long id);
-    List<ProductDetail> getDetailByIdProduct(Long idProduct);
+    ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(Long idProduct, Pageable pageable);
 }

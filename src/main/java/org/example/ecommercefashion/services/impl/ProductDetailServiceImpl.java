@@ -119,8 +119,21 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     }
 
     @Override
-    public List<ProductDetail> getDetailByIdProduct(Long idProduct) {
-        return productDetailRepository.getDetailByIdProduct(idProduct);
+    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(Long idProduct, Pageable pageable) {
+        Page<ProductDetail> productDetailPage =
+                productDetailRepository.getDetailByIdProduct(idProduct, pageable)
+                        .map(detail -> {
+                            if(detail.getCreateBy() != null){
+                                detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
+                            }
+                            if(detail.getUpdateBy() != null){
+                                detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
+                            }
+                            return detail;
+                        });
+        return new ResponsePage<>(productDetailPage);
+
+//        return productDetailRepository.getDetailByIdProduct(idProduct, pageable);
     }
 
     private ProductDetail findById(Long id) {

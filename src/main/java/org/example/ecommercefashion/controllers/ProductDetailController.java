@@ -67,7 +67,7 @@ public class ProductDetailController {
     }
 
     @GetMapping("/product/{id}")
-    public ResponseEntity<List<ProductDetail>> getDetailByIdProduct(@PathVariable Long id){
-        return ResponseEntity.ok(service.getDetailByIdProduct(id));
+    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(@PathVariable Long id, Pageable pageable){
+        return service.getDetailByIdProduct(id, pageable);
     }
 }

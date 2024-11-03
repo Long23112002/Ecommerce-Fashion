@@ -41,5 +41,5 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
             "JOIN ProductDetail pd ON p.id = pd.product.id " +
             "WHERE p.id = :idProduct " +
             "GROUP BY p.id, pd.id")
-    List<ProductDetail> getDetailByIdProduct(Long idProduct);
+    Page<ProductDetail> getDetailByIdProduct(Long idProduct, Pageable pageable);
 }

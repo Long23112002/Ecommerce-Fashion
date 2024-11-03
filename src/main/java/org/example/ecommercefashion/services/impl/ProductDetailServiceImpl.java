@@ -31,6 +31,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductDetailServiceImpl implements ProductDetailService {
@@ -114,6 +116,24 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             productDetail.setUpdateByUser(getInfoUserValue(productDetail.getUpdateBy()));
         }
         return productDetail;
+    }
+
+    @Override
+    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(Long idProduct, Pageable pageable) {
+        Page<ProductDetail> productDetailPage =
+                productDetailRepository.getDetailByIdProduct(idProduct, pageable)
+                        .map(detail -> {
+                            if(detail.getCreateBy() != null){
+                                detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
+                            }
+                            if(detail.getUpdateBy() != null){
+                                detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
+                            }
+                            return detail;
+                        });
+        return new ResponsePage<>(productDetailPage);
+
+//        return productDetailRepository.getDetailByIdProduct(idProduct, pageable);
     }
 
     private ProductDetail findById(Long id) {

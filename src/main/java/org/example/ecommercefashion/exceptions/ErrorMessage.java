@@ -21,6 +21,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   BAD_CREDENTIAL("Thông tin xác thực không chính xác"),
   INVALID_REFRESH_TOKEN("Mã thông báo làm mới không hợp lệ"),
   CURRENT_PASSWORD_SAME_NEW_PASSWORD("Mật khẩu hiện tại giống mật khẩu mới"),
+  PASSWORD_DO_NOT_MATCH("Mật khẩu không đúng"),
   OTP_IS_EXPIRED("OTP đã hết hạn"),
   ERROR_UPLOADING_FILE("Lỗi khi tải tệp lên"),
   SOMETHING_WENT_WRONG("Đã xảy ra lỗi"),

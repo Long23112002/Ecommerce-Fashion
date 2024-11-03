@@ -127,6 +127,22 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
+  public UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest) {
+    User user = entityManager.find(User.class, id);
+    if(user==null) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
+    }
+    if(userUpdateRequest.getAvatar()==null) {
+      userUpdateRequest.setAvatar(user.getAvatar());
+    }
+    FnCommon.copyProperties(user, userUpdateRequest);
+    user.setSlugFullName(userUpdateRequest.getFullName());
+    entityManager.merge(user);
+    return mapEntityToResponse(user);
+  }
+
+  @Override
+  @Transactional
   public MessageResponse deleteUser(Long id) {
 
     User user = entityManager.find(User.class, id);

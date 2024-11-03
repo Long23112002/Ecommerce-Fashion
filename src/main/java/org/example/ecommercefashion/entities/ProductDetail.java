@@ -27,7 +27,7 @@ import org.hibernate.annotations.Where;
 @Table(name = "product_detail", schema = "products")
 @Where(clause = "deleted = false")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class ProductDetail {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,7 +73,7 @@ public class ProductDetail {
       cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
       fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"productDetails"})
-//  @JsonBackReference
+  //  @JsonBackReference
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_product")
   private Product product;
@@ -102,5 +102,4 @@ public class ProductDetail {
   @JsonBackReference
   @BatchSize(size = 100)
   private List<Promotion> promotionList;
-
 }

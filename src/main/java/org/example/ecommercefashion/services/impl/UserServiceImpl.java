@@ -2,23 +2,13 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.UserParam;
-import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
-import org.example.ecommercefashion.dtos.request.OtpRequest;
-import org.example.ecommercefashion.dtos.request.UserInfoUpdateRequest;
-import org.example.ecommercefashion.dtos.request.UserRequest;
-import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
+import org.example.ecommercefashion.dtos.request.*;
 import org.example.ecommercefashion.dtos.response.*;
 import org.example.ecommercefashion.entities.EmailJob;
 import org.example.ecommercefashion.entities.Role;
@@ -26,6 +16,7 @@ import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
+import org.example.ecommercefashion.services.CartService;
 import org.example.ecommercefashion.services.OTPService;
 import org.example.ecommercefashion.services.UserService;
 import org.quartz.*;
@@ -56,6 +47,8 @@ public class UserServiceImpl implements UserService {
 
   @Autowired private RedisTemplate<String, String> redisTemplate;
 
+  @Autowired private CartService cartService;
+
   @Override
   @Transactional
   public UserResponse createUser(UserRequest userRequest) throws JobExecutionException {
@@ -63,10 +56,11 @@ public class UserServiceImpl implements UserService {
     String email = userRequest.getEmail();
 
     String emailStatus = redisTemplate.opsForValue().get(email);
-
-    if (!"done".equals(emailStatus)) {
-      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_NOT_VERIFIED.val());
-    }
+    //
+    //    if (!"done".equals(emailStatus)) {
+    //      throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
+    // ErrorMessage.EMAIL_NOT_VERIFIED.val());
+    //    }
 
     validateEmail(userRequest.getEmail());
     validatePhone(userRequest.getPhoneNumber());
@@ -85,6 +79,8 @@ public class UserServiceImpl implements UserService {
     user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
 
     entityManager.persist(user);
+
+    cartService.create(new CartRequest(user.getId(), new HashSet<>()));
 
     return mapEntityToResponse(user);
   }
@@ -131,22 +127,6 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest) {
-    User user = entityManager.find(User.class, id);
-    if(user==null) {
-      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
-    }
-    if(userUpdateRequest.getAvatar()==null) {
-      userUpdateRequest.setAvatar(user.getAvatar());
-    }
-    FnCommon.copyProperties(user, userUpdateRequest);
-    user.setSlugFullName(userUpdateRequest.getFullName());
-    entityManager.merge(user);
-    return mapEntityToResponse(user);
-  }
-
-  @Override
-  @Transactional
   public MessageResponse deleteUser(Long id) {
 
     User user = entityManager.find(User.class, id);
@@ -170,20 +150,22 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User findUserOrDefault(Long id) {
-    return userRepository.findById(id)
-            .filter(entity -> !entity.getDeleted())
-            .orElse(getDeletedUser());
+    return userRepository
+        .findById(id)
+        .filter(entity -> !entity.getDeleted())
+        .orElse(getDeletedUser());
   }
 
   @Override
   public User getDeletedUser() {
     return User.builder()
-            .fullName("Tài khoản đã bị xóa")
-            .avatar(avatarDefault())
-            .deleted(true)
-            .build();
+        .fullName("Tài khoản đã bị xóa")
+        .avatar(avatarDefault())
+        .deleted(true)
+        .build();
   }
 
+  @Override
   @Transactional
   public MessageResponse assignRoleAdmin(String email) {
     User user =
@@ -198,17 +180,12 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest) {
     User user =
         Optional.ofNullable(userRepository.findByEmail(changePasswordRequest.getEmail()))
             .orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
     String currentPassword = user.getPassword();
-    if(!passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), currentPassword)){
-      throw new ExceptionHandle(
-              HttpStatus.BAD_REQUEST, ErrorMessage.PASSWORD_DO_NOT_MATCH);
-    }
     if (passwordEncoder.matches(changePasswordRequest.getNewPassword(), currentPassword)) {
       throw new ExceptionHandle(
           HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_SAME_NEW_PASSWORD.val());
@@ -258,7 +235,6 @@ public class UserServiceImpl implements UserService {
     String email = otpRequest.getEmail();
     redisTemplate.opsForValue().set(email, "done", 10, TimeUnit.MINUTES);
   }
-
 
   private UserResponse mapEntityToResponse(User user) {
     UserResponse userResponse = new UserResponse();

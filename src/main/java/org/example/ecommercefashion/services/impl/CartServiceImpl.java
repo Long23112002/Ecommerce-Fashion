@@ -62,8 +62,9 @@ public class CartServiceImpl implements CartService {
 
   @Override
   @Transactional
-  public void delete(Long id) {
-    Cart cart = getCartById(id);
+  public void delete(String token) {
+    JwtResponse jwtResponse = jwtService.decodeToken(token);
+    Cart cart = getCartById(jwtResponse.getUserId());
     cart.setCartValues(new HashSet<>());
     cartRepository.save(cart);
   }

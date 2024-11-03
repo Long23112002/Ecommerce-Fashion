@@ -82,6 +82,13 @@ spring:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
     password:
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    connection-timeout: 10000
+    requested-heartbeat: 60
 
 server:
   port: ${PORT_SERVER}
@@ -98,5 +105,8 @@ vnpay:
     url: ${VNPAY_API_URL}
   version: ${VNPAY_VERSION}
   command: ${COMMAND}
+
+queueName: ${QUEUE_NAME}
+
 
 

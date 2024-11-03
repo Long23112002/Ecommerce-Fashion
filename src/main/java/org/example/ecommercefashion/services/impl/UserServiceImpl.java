@@ -129,10 +129,10 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest) {
     User user = entityManager.find(User.class, id);
-    if(user==null) {
+    if (user == null) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
     }
-    if(userUpdateRequest.getAvatar()==null) {
+    if (userUpdateRequest.getAvatar() == null) {
       userUpdateRequest.setAvatar(user.getAvatar());
     }
     FnCommon.copyProperties(user, userUpdateRequest);

@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.dtos.request.ChangePasswordRequest;
+import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.request.UserRequest;
 import org.example.ecommercefashion.dtos.request.UserRoleAssignRequest;
 import org.example.ecommercefashion.dtos.request.UserInfoUpdateRequest;
@@ -78,8 +79,8 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponsePage<User, UserResponse> getAllUsers(UserParam param, Pageable pageable) {
-        return userService.getAllUsers(param, pageable);
+    public ResponsePage<User, UserResponse> getAllUsers(UserParam param, PageableRequest pageable) {
+        return userService.getAllUsers(param, pageable.toPageable());
     }
 
     @PatchMapping("/assign-user-role")

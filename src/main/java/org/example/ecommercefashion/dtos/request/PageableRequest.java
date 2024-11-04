@@ -18,7 +18,7 @@ public class PageableRequest {
 
     public Pageable toPageable() {
         if(sortBy == null){
-            return PageRequest.of(page,size);
+            return PageRequest.of(Math.max(page,0),size);
         }
         return PageRequest.of(Math.max(page,0),size, Sort.by(sort,sortBy));
     }

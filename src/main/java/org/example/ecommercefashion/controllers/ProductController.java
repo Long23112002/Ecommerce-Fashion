@@ -3,11 +3,13 @@ package org.example.ecommercefashion.controllers;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.ProductParam;
+import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Product;
 import org.example.ecommercefashion.services.ProductService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,8 +25,8 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponsePage<Product, Product> getAll(ProductParam param, Pageable pageable) {
-        return productService.filterProduct(param, pageable);
+    public ResponsePage<Product, Product> getAll(ProductParam param, PageableRequest pageable) {
+        return productService.filterProduct(param, pageable.toPageable());
     }
 
     @PostMapping

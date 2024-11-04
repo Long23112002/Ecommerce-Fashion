@@ -9,7 +9,7 @@ public interface CartService {
 
   Cart update(CartRequest cartRequest, String token);
 
-  void delete(Long id);
+  void delete(String token);
 
   Cart getCartByUserId(Long userId);
 }

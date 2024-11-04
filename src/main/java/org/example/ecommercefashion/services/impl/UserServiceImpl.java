@@ -16,6 +16,7 @@ import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
+import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.CartService;
 import org.example.ecommercefashion.services.OTPService;
 import org.example.ecommercefashion.services.UserService;
@@ -45,6 +46,8 @@ public class UserServiceImpl implements UserService {
 
   private final OTPService otpService;
 
+  private final JwtService jwtService;
+
   @Autowired private RedisTemplate<String, String> redisTemplate;
 
   @Autowired private CartService cartService;
@@ -56,11 +59,11 @@ public class UserServiceImpl implements UserService {
     String email = userRequest.getEmail();
 
     String emailStatus = redisTemplate.opsForValue().get(email);
-    //
-    //    if (!"done".equals(emailStatus)) {
-    //      throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
-    // ErrorMessage.EMAIL_NOT_VERIFIED.val());
-    //    }
+
+        if (!"done".equals(emailStatus)) {
+          throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
+     ErrorMessage.EMAIL_NOT_VERIFIED.val());
+        }
 
     validateEmail(userRequest.getEmail());
     validatePhone(userRequest.getPhoneNumber());
@@ -127,10 +130,13 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest) {
+  public UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest, String token) {
     User user = entityManager.find(User.class, id);
     if (user == null) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
+    }
+    if(!user.getId().equals(jwtService.getIdUserByToken(token))){
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_PERMISSION_DENIED);
     }
     if (userUpdateRequest.getAvatar() == null) {
       userUpdateRequest.setAvatar(user.getAvatar());

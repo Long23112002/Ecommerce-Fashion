@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.ecommercefashion.annotations.EnumPattern;
+import org.example.ecommercefashion.annotations.ValidBirth;
 import org.example.ecommercefashion.annotations.ValidPhoneNumber;
 import org.example.ecommercefashion.enums.GenderEnum;
 
@@ -23,6 +24,7 @@ public class UserInfoUpdateRequest {
     private String phoneNumber;
 
     @Past(message = "Birth date must be in the past")
+    @ValidBirth
     private Date birth;
 
     @NotNull(message = "gender is required")

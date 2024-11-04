@@ -24,7 +24,7 @@ public interface UserService {
 
   UserResponse updateUser(Long id, UserRequest userRequest);
 
-  UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest);
+  UserResponse updateUser(Long id, UserInfoUpdateRequest userUpdateRequest, String token);
 
   MessageResponse deleteUser(Long id);
 

@@ -161,6 +161,8 @@ public class JwtService {
   }
 
   public JwtResponse decodeToken(String token) {
+    token = removeBearer(token);
+    System.out.println(token);
     Claims claims = extractAllClaims(token, getSigningKey(jwtKey));
 
     JwtResponse jwtResponse = new JwtResponse();
@@ -169,4 +171,20 @@ public class JwtService {
     jwtResponse.setSub(claims.getSubject());
     return jwtResponse;
   }
+
+  public String removeBearer(String token) {
+    if (token != null) {
+      if (token.startsWith("Bearer ")) {
+        return token.substring(7);
+      }
+      return token;
+    }
+    throw new ExceptionHandle(HttpStatus.UNAUTHORIZED, ErrorMessage.ACCESS_TOKEN_NOT_FOUND);
+  }
+
+  public Long getIdUserByToken(String token) {
+    JwtResponse jwtResponse = decodeToken(token);
+    return jwtResponse.getUserId();
+  }
+
 }

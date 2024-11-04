@@ -14,4 +14,6 @@ public interface ColorRepository extends JpaRepository<Color,Long> {
     Page<Color> getColorPage(@Param("name") String name, Pageable pageable);
 
     Boolean existsByNameIgnoreCase(String name);
+
+    Boolean existsByCode(String code);
 }

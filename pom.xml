@@ -44,6 +44,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
@@ -252,6 +263,28 @@
                         </goals>
                         <configuration>
                             <configFile>services/products/config/dev/flyway.conf</configFile>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>promotions</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                        <configuration>
+                            <configFile>services/promotions/config/dev/flyway.conf</configFile>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>carts</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                        <configuration>
+                            <configFile>services/carts/config/dev/flyway.conf</configFile>
                         </configuration>
                     </execution>
 

@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.annotations.normalized;
 import org.example.ecommercefashion.dtos.filter.OriginParam;
 import org.example.ecommercefashion.dtos.request.OriginRequest;
 import org.example.ecommercefashion.dtos.response.BrandResponse;
@@ -16,6 +17,7 @@ import org.example.ecommercefashion.entities.Origin;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OriginRepository;
+import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.OriginService;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 
 import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
@@ -37,6 +40,8 @@ public class OriginServiceImpl implements OriginService{
     private final UserRepository userRepository;
 
     private final org.example.ecommercefashion.security.JwtService JwtService;
+
+    private final ProductRepository productRepository;
 
     @Override
     public ResponsePage<Origin, OriginResponse> filterOrigin(OriginParam param, Pageable pageable){
@@ -101,6 +106,7 @@ public class OriginServiceImpl implements OriginService{
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NAME_EXISTED);
             }
             origin.setUpdateBy(jwt.getUserId());
+            origin.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             origin = repository.save(origin);
             OriginResponse response = new OriginResponse();
             FnCommon.copyNonNullProperties(response,origin);
@@ -115,6 +121,10 @@ public class OriginServiceImpl implements OriginService{
         Origin origin = repository.findById(id).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ORIGIN_NOT_FOUND)
         );
+
+        if(productRepository.existsByOrigin(origin)){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_HAS_PRODUCT);
+        }
 
         origin.setDeleted(true);
         repository.save(origin);

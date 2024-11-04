@@ -10,12 +10,15 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Color;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ColorRepository;
+import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.ColorService;
+import org.example.ecommercefashion.services.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -32,6 +35,10 @@ public class ColorServiceImpl implements ColorService {
     private final UserRepository userRepository;
 
     private final JwtService jwtService;
+
+    private final NotificationService notificationService;
+
+    private final ProductDetailRepository productDetailRepository;
 
     private UserResponse getInforUser(Long id) {
         if (id == null) {
@@ -71,6 +78,10 @@ public class ColorServiceImpl implements ColorService {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
             }
 
+            if(colorRepository.existsByCode(colorRequest.getCode().trim())){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CODE_COLOR_EXIST);
+            }
+
             Color colorCreate = mapColorRequestToColor(color, colorRequest);
             colorCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             colorRepository.save(colorCreate);
@@ -94,6 +105,10 @@ public class ColorServiceImpl implements ColorService {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
             }
 
+            if(colorRepository.existsByCode(colorRequest.getCode().trim())){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CODE_COLOR_EXIST);
+            }
+
             Color colorUpdate = mapColorRequestToColor(color, colorRequest);
             colorUpdate.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             colorUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
@@ -101,6 +116,7 @@ public class ColorServiceImpl implements ColorService {
             ColorResponse colorResponse = mapColorToColorResponse(colorUpdate);
             colorResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
             colorResponse.setCreatedBy(getInforUser(color.getCreatedBy()));
+
             return colorResponse;
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
@@ -114,6 +130,9 @@ public class ColorServiceImpl implements ColorService {
             Color color = colorRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.COLOR_NOT_FOUND);
             });
+            if(productDetailRepository.existsByColor(color)){
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.COLOR_HAS_PRODUCT_DETAIL);
+            }
             color.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             color.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             color.setDeleted(true);

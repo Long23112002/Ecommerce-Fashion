@@ -2,6 +2,7 @@ package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @Data
 @Table(name = "category", schema = "products")
 @Where(clause = "deleted = false")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Category {
 
     @Id
@@ -43,7 +45,6 @@ public class Category {
 
 
     @Column(name = "update_at")
-    @UpdateTimestamp
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateAt;
 
@@ -76,4 +77,5 @@ public class Category {
         this.lever = level;
         return this.lever;
     }
+
 }

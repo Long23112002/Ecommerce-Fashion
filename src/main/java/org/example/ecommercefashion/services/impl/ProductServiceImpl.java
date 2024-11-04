@@ -152,13 +152,13 @@ public class ProductServiceImpl implements ProductService {
                   () ->
                       new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
 
-      String normalizedCategoryName;
+      String normalizedProductName;
       try {
-        normalizedCategoryName = normalizeString(request.getName());
+        normalizedProductName = normalizeString(request.getName());
       } catch (IOException e) {
         throw new RuntimeException("Failed to normalize string", e);
       }
-      if (brandRepository.existsByName(normalizedCategoryName)) {
+      if (productRepository.existsByNameIgnoreCase(normalizedProductName)) {
         throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NAME_EXISTED);
       }
 

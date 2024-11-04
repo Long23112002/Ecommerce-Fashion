@@ -133,7 +133,6 @@ public class ProductDetailServiceImpl implements ProductDetailService {
                         });
         return new ResponsePage<>(productDetailPage);
 
-//        return productDetailRepository.getDetailByIdProduct(idProduct, pageable);
     }
 
     private ProductDetail findById(Long id) {

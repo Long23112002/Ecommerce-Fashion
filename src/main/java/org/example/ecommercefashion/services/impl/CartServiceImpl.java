@@ -97,7 +97,8 @@ public class CartServiceImpl implements CartService {
                                       productDetailEntity.getImages(),
                                       productDetailEntity.getProduct(),
                                       productDetailEntity.getSize(),
-                                      productDetailEntity.getColor()))
+                                      productDetailEntity.getColor(),
+                                          productDetailEntity.getOriginPrice()))
                           .orElse(null);
                   return new CartValueInfo(value.getQuantity(), productDetail);
                 })

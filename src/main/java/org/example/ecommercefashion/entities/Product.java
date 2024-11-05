@@ -64,7 +64,7 @@ public class Product {
   @Column(name = "image")
   private String image;
 
-  @Column(name = "mix_price")
+  @Column(name = "min_price")
   private Long minPrice;
 
   @Column(name = "max_price")

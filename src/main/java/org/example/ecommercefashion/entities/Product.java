@@ -64,10 +64,10 @@ public class Product {
   @Column(name = "image")
   private String image;
 
-  @Column(name = "max_price")
+  @Column(name = "mix_price")
   private Long minPrice;
 
-  @Column(name = "image")
+  @Column(name = "max_price")
   private Long maxPrice;
 
   @PrePersist

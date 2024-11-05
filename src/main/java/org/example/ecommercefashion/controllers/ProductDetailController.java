@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.ProductDetailParam;
 import org.example.ecommercefashion.dtos.filter.ProductParam;
+import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.request.ProductDetailRequest;
 import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -67,7 +68,7 @@ public class ProductDetailController {
     }
 
     @GetMapping("/product/{id}")
-    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(@PathVariable Long id, Pageable pageable){
-        return service.getDetailByIdProduct(id, pageable);
+    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(@PathVariable Long id, PageableRequest pageable){
+        return service.getDetailByIdProduct(id, pageable.toPageable());
     }
 }

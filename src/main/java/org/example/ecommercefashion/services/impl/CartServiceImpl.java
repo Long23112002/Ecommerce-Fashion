@@ -133,7 +133,7 @@ public class CartServiceImpl implements CartService {
                 .findFirst()
                 .orElse(null);
         if (requestedValue != null) {
-          existingValue.setQuantity(existingValue.getQuantity() + requestedValue.getQuantity());
+          existingValue.setQuantity(requestedValue.getQuantity());
         }
         updatedCartValues.add(existingValue);
       }

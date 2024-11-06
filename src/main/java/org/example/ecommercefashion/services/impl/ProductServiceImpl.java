@@ -78,16 +78,16 @@ public class ProductServiceImpl implements ProductService {
   public ResponsePage<Product, Product> filterProduct(ProductParam param, Pageable pageable) {
     Page<Product> productPage = productRepository.filterProduct(param, pageable);
     Page<Product> responses =
-        productPage.map(
-            product -> {
-              if (product.getCreateBy() != null) {
-                product.setCreateByUser(getInfoUserValue(product.getCreateBy()));
-              }
-              if (product.getUpdateBy() != null) {
-                product.setUpdateByUser(getInfoUserValue(product.getUpdateBy()));
-              }
-              return product;
-            });
+            productPage.map(
+                    product -> {
+                      if (product.getCreateBy() != null) {
+                        product.setCreateByUser(getInfoUserValue(product.getCreateBy()));
+                      }
+                      if (product.getUpdateBy() != null) {
+                        product.setUpdateByUser(getInfoUserValue(product.getUpdateBy()));
+                      }
+                      return product;
+                    });
     return new ResponsePage<>(responses);
   }
 

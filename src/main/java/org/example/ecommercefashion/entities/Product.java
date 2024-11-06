@@ -61,6 +61,15 @@ public class Product {
   @Column(nullable = false)
   private Boolean deleted = false;
 
+  @Column(name = "image")
+  private String image;
+
+  @Column(name = "min_price")
+  private Long minPrice;
+
+  @Column(name = "max_price")
+  private Long maxPrice;
+
   @PrePersist
   public void generateCode() {
     if (this.code == null || this.code.isEmpty()) {

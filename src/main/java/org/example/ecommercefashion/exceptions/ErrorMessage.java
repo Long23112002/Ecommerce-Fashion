@@ -3,6 +3,7 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+  DISCOUNT_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   DISCOUNT_CONDITION_NOT_MET("Không đủ điều kiện để sử dụng Voucher"),
   VOUCHER_ALREADY_USED("Voucher đã được sử dụng"),
   VOUCHER_NOT_FOUND("Không Tìm thấy voucher"),
@@ -57,7 +58,9 @@ public enum ErrorMessage implements BaseErrorMessage {
   MATERIAL_HAS_PRODUCT_DETAIL("Chất liệu đang thuộc về 1 chi tiết sản phẩm"),
   BRAND_HAS_PRODUCT("Thương hiệu đang thuộc về 1 chi tiết sản phẩm"),
   CATEGORY_HAS_PRODUCT("Danh mục đang thuộc về 1 chi tiết sản phẩm"),
-  ORIGIN_HAS_PRODUCT("Xuất xứ sản phẩm đang thuộc về 1 chi tiết sản phẩm")
+  ORIGIN_HAS_PRODUCT("Xuất xứ sản phẩm đang thuộc về 1 chi tiết sản phẩm"),
+  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  DISCOUNT_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000")
   ;
 
   public String val;

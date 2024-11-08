@@ -1,8 +1,7 @@
 package org.example.ecommercefashion.controllers;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.example.ecommercefashion.dtos.Param.DiscountParam;
+import org.example.ecommercefashion.dtos.filter.DiscountParam;
 import org.example.ecommercefashion.dtos.request.DiscountRequest;
 import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;

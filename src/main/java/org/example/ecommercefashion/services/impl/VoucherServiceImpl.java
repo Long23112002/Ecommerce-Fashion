@@ -3,7 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
-import org.example.ecommercefashion.dtos.Param.VoucherParam;
+import org.example.ecommercefashion.dtos.filter.VoucherParam;
 import org.example.ecommercefashion.dtos.request.VoucherRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -25,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.UUID;
 
 
 @Service

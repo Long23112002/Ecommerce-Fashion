@@ -3,23 +3,18 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
-import org.example.ecommercefashion.dtos.Param.DiscountParam;
+import org.example.ecommercefashion.dtos.filter.DiscountParam;
 import org.example.ecommercefashion.dtos.request.DiscountRequest;
-
-import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
-import org.example.ecommercefashion.entities.Brand;
-import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.Condition;
 import org.example.ecommercefashion.entities.Discount;
-import org.example.ecommercefashion.entities.Product;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
-import org.example.ecommercefashion.entities.Voucher;
+import org.example.ecommercefashion.enums.StatusDiscount;
 import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.BrandRepository;
@@ -38,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,15 +48,11 @@ public class DiscountServiceImpl implements DiscountService {
 
     private final ProductDetailRepository productDetailRepository;
 
-    private final ProductRepository productRepository;
-
-    private final CategoryRepository categoryRepository;
-
-    private final BrandRepository brandRepository;
     @Override
     public ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam param, Pageable pageable) {
-        Page<Discount> discountResponsesPage = discountRepository.getFilterDiscountPage(param,pageable);
-        return new ResponsePage<>(discountResponsesPage, DiscountResponse.class);
+        Page<Discount> discountPage = discountRepository.getFilterDiscountPage(param, pageable);
+        Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
+        return new ResponsePage<>(DiscountResponsePage);
     }
 
     @Override
@@ -70,9 +60,19 @@ public class DiscountServiceImpl implements DiscountService {
 
         if (token != null) {
             JwtResponse jwt = jwtService.decodeToken(token);
+            if (request.getType() == TypeDiscount.PERCENTAGE) {
+                if (request.getValue() < 0 || request.getValue() > 100) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
+                }
+            } else if (request.getType() == TypeDiscount.FIXED_AMOUNT) {
+                if (request.getValue() < 1000) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
+                }
+            }
             Discount discount = new Discount();
             validateDiscountCondition(request.getCondition());
             FnCommon.copyNonNullProperties(discount, request);
+            setDiscountStatus(discount);
             discount.setCreateBy(jwt.getUserId());
             discount = discountRepository.save(discount);
             DiscountResponse discountResponse = new DiscountResponse();
@@ -112,12 +112,21 @@ public class DiscountServiceImpl implements DiscountService {
     public DiscountResponse update(DiscountRequest request, Long id, String token) {
         if (token != null) {
             JwtResponse jwt = jwtService.decodeToken(token);
+            if (request.getType() == TypeDiscount.PERCENTAGE) {
+                if (request.getValue() < 0 || request.getValue() > 100) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
+                }
+            } else if (request.getType() == TypeDiscount.FIXED_AMOUNT) {
+                if (request.getValue() < 1000) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
+                }
+            }
             Discount discount = discountRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND)
             );
             validateDiscountCondition(discount.getCondition());
             FnCommon.copyNonNullProperties(discount, request);
-
+            setDiscountStatus(discount);
             discount.setUpdateBy(jwt.getUserId());
             discount.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             discount = discountRepository.save(discount);
@@ -158,52 +167,55 @@ public class DiscountServiceImpl implements DiscountService {
                 .filter(discount -> {
                     Condition condition = discount.getCondition();
                     return detailList.stream().anyMatch(detail -> {
-                        boolean isProductDetail = condition.getProductDetailId().stream().anyMatch(id -> id.equals(detail.getId()));
+                        boolean isProductDetail = condition.getIdProductDetail().stream().anyMatch(id -> id.equals(detail.getId()));
 
-                        boolean isProduct =  condition.getProductId().stream().anyMatch(id -> id.equals(detail.getProduct().getId()));
 
-                        boolean isCategory =  detail.getProduct().getCategory() != null
-                                && condition.getCategoryId().stream().anyMatch(id -> id.equals(detail.getProduct().getCategory().getId()));
 
-                        boolean isBrand =  detail.getProduct().getBrand() != null
-                                && condition.getBrandId().stream().anyMatch(id -> id.equals(detail.getProduct().getBrand().getId()));
-
-                        return isProductDetail || isProduct || isCategory || isBrand;
-                   });
+                        return isProductDetail ;
+                    });
                 })
                 .collect(Collectors.toList());
 
         return validDiscounts;
     }
-    public void validateDiscountCondition(Condition condition){
-        if (condition.getProductId() != null && !condition.getProductId().isEmpty()) {
-            for (Long productId : condition.getProductId()) {
-                if (!productRepository.existsById(productId)) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Product ID " + productId + " không tồn tại");
-                }
-            }
-        }
-        if (condition.getProductDetailId() != null && !condition.getProductDetailId().isEmpty()) {
-            for (Long productDetailId: condition.getProductDetailId()) {
+
+    public void validateDiscountCondition(Condition condition) {
+
+        if (condition.getIdProductDetail() != null && !condition.getIdProductDetail().isEmpty()) {
+            for (Long productDetailId : condition.getIdProductDetail()) {
                 if (!productDetailRepository.existsById(productDetailId)) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "ProductDetailId ID " + productDetailId + " không tồn tại");
                 }
             }
         }
-        if (condition.getCategoryId() != null && !condition.getCategoryId().isEmpty()) {
-            for (Long categoryId: condition.getCategoryId()) {
-                if (!categoryRepository.existsById(categoryId)) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Category ID " + categoryId + " không tồn tại");
-                }
-            }
+    }
+
+    public static void setDiscountStatus(Discount discount) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        if (discount.getEndDate().before(discount.getStartDate())) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_START_DATE_OR_END_DATE_WRONG);
         }
-        if (condition.getBrandId() != null && !condition.getBrandId().isEmpty()) {
-            for (Long brandId: condition.getBrandId()) {
-                if (!brandRepository.existsById(brandId)) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Brand ID " + brandId + " không tồn tại");
-                }
-            }
+
+        if (now.before(discount.getStartDate())) {
+            discount.setDiscountStatus(StatusDiscount.UPCOMING);
+        } else if (now.after(discount.getEndDate())) {
+            discount.setDiscountStatus(StatusDiscount.ENDED);
+        } else {
+            discount.setDiscountStatus(StatusDiscount.ACTIVE);
         }
+    }
+
+    private DiscountResponse mapSizeToSizeResponse(Discount discount) {
+        DiscountResponse discountResponse = new DiscountResponse();
+        FnCommon.copyNonNullProperties(discountResponse, discount);
+        if (discount.getCreateBy() != null) {
+            discountResponse.setCreateBy(getInfoUser(discount.getCreateBy()));
+        }
+        if (discount.getUpdateBy() != null) {
+            discountResponse.setUpdateBy(getInfoUser(discount.getUpdateBy()));
+        }
+        return discountResponse;
     }
 
 }

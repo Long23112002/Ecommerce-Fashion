@@ -1,4 +1,4 @@
-package org.example.ecommercefashion.dtos.Param;
+package org.example.ecommercefashion.dtos.filter;
 
 import lombok.Data;
 

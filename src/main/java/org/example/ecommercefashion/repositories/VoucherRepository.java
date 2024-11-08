@@ -1,6 +1,6 @@
 package org.example.ecommercefashion.repositories;
 
-import org.example.ecommercefashion.dtos.Param.VoucherParam;
+import org.example.ecommercefashion.dtos.filter.VoucherParam;
 import org.example.ecommercefashion.entities.Voucher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

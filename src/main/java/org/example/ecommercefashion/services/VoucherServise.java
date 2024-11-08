@@ -1,6 +1,6 @@
 package org.example.ecommercefashion.services;
 
-import org.example.ecommercefashion.dtos.Param.VoucherParam;
+import org.example.ecommercefashion.dtos.filter.VoucherParam;
 import org.example.ecommercefashion.dtos.request.VoucherRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;

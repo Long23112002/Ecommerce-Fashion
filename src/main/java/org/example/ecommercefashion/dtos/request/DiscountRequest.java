@@ -35,13 +35,12 @@ public class DiscountRequest {
     @NotNull(message = "maxValue cannot be null")
     private Double maxValue;
 
-    @NotNull(message = "Start date cannot be null")
-    @PastOrPresent(message = "Start date must be in the past or present")
+    @NotNull(message = "Ngày bắt đầu không được trống")
     private Timestamp startDate;
 
+    @NotNull(message = "Ngày kết thúc không được trống")
     private Timestamp endDate;
 
-    @NotNull(message = "Status is required")
     @EnumPattern(name = "discountStatus", regexp = "ACTIVE|INACTIVE|EXPIRED")
     private StatusDiscount discountStatus;
 

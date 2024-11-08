@@ -1,17 +1,13 @@
 package org.example.ecommercefashion.repositories;
 
-import org.example.ecommercefashion.dtos.Param.DiscountParam;
+import org.example.ecommercefashion.dtos.filter.DiscountParam;
 import org.example.ecommercefashion.entities.Discount;
-import org.example.ecommercefashion.enums.StatusDiscount;
-import org.example.ecommercefashion.enums.TypeDiscount;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Long> {

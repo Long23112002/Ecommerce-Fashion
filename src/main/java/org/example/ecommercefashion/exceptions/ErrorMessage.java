@@ -61,6 +61,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_DETAIL_IDS_EMPTY("ID sản phẩm chi tiết trống"),
   PROMOTION_DATE_OVERLAP("Không được tạo đợt giảm giá có khoảng thời gian chồng nhau"),
   PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
+  EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
   ;
 
   public String val;

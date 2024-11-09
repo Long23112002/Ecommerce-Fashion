@@ -33,13 +33,13 @@ public class RabbitConfig {
     return new TopicExchange(MY_EXCHANGE);
   }
 
-  @Bean
-  public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
-    RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
-    rabbitAdmin.initialize();
-    rabbitAdmin.declareQueue(myQueue());
-    rabbitAdmin.declareExchange(myExchange());
-
-    return rabbitAdmin;
-  }
+//  @Bean
+//  public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+//    RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
+//    rabbitAdmin.initialize();
+//    rabbitAdmin.declareQueue(myQueue());
+//    rabbitAdmin.declareExchange(myExchange());
+//
+//    return rabbitAdmin;
+//  }
 }

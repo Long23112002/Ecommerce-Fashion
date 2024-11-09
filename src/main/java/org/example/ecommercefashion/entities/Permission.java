@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.checkerframework.checker.units.qual.C;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +31,9 @@ public class Permission {
 
   @Column(name = "name", unique = true, nullable = false)
   private String name;
+
+  @Column(name = "description")
+  private String description;
 
   @ManyToMany(mappedBy = "permissions")
   private Set<Role> roles;

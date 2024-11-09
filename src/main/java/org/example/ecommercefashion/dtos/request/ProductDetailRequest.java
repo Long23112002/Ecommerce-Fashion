@@ -24,4 +24,6 @@ public class ProductDetailRequest {
     private Long idSize;
     @NotNull(message = "Màu sắc không được trống")
     private Long idColor;
+
+    private Double originPrice;
 }

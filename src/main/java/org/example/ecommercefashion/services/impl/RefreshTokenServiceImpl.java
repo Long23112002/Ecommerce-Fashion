@@ -1,10 +1,10 @@
 package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.response.AuthResponse;
 import org.example.ecommercefashion.entities.RefreshToken;
@@ -43,9 +43,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     HttpStatus.NOT_FOUND, ErrorMessage.REFRESH_TOKEN_NOT_FOUND.val()));
   }
 
+  @Override
   public void revokeAllUserToken(User user) {
     var validUserTokens = refreshTokenRepository.findAllValidTokenByUserId(user.getId());
-    if (validUserTokens.isEmpty()) return;
+    if (validUserTokens.isEmpty()) {
+      return;
+    }
     validUserTokens.forEach(token -> token.setRevoked(true));
     refreshTokenRepository.saveAll(validUserTokens);
   }
@@ -67,9 +70,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
     List<RefreshToken> tokens = refreshTokenRepository.findTokensByToken(refreshToken);
-    if (tokens.isEmpty()) {
-      throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.REFRESH_TOKEN_NOT_FOUND.val());
-    }
+    //    if (tokens.isEmpty()) {
+    //      throw new ExceptionHandle(HttpStatus.NOT_FOUND,
+    // ErrorMessage.REFRESH_TOKEN_NOT_FOUND.val());
+    //    }
 
     RefreshToken existRefreshToken = tokens.get(0);
 

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
     Boolean existsByNameIgnoreCase(String name);
     @Query("SELECT p FROM Product p "
             + "WHERE "
@@ -31,13 +32,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             + "ORDER BY p.id DESC ")
     Page<Product> filterProduct(ProductParam param, Pageable pageable);
 
-    Boolean existsByMaterial(Material material);
 
-    Boolean existsByBrand(Brand brand);
 
-    Boolean existsByCategory(Category category);
 
-    Boolean existsByOrigin(Origin origin);
+  Boolean existsByMaterial(Material material);
+
+  Boolean existsByBrand(Brand brand);
+
+  Boolean existsByCategory(Category category);
+
 
     Boolean existsByCode(String code);
+
+  Boolean existsByOrigin(Origin origin);
+
+  @Query(value  = "select last_value + 1 from products.product_id_seq", nativeQuery = true)
+  Long getLastValue();
+
 }

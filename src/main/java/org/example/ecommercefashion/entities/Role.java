@@ -28,6 +28,9 @@ public class Role {
   @JsonIgnore
   private Set<User> users;
 
+  @Column(name = "description")
+  private String description;
+
   @ManyToMany
   @JoinTable(
       name = "role_permission",

@@ -21,5 +21,7 @@ public class RoleResponse {
 
   private Set<Permission> permissions;
 
+  private String description;
+
   private Boolean deleted;
 }

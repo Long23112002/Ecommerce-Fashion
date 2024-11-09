@@ -28,4 +28,6 @@ public class ColorResponse {
     private UserResponse updatedBy;
 
     private Boolean deleted;
+
+    private String code;
 }

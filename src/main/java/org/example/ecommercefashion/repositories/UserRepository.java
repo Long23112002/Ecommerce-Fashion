@@ -57,7 +57,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
               + "on rp.id_role = r.id "
               + "join users.permission p "
               + "on p.id = rp.id_permission "
-              + "where p.name like :permission ",
+              + "where p.name like :permission "
+              + "and u.deleted = false",
       nativeQuery = true)
   List<User> findAllUserByPermission(String permission);
 

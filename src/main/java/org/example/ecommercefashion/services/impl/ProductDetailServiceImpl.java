@@ -122,7 +122,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
       Long idProduct, Pageable pageable) {
     Page<ProductDetail> productDetailPage =
         productDetailRepository
-            .getDetailByIdProduct(idProduct, pageable)
+            .findAllByProductId(idProduct, pageable)
             .map(
                 detail -> {
                   if (detail.getCreateBy() != null) {
@@ -218,7 +218,6 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     //                        });
     return new ResponsePage<>(productDetailPage);
   }
-
 
   @Override
   public MessageResponse delete(Long id) {

@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.services;
 
+import java.io.IOException;
 import org.example.ecommercefashion.dtos.filter.ProductParam;
 import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -17,4 +18,6 @@ public interface ProductService {
   Product getProductById(Long id);
 
   MessageResponse updateStatus(Long id);
+
+  byte[] exSampleTemplate() throws IOException;
 }

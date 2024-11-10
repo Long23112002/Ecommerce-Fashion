@@ -29,8 +29,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.origin.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
           + "AND (:#{#param.minPrice} IS NULL OR p.minPrice >= :#{#param.minPrice})"
           + "AND (:#{#param.maxPrice} IS NULL OR p.maxPrice <= :#{#param.maxPrice})"
-          + "AND (:#{#param.idColor} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.color.id = :#{#param.idColor}))"
-          + "AND (:#{#param.idSize} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.size.id = :#{#param.idSize}))"
+          + "AND (:#{#param.idColors} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.color.id IN :#{#param.idColors}))"
+          + "AND (:#{#param.idSizes} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.size.id IN :#{#param.idSizes}))"
           + " ORDER BY p.id DESC ")
   Page<Product> filterProduct(ProductParam param, Pageable pageable);
 

@@ -3,9 +3,9 @@ package org.example.ecommercefashion.config.socket.chat;
 import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.config.socket.WebSocketDestination;
-import org.example.ecommercefashion.contants.Permissions;
 import org.example.ecommercefashion.entities.ChatRoom;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.PermissionEnum;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ChatRoomRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
@@ -86,7 +86,7 @@ public class ChatInterceptor implements ChannelInterceptor {
     private void isUserHasPermission(StompHeaderAccessor accessor) {
         User user = decodeToUser(accessor);
         boolean isUserHasPermission =
-                userRepository.isUserHasPermission(user.getId(), Permissions.MESSAGE_CONSULT);
+                userRepository.isUserHasPermission(user.getId(), PermissionEnum.CUSTOMER_CHAT.val);
         if (user.getIsAdmin() && !isUserHasPermission) {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.USER_PERMISSION_DENIED);
         }

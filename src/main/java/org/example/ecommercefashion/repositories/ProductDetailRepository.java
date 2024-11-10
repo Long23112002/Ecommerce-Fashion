@@ -35,11 +35,15 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
   @Query("SELECT pd FROM ProductDetail pd JOIN pd.promotionList p WHERE p.id = :promotionId")
   Page<ProductDetail> findByPromotionId(@Param("promotionId") Long promotionId, Pageable pageable);
 
+
   @Query(
       "SELECT pd "
           + "FROM Product p "
           + "JOIN ProductDetail pd ON p.id = pd.product.id "
-          + "WHERE p.id = :idProduct "
+          + "WHERE p.id = :idProduct AND pd.deleted = false "
           + "GROUP BY p.id, pd.id")
   Page<ProductDetail> getDetailByIdProduct(Long idProduct, Pageable pageable);
+
+  Page<ProductDetail> findAllByProductId(Long idProduct, Pageable pageable);
+
 }

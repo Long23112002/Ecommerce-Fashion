@@ -26,49 +26,49 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/brand")
 @RequiredArgsConstructor
 public class BrandController {
-  private final BrandService brandService;
+    private final BrandService brandService;
 
-  @GetMapping
-  public ResponsePage<Brand, BrandResponse> getAll(BrandParam param, Pageable pageable) {
-    return brandService.filterCategory(param, pageable);
-  }
-
-  @PostMapping
-  @CheckPermission({"add_brand"})
-  public ResponseEntity<BrandResponse> add(
-      @Valid @RequestBody BrandRequest request, @RequestHeader("Authorization") String token) {
-    if (token.startsWith("Bearer ")) {
-      token = token.substring(7);
+    @GetMapping
+    public ResponsePage<Brand, BrandResponse> getAll(BrandParam param, Pageable pageable) {
+        return brandService.filterCategory(param, pageable);
     }
-    return ResponseEntity.ok(brandService.add(request, token));
-  }
 
-  @PutMapping("/{id}")
-  @CheckPermission({"update_brand"})
-  public ResponseEntity<BrandResponse> update(
-      @PathVariable long id,
-      @Valid @RequestBody BrandRequest request,
-      @RequestHeader("Authorization") String token) {
-    if (token.startsWith("Bearer ")) {
-      token = token.substring(7);
+    @PostMapping
+    @CheckPermission({"add_brand"})
+    public ResponseEntity<BrandResponse> add(
+            @Valid @RequestBody BrandRequest request, @RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        return ResponseEntity.ok(brandService.add(request, token));
     }
-    return ResponseEntity.ok(brandService.update(request, id, token));
-  }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<BrandResponse> getFindById(@PathVariable Long id) {
-    BrandResponse response = brandService.getByBrandId(id);
-    if (response != null) {
-      return ResponseEntity.ok(response);
-    } else {
-      return null;
+    @PutMapping("/{id}")
+    @CheckPermission({"update_brand"})
+    public ResponseEntity<BrandResponse> update(
+            @PathVariable long id,
+            @Valid @RequestBody BrandRequest request,
+            @RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        return ResponseEntity.ok(brandService.update(request, id, token));
     }
-  }
 
-  @DeleteMapping("/{id}")
-  @CheckPermission({"delete_brand"})
-  public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {
-    MessageResponse messageResponse = brandService.deleted(id);
-    return ResponseEntity.ok(messageResponse);
-  }
+    @GetMapping("/{id}")
+    public ResponseEntity<BrandResponse> getFindById(@PathVariable Long id) {
+        BrandResponse response = brandService.getByBrandId(id);
+        if (response != null) {
+            return ResponseEntity.ok(response);
+        } else {
+            return null;
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @CheckPermission({"delete_brand"})
+    public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {
+        MessageResponse messageResponse = brandService.deleted(id);
+        return ResponseEntity.ok(messageResponse);
+    }
 }

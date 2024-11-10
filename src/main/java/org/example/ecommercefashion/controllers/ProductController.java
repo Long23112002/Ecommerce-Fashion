@@ -12,6 +12,7 @@ import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Product;
+import org.example.ecommercefashion.enums.PermissionEnum;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.services.ProductService;
 import org.springframework.http.HttpHeaders;

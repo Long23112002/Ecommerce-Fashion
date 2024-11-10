@@ -1,5 +1,7 @@
 package org.example.ecommercefashion.annotations;
 
+import org.example.ecommercefashion.enums.PermissionEnum;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

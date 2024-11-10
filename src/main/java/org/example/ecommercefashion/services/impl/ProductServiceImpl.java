@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
+import javax.persistence.criteria.Order;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -380,12 +382,12 @@ public class ProductServiceImpl implements ProductService {
     if (param.getKeyword() != null && !param.getKeyword().isEmpty()) {
       String keywordPattern = "%" + param.getKeyword().toLowerCase() + "%";
       predicates.add(
-          cb.or(
-              cb.like(cb.lower(product.get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("brand").get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("material").get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("category").get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("origin").get("name")), keywordPattern)));
+              cb.or(
+                      cb.like(cb.lower(product.get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("brand").get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("material").get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("category").get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("origin").get("name")), keywordPattern)));
     }
     if (param.getCode() != null && !param.getCode().isEmpty()) {
       String codePattern = "%" + param.getCode().toLowerCase() + "%";
@@ -401,24 +403,38 @@ public class ProductServiceImpl implements ProductService {
       Subquery<Long> colorSubquery = query.subquery(Long.class);
       Root<ProductDetail> productDetail = colorSubquery.from(ProductDetail.class);
       colorSubquery
-          .select(productDetail.get("product").get("id"))
-          .where(productDetail.get("color").get("id").in(param.getIdColors()));
+              .select(productDetail.get("product").get("id"))
+              .where(productDetail.get("color").get("id").in(param.getIdColors()));
       predicates.add(product.get("id").in(colorSubquery));
     }
     if (param.getIdSizes() != null && !param.getIdSizes().isEmpty()) {
       Subquery<Long> sizeSubquery = query.subquery(Long.class);
       Root<ProductDetail> productDetail = sizeSubquery.from(ProductDetail.class);
       sizeSubquery
-          .select(productDetail.get("product").get("id"))
-          .where(productDetail.get("size").get("id").in(param.getIdSizes()));
+              .select(productDetail.get("product").get("id"))
+              .where(productDetail.get("size").get("id").in(param.getIdSizes()));
       predicates.add(product.get("id").in(sizeSubquery));
     }
 
     query.where(cb.and(predicates.toArray(new Predicate[0])));
-    query.orderBy(cb.desc(product.get("id")));
 
-    List<Product> products =
-        entityManager
+    List<Order> orders = new ArrayList<>();
+    pageable.getSort().forEach(order -> {
+      String property = order.getProperty();
+      if (order.isAscending()) {
+        orders.add(cb.asc(product.get(property)));
+      } else {
+        orders.add(cb.desc(product.get(property)));
+      }
+    });
+
+    if (orders.isEmpty()) {
+      orders.add(cb.desc(product.get("id")));
+    }
+
+    query.orderBy(orders);
+
+    List<Product> products = entityManager
             .createQuery(query)
             .setFirstResult((int) pageable.getOffset())
             .setMaxResults(pageable.getPageSize())

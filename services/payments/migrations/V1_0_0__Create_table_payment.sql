@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS payments.payment
+(
+    id
+    SERIAL
+    PRIMARY
+    KEY,
+    payment_method
+    varchar
+    NOT
+    NULL,
+    description
+    varchar,
+    created_at
+    TIMESTAMP
+    DEFAULT
+    CURRENT_TIMESTAMP,
+    updated_at
+    TIMESTAMP
+    DEFAULT
+    CURRENT_TIMESTAMP,
+    deleted
+    BOOLEAN
+    DEFAULT
+    FALSE
+);

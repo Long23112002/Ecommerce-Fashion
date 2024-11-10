@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -121,7 +122,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
       Long idProduct, Pageable pageable) {
     Page<ProductDetail> productDetailPage =
         productDetailRepository
-            .getDetailByIdProduct(idProduct, pageable)
+            .findAllByProductId(idProduct, pageable)
             .map(
                 detail -> {
                   if (detail.getCreateBy() != null) {
@@ -135,6 +136,16 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     return new ResponsePage<>(productDetailPage);
 
     //        return productDetailRepository.getDetailByIdProduct(idProduct, pageable);
+  }
+
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public void handleMinusQuantity(Integer quantityBuy, ProductDetail productDetail) {
+    if (productDetail.getQuantity() < quantityBuy) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_ENOUGH);
+    }
+    productDetail.setQuantity(productDetail.getQuantity() - quantityBuy);
+    productDetailRepository.save(productDetail);
   }
 
   private ProductDetail findById(Long id) {
@@ -207,7 +218,6 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     //                        });
     return new ResponsePage<>(productDetailPage);
   }
-
 
   @Override
   public MessageResponse delete(Long id) {

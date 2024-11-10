@@ -42,7 +42,8 @@ public enum ErrorMessage implements BaseErrorMessage {
   OTP_NOT_MATCH("OTP không đúng vui lòng kiểm tra lại"),
   OTP_EXPIRED("OTP đã hết hạn"),
   PROMOTION_NOT_FOUND("Không tìm thấy khuyến mãi"),
-  PROMOTION_PERCENTAGE_WRONG_FORMAT("Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  PROMOTION_PERCENTAGE_WRONG_FORMAT(
+      "Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
   PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
   PROMOTION_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   PRODUCT_NAME_EXISTED("Tên Sản Phẩm Đã Tồn Tại"),
@@ -59,6 +60,8 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_DETAIL_NOT_FOUND("Sản phẩm chi tiết không tồn tại"),
   PRODUCT_DETAIL_IDS_EMPTY("ID sản phẩm chi tiết trống"),
   PROMOTION_DATE_OVERLAP("Không được tạo đợt giảm giá có khoảng thời gian chồng nhau"),
+  PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
+  EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
   ;
 
   public String val;

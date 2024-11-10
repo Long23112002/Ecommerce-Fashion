@@ -98,7 +98,9 @@ public class CartServiceImpl implements CartService {
                                       productDetailEntity.getProduct(),
                                       productDetailEntity.getSize(),
                                       productDetailEntity.getColor(),
-                                          productDetailEntity.getOriginPrice()))
+                                      productDetailEntity.getOriginPrice(),
+                                      productDetailEntity.getQuantity()
+                                          ))
                           .orElse(null);
                   return new CartValueInfo(value.getQuantity(), productDetail);
                 })
@@ -131,7 +133,7 @@ public class CartServiceImpl implements CartService {
                 .findFirst()
                 .orElse(null);
         if (requestedValue != null) {
-          existingValue.setQuantity(existingValue.getQuantity() + requestedValue.getQuantity());
+          existingValue.setQuantity(requestedValue.getQuantity());
         }
         updatedCartValues.add(existingValue);
       }

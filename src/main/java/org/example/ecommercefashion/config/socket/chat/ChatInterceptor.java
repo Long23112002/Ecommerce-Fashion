@@ -86,7 +86,7 @@ public class ChatInterceptor implements ChannelInterceptor {
     private void isUserHasPermission(StompHeaderAccessor accessor) {
         User user = decodeToUser(accessor);
         boolean isUserHasPermission =
-                userRepository.isUserHasPermission(user.getId(), PermissionEnum.CUSTOMER_CHAT.val());
+                userRepository.isUserHasPermission(user.getId(), PermissionEnum.CUSTOMER_CHAT.val);
         if (user.getIsAdmin() && !isUserHasPermission) {
             throw new ExceptionHandle(HttpStatus.FORBIDDEN, ErrorMessage.USER_PERMISSION_DENIED);
         }

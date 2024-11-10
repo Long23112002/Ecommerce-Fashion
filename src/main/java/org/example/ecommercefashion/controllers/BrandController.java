@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.controllers;
 
 import javax.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.BrandParam;
 import org.example.ecommercefashion.dtos.request.BrandRequest;
@@ -27,29 +28,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BrandController {
     private final BrandService brandService;
+
     @GetMapping
-    public ResponsePage<Brand, BrandResponse> getAll(BrandParam param, Pageable pageable){
-        return brandService.filterCategory(param,pageable);
+    public ResponsePage<Brand, BrandResponse> getAll(BrandParam param, Pageable pageable) {
+        return brandService.filterCategory(param, pageable);
     }
 
     @PostMapping
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<BrandResponse> add(@Valid @RequestBody BrandRequest request,
-                                                @RequestHeader("Authorization") String token) {
+                                             @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
         return ResponseEntity.ok(brandService.add(request, token));
     }
+
     @PutMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<BrandResponse> update(@PathVariable long id, @Valid @RequestBody BrandRequest request,
-                                                   @RequestHeader("Authorization") String token) {
+                                                @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
         return ResponseEntity.ok(brandService.update(request, id, token));
     }
+
     @GetMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<BrandResponse> getFindById(@PathVariable Long id) {
@@ -60,6 +64,7 @@ public class BrandController {
             return null;
         }
     }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {

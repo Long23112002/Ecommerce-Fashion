@@ -25,13 +25,10 @@ public enum PermissionEnum {
     CUSTOMER_CHAT("customer_chat")
     ;
 
-    private final String val;
+    public final String val;
 
     PermissionEnum(String val) {
         this.val = val;
     }
 
-    public String val() {
-        return this.val;
-    }
 }

@@ -95,7 +95,7 @@ public class MaterialServiceImpl implements MaterialService {
             });
 
             boolean isNameDuplicate = materialRepository.existsByNameIgnoreCase(materialRequest.getName().trim());
-            if (isNameDuplicate && !material.getName().trim().equals(materialRequest.getName().trim())) {
+            if (isNameDuplicate && !material.getName().trim().equalsIgnoreCase(materialRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NAME_EXISTED);
             }
 

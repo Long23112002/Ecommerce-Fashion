@@ -94,7 +94,7 @@ public class SizeServiceImpl implements SizeService {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
             });
             boolean isNameDuplicate = sizeRepository.existsByNameIgnoreCase(sizeRequest.getName().trim());
-            if (isNameDuplicate && !size.getName().trim().equals(sizeRequest.getName().trim())) {
+            if (isNameDuplicate && !size.getName().trim().equalsIgnoreCase(sizeRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.SIZE_NAME_EXISTED);
             }
             Size sizeUpdate = mapSizeRequestToSize(size, sizeRequest);

@@ -24,6 +24,5 @@ public class ProductRequest {
     private Long idMaterial;
     @NotNull(message = "Vui lòng chọn origin")
     private Long idOrigin;
-//    @NotNull(message = "Vui lòng chọn image")
-//    private String image;
+    private String image;
 }

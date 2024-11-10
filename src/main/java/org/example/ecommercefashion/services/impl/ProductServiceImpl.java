@@ -60,17 +60,6 @@ public class ProductServiceImpl implements ProductService {
 
     @PersistenceContext private EntityManager entityManager;
 
-    private UserResponse getInfoUser(Long id) {
-        User user =
-                userRepository
-                        .findById(id)
-                        .orElseThrow(
-                                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
-        UserResponse userResponse = new UserResponse();
-        FnCommon.copyNonNullProperties(userResponse, user);
-        return userResponse;
-    }
-
     private UserValue getInfoUserValue(Long id) {
         User user =
                 userRepository
@@ -168,16 +157,10 @@ public class ProductServiceImpl implements ProductService {
                                     () ->
                                             new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
 
-            String normalizedProductName;
-            try {
-                normalizedProductName = normalizeString(request.getName());
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to normalize string", e);
-            }
-            if (productRepository.existsByNameIgnoreCase(normalizedProductName)) {
+            boolean isNameDuplicate = productRepository.existsByNameIgnoreCase(request.getName().trim());
+            if (isNameDuplicate && !product.getName().trim().equals(request.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NAME_EXISTED);
             }
-
             Brand brand =
                     brandRepository
                             .findById(request.getIdBrand())

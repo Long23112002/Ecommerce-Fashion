@@ -53,21 +53,8 @@ public class Product {
     @Column(name = "create_by", updatable = false)
     private Long createBy;
 
-
-    //    @PrePersist
-//    public void generateCode() {
-//        if (this.code == null || this.code.isEmpty()) {
-//            this.code = UUID.randomUUID().toString();
-//        }
-//    }
-    @PrePersist
-    private void generateProductCode() {
-        this.code = "PD" + this.id;
-    }
-
     @Transient
     private UserValue createByUser;
-
 
     @Column(name = "update_by")
     private Long updateBy;
@@ -86,13 +73,6 @@ public class Product {
 
     @Column(name = "max_price")
     private Long maxPrice;
-
-//  @PrePersist
-//  public void generateCode() {
-//    if (this.code == null || this.code.isEmpty()) {
-//      this.code = UUID.randomUUID().toString();
-//    }
-//  }
 
     //    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     //    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

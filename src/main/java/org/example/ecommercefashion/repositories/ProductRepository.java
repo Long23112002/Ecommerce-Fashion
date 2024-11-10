@@ -31,8 +31,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           + "AND (:#{#param.minPrice} IS NULL OR p.minPrice >= :#{#param.minPrice})"
           + "AND (:#{#param.maxPrice} IS NULL OR p.maxPrice <= :#{#param.maxPrice})"
           + "AND (:#{#param.idColors} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.color.id IN :#{#param.idColors}))"
-          + "AND (:#{#param.idSizes} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.size.id IN :#{#param.idSizes}))"
-          + " ORDER BY p.id DESC ")
+          + "AND (:#{#param.idSizes} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.size.id IN :#{#param.idSizes}))")
   Page<Product> filterProduct(ProductParam param, Pageable pageable);
 
   Boolean existsByMaterial(Material material);

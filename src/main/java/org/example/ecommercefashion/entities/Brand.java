@@ -49,7 +49,4 @@ public class Brand {
     @Column(nullable = false)
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy = "brand")
-    @JsonManagedReference("brand-product")
-    private List<Product> products;
 }

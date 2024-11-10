@@ -10,5 +10,5 @@ public class ProductDetailParam {
     private Long idProduct;
     private Long idColor;
     private Long idSize;
-    private String keyword;
+    private String keyword = "";
 }

@@ -12,16 +12,14 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Condition;
 import org.example.ecommercefashion.entities.Discount;
+import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.enums.StatusDiscount;
 import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
-import org.example.ecommercefashion.repositories.BrandRepository;
-import org.example.ecommercefashion.repositories.CategoryRepository;
 import org.example.ecommercefashion.repositories.DiscountRepository;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
-import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.repositories.VoucherRepository;
 import org.example.ecommercefashion.security.JwtService;
@@ -31,9 +29,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
 @Service
 @RequiredArgsConstructor
@@ -69,10 +70,23 @@ public class DiscountServiceImpl implements DiscountService {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
                 }
             }
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
+            if (discountRepository.existsByName(normalizedCategoryName)) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_NAME_EXISTED);
+            }
+            if (request.getCondition() != null && request.getCondition().getPrice() == 0.0) {
+                request.getCondition().setPrice(null);
+            }
             Discount discount = new Discount();
-            validateDiscountCondition(request.getCondition());
+
             FnCommon.copyNonNullProperties(discount, request);
             setDiscountStatus(discount);
+            validateDiscountCondition(discount.getCondition());
             discount.setCreateBy(jwt.getUserId());
             discount = discountRepository.save(discount);
             DiscountResponse discountResponse = new DiscountResponse();
@@ -121,11 +135,24 @@ public class DiscountServiceImpl implements DiscountService {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
                 }
             }
+            if (request.getCondition() != null && request.getCondition().getPrice() == 0.0) {
+                request.getCondition().setPrice(null);
+            }
+            String normalizedCategoryName;
+            try {
+                normalizedCategoryName = normalizeString(request.getName());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to normalize string", e);
+            }
+
             Discount discount = discountRepository.findById(id).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND)
             );
-            validateDiscountCondition(discount.getCondition());
             FnCommon.copyNonNullProperties(discount, request);
+            if (discountRepository.existsByNameAndIdNot(normalizedCategoryName,discount.getId())) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_NAME_EXISTED);
+            }
+            validateDiscountCondition(discount.getCondition());
             setDiscountStatus(discount);
             discount.setUpdateBy(jwt.getUserId());
             discount.setUpdateAt(new Timestamp(System.currentTimeMillis()));
@@ -161,17 +188,20 @@ public class DiscountServiceImpl implements DiscountService {
     // true -> cho vào list return
     // return list
     @Override
-    public List<Discount> getVoucher(List<ProductDetail> detailList) {
+    public List<Discount> getVoucher(List<ProductDetail> detailList, Order order) {
         List<Discount> allDiscounts = discountRepository.findAll();
         List<Discount> validDiscounts = allDiscounts.stream()
                 .filter(discount -> {
                     Condition condition = discount.getCondition();
                     return detailList.stream().anyMatch(detail -> {
-                        boolean isProductDetail = condition.getIdProductDetail().stream().anyMatch(id -> id.equals(detail.getId()));
 
+                        boolean isProductDetail = condition.getIdProductDetail() != null
+                                && condition.getIdProductDetail().stream().anyMatch(id -> id.equals(detail.getId()));
 
+                        boolean isPriceConditionMet = condition.getPrice() != null
+                                && order.getTotalMoney() >= condition.getPrice();
 
-                        return isProductDetail ;
+                        return isProductDetail || isPriceConditionMet;
                     });
                 })
                 .collect(Collectors.toList());
@@ -180,12 +210,14 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     public void validateDiscountCondition(Condition condition) {
-
         if (condition.getIdProductDetail() != null && !condition.getIdProductDetail().isEmpty()) {
-            for (Long productDetailId : condition.getIdProductDetail()) {
-                if (!productDetailRepository.existsById(productDetailId)) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "ProductDetailId ID " + productDetailId + " không tồn tại");
-                }
+            List<Long> invalidIds = condition.getIdProductDetail().stream()
+                    .filter(id -> !productDetailRepository.existsById(id))
+                    .collect(Collectors.toList());
+
+            if (!invalidIds.isEmpty()) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
+                        "Các ID ProductDetail sau không tồn tại: " + invalidIds);
             }
         }
     }

@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.ProductDetailParam;
 import org.example.ecommercefashion.dtos.filter.ProductParam;
+import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.request.ProductDetailRequest;
 import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -19,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/product-detail")
@@ -63,5 +65,10 @@ public class ProductDetailController {
     public ResponseEntity<MessageResponse> deleteProduct(@PathVariable Long id) {
         MessageResponse messageResponse = service.delete(id);
         return ResponseEntity.ok(messageResponse);
+    }
+
+    @GetMapping("/product/{id}")
+    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(@PathVariable Long id, PageableRequest pageable){
+        return service.getDetailByIdProduct(id, pageable.toPageable());
     }
 }

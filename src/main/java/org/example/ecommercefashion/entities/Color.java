@@ -50,4 +50,7 @@ public class Color {
     @Column(name = "deleted")
     private Boolean deleted = false;
 
+    @Column(name = "code")
+    private String code;
+
 }

@@ -66,10 +66,6 @@ public class Category {
     @JsonManagedReference
     private List<Category> subCategories;
 
-    @OneToMany(mappedBy= "category")
-    @JsonManagedReference("category-products")
-    private List<Product> products;
-
     public int calculateLevel() {
         int level = 1;
         Category currentParent = this.parentCategory;

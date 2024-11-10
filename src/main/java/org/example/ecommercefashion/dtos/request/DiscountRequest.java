@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.dtos.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,9 +11,7 @@ import org.example.ecommercefashion.enums.TypeDiscount;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
 import java.sql.Timestamp;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -32,17 +31,17 @@ public class DiscountRequest {
     @NotNull(message = "Value cannot be null")
     private Double value;
 
-    @NotNull(message = "maxValue cannot be null")
     private Double maxValue;
 
     @NotNull(message = "Ngày bắt đầu không được trống")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp startDate;
 
     @NotNull(message = "Ngày kết thúc không được trống")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp endDate;
 
-    @EnumPattern(name = "discountStatus", regexp = "ACTIVE|INACTIVE|EXPIRED")
+    @EnumPattern(name = "discountStatus", regexp = "UPCOMING|ACTIVE|ENDED")
     private StatusDiscount discountStatus;
-
 
 }

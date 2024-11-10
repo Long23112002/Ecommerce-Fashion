@@ -10,6 +10,8 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Promotion;
 import org.example.ecommercefashion.services.PromotionService;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -71,5 +74,21 @@ public class PromotionController {
             token = token.substring(7);
         }
         return promotionService.deletePromotion(id, token);
+    }
+
+    @PostMapping("/{promotionId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<PromotionResponse> addProductDetailsToPromotion(
+            @PathVariable Long promotionId,
+            @RequestBody List<Long> productDetailIds,
+            @RequestHeader("Authorization") String token) {
+
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        PromotionResponse updatedPromotion = promotionService.addProductDetailsToPromotion(promotionId, productDetailIds, token);
+
+        return new ResponseEntity<>(updatedPromotion, HttpStatus.OK);
     }
 }

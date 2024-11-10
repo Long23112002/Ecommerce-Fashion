@@ -50,7 +50,4 @@ public class Material {
     @Column(name = "deleted")
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy= "material")
-    @JsonManagedReference("material-product")
-    private List<Product> products;
 }

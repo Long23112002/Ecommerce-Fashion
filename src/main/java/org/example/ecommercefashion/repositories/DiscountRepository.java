@@ -17,4 +17,6 @@ public interface DiscountRepository extends JpaRepository<Discount, Long> {
     Page<Discount> getFilterDiscountPage(@Param("param")DiscountParam param,
                                          Pageable pageable);
 
+    boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name , long id);
 }

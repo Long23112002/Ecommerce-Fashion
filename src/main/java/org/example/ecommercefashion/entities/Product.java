@@ -3,7 +3,6 @@ package org.example.ecommercefashion.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -30,7 +29,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "product", schema = "products")
 @Where(clause = "deleted = false")
-//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,11 +72,11 @@ public class Product {
         }
     }
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @JsonManagedReference("product-productDetail")
-//    @JsonBackReference
-    private List<ProductDetail> productDetails;
+//    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+//    @JsonManagedReference
+////    @JsonBackReference
+//    private List<ProductDetail> productDetails;
 
     @ManyToOne(
             cascade = {
@@ -86,7 +85,7 @@ public class Product {
             },
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_brand", nullable = false)
-    @JsonBackReference("brand-product")
+//    @JsonBackReference
     @Fetch(FetchMode.JOIN)
     private Brand brand;
 
@@ -97,7 +96,7 @@ public class Product {
             },
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_origin")
-    @JsonBackReference("origin-product")
+//    @JsonBackReference
     @Fetch(FetchMode.JOIN)
     private Origin origin;
 
@@ -108,7 +107,7 @@ public class Product {
             },
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_material")
-    @JsonBackReference("material-product")
+//    @JsonBackReference
     @Fetch(FetchMode.JOIN)
     private Material material;
 
@@ -121,6 +120,6 @@ public class Product {
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "id_category")
     @JsonIgnoreProperties({"products"})
-    @JsonBackReference("category-products")
+//    @JsonBackReference
     private Category category;
 }

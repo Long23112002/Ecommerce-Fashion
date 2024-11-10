@@ -6,6 +6,7 @@ import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Discount;
+import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.springframework.data.domain.Pageable;
 
@@ -22,5 +23,5 @@ public interface DiscountService {
 
     MessageResponse deleted(Long id);
 
-    List<Discount> getVoucher(List<ProductDetail> detailList);
+    List<Discount> getVoucher(List<ProductDetail> detailList, Order order);
 }

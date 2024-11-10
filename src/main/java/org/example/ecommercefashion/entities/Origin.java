@@ -50,7 +50,4 @@ public class Origin {
     @Column(nullable = false)
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy= "origin")
-    @JsonManagedReference("origin-product")
-    private List<Product> products;
 }

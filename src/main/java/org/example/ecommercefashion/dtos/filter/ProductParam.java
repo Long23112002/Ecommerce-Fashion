@@ -13,6 +13,6 @@ public class ProductParam {
   private Long idMaterial;
   private List<Long> idColors;
   private List<Long> idSizes;
-  private Double minPrice;
-  private Double maxPrice;
+  private Long minPrice;
+  private Long maxPrice;
 }

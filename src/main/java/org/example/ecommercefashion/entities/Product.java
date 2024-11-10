@@ -3,7 +3,7 @@ package org.example.ecommercefashion.entities;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.sql.Timestamp;
-import java.util.UUID;
+import java.util.List;
 import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,18 +70,16 @@ public class Product {
   @Column(name = "max_price")
   private Long maxPrice;
 
-//  @PrePersist
-//  public void generateCode() {
-//    if (this.code == null || this.code.isEmpty()) {
-//      this.code = UUID.randomUUID().toString();
-//    }
-//  }
+  //  @PrePersist
+  //  public void generateCode() {
+  //    if (this.code == null || this.code.isEmpty()) {
+  //      this.code = UUID.randomUUID().toString();
+  //    }
+  //  }
 
-  //    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  //    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-  //    @JsonManagedReference
-  ////    @JsonBackReference
-  //    private List<ProductDetail> productDetails;
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+  private List<ProductDetail> productDetails;
 
   @ManyToOne(
       cascade = {

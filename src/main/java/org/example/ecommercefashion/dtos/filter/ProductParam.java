@@ -10,4 +10,8 @@ public class ProductParam {
   private Long idOrigin;
   private Long idCategory;
   private Long idMaterial;
+  private Long idColor;
+  private Long idSize;
+  private Double minPrice;
+  private Double maxPrice;
 }

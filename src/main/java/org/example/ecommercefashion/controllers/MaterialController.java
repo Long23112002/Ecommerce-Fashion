@@ -1,8 +1,10 @@
 package org.example.ecommercefashion.controllers;
 
 import io.swagger.annotations.Api;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.ecommercefashion.annotations.CheckPermission;
 import org.example.ecommercefashion.dtos.request.MaterialRequest;
 import org.example.ecommercefashion.dtos.response.ApiResponse;
 import org.example.ecommercefashion.dtos.response.MaterialResponse;
@@ -10,7 +12,6 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Material;
 import org.example.ecommercefashion.services.MaterialService;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 
 @RestController
 @Slf4j
@@ -44,7 +43,7 @@ public class MaterialController {
   }
 
   @PostMapping
-  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @CheckPermission({"add_material"})
   public MaterialResponse createMaterial(
       @RequestBody @Valid MaterialRequest materialRequest,
       @RequestHeader("Authorization") String token) {
@@ -55,7 +54,7 @@ public class MaterialController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @CheckPermission({"update_material"})
   public MaterialResponse updateMaterial(
       @PathVariable Long id,
       @RequestBody @Valid MaterialRequest materialRequest,
@@ -67,7 +66,7 @@ public class MaterialController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @CheckPermission({"delete_material"})
   public ApiResponse<Object> deleteMaterial(
       @PathVariable Long id, @RequestHeader("Authorization") String token) {
     if (token.startsWith("Bearer ")) {

@@ -27,7 +27,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.material.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.category.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.origin.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
-           + " ORDER BY p.id DESC ")
+          + "AND (:#{#param.minPrice} IS NULL OR p.minPrice >= :#{#param.minPrice})"
+          + "AND (:#{#param.maxPrice} IS NULL OR p.maxPrice <= :#{#param.maxPrice})"
+          + "AND (:#{#param.idColor} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.color.id = :#{#param.idColor}))"
+          + "AND (:#{#param.idSize} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.size.id = :#{#param.idSize}))"
+          + " ORDER BY p.id DESC ")
   Page<Product> filterProduct(ProductParam param, Pageable pageable);
 
   Boolean existsByMaterial(Material material);
@@ -38,6 +42,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
   Boolean existsByOrigin(Origin origin);
 
-  @Query(value  = "select last_value + 1 from products.product_id_seq", nativeQuery = true)
+  @Query(value = "select last_value + 1 from products.product_id_seq", nativeQuery = true)
   Long getLastValue();
 }

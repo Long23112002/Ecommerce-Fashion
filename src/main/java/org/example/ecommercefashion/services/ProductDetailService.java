@@ -7,6 +7,8 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface ProductDetailService {
   ProductDetail createProductDetail(ProductDetailRequest request, String token);
 

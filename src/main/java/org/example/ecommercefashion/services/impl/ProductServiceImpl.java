@@ -141,6 +141,7 @@ public class ProductServiceImpl implements ProductService {
 
       Product productCreate = new Product();
       FnCommon.copyNonNullProperties(productCreate, request);
+      productCreate.setCode("PH"+ productRepository.getLastValue());
       productCreate.setCreateBy(jwtResponse.getUserId());
       productCreate.setBrand(brand);
       productCreate.setCategory(category);

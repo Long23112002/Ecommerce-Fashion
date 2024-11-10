@@ -18,7 +18,6 @@ import org.example.ecommercefashion.services.ProductService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,7 +33,7 @@ public class ProductController {
   }
 
   @PostMapping
-  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  @CheckPermission({"add_product"})
   public ResponseEntity<Product> createProduct(
       @Valid @RequestBody ProductRequest request, @RequestHeader("Authorization") String token) {
     if (token.startsWith("Bearer ")) {
@@ -44,7 +43,7 @@ public class ProductController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize(("hasRole('ROLE_ADMIN')"))
+  @CheckPermission({"update_product"})
   public ResponseEntity<Product> updateProduct(
       @PathVariable Long id,
       @Valid @RequestBody ProductRequest request,
@@ -61,13 +60,14 @@ public class ProductController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @CheckPermission({"delete_product"})
   public ResponseEntity<MessageResponse> deleteProduct(@PathVariable Long id) {
     MessageResponse messageResponse = productService.updateStatus(id);
     return ResponseEntity.ok(messageResponse);
   }
 
   @GetMapping("/export-sample-file")
+  @CheckPermission({"export_sample_product"})
   public ResponseEntity<byte[]> exportSampleFile() throws IOException {
     try {
       byte[] content = productService.exSampleTemplate();

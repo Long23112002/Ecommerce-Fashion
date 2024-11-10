@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.dtos.filter;
 
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -10,4 +11,8 @@ public class ProductParam {
   private Long idOrigin;
   private Long idCategory;
   private Long idMaterial;
+  private List<Long> idColors;
+  private List<Long> idSizes;
+  private Double minPrice;
+  private Double maxPrice;
 }

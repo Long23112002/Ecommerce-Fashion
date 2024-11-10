@@ -15,23 +15,42 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+
     Boolean existsByNameIgnoreCase(String name);
 
-    @Query("SELECT p FROM Product p "
-            + "WHERE "
-            + "(CAST(:#{#param.keyword} AS string) IS NULL OR lower(p.name) LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
-            + " OR cast(lower(p.code) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR cast(lower(p.description) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR cast(lower(p.brand.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')"
-            + " OR cast(lower(p.origin.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR cast(lower(p.category.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR cast(lower(p.material.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')) AND "
-            + "(:#{#param.idBrand} IS NULL OR p.brand.id = :#{#param.idBrand}) AND "
-            + "(:#{#param.idOrigin} IS NULL OR p.origin.id = :#{#param.idOrigin}) AND "
-            + "(:#{#param.idCategory} IS NULL OR p.category.id = :#{#param.idCategory}) AND "
-            + "(:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial}) "
-            + "ORDER BY p.id DESC ")
-    Page<Product> filterProduct(ProductParam param, Pageable pageable);
+  @Query(
+      "SELECT p FROM Product p WHERE (:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial})"
+          + "AND (:#{#param.idBrand} IS NULL OR p.brand.id = :#{#param.idBrand})"
+          + "AND (:#{#param.idCategory} IS NULL OR p.category.id = :#{#param.idCategory})"
+          + "AND (:#{#param.idOrigin} IS NULL OR p.origin.id = :#{#param.idOrigin})"
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
+          + "AND (:#{#param.code} IS NULL OR LOWER(p.code) LIKE CONCAT('%', LOWER(CAST(:#{#param.code} AS string)), '%'))"
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.brand.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.material.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.category.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.origin.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
+          + "AND (:#{#param.minPrice} IS NULL OR p.minPrice >= :#{#param.minPrice})"
+          + "AND (:#{#param.maxPrice} IS NULL OR p.maxPrice <= :#{#param.maxPrice})"
+          + "AND (:#{#param.idColors} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.color.id IN :#{#param.idColors}))"
+          + "AND (:#{#param.idSizes} IS NULL OR p.id IN (SELECT pd.product.id FROM ProductDetail pd WHERE pd.size.id IN :#{#param.idSizes}))"
+          + " ORDER BY p.id DESC ")
+  Page<Product> filterProduct(ProductParam param, Pageable pageable);
+
+//    @Query("SELECT p FROM Product p "
+//            + "WHERE "
+//            + "(CAST(:#{#param.keyword} AS string) IS NULL OR lower(p.name) LIKE CONCAT('%', CAST(:#{#param.keyword} AS string), '%') "
+//            + " OR cast(lower(p.code) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
+//            + " OR cast(lower(p.description) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
+//            + " OR cast(lower(p.brand.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')"
+//            + " OR cast(lower(p.origin.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
+//            + " OR cast(lower(p.category.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
+//            + " OR cast(lower(p.material.name) as string) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')) AND "
+//            + "(:#{#param.idBrand} IS NULL OR p.brand.id = :#{#param.idBrand}) AND "
+//            + "(:#{#param.idOrigin} IS NULL OR p.origin.id = :#{#param.idOrigin}) AND "
+//            + "(:#{#param.idCategory} IS NULL OR p.category.id = :#{#param.idCategory}) AND "
+//            + "(:#{#param.idMaterial} IS NULL OR p.material.id = :#{#param.idMaterial}) "
+//            + "ORDER BY p.id DESC ")
+//    Page<Product> filterProduct(ProductParam param, Pageable pageable);
 
     Boolean existsByMaterial(Material material);
 

@@ -50,7 +50,7 @@ public class PermissionController {
   }
 
   @PatchMapping("/assign-permission-to-role")
-  @CheckPermission({"assign_role_admin"})
+  @CheckPermission({"assign_role_permission"})
   public MessageResponse assignPermissionToRole(
       @Valid @RequestBody AssignPermissionRequest assignPermissionRequest) {
     return permissionService.assignPermissionToRole(assignPermissionRequest);

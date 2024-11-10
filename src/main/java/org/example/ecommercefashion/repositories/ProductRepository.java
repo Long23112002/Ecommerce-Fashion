@@ -25,6 +25,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           + "AND (:#{#param.idOrigin} IS NULL OR p.origin.id = :#{#param.idOrigin})"
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
           + "AND (:#{#param.code} IS NULL OR LOWER(p.code) LIKE CONCAT('%', LOWER(CAST(:#{#param.code} AS string)), '%'))"
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.brand.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.material.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
           + "AND (:#{#param.keyword} IS NULL OR LOWER(p.category.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"

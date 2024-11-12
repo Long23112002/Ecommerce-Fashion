@@ -65,13 +65,13 @@ public enum NotificationCode {
 
     CREATE_COLOR(
             "Thêm màu sắc thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính màu sắc",
             PermissionEnum.ADD_COLOR.val
     ),
 
     UPDATE_COLOR(
             "Cập nhật màu sắc thành công",
-            "Đã cập nhật <b>%s</b> thành <b>%s</b>",
+            "Đã cập nhật màu sắc <b>%s</b> thành <b>%s</b>",
             PermissionEnum.UPDATE_COLOR.val
     ),
 
@@ -98,6 +98,80 @@ public enum NotificationCode {
             "Đã xóa tất cả sản phẩm cho đợt giảm giá id: <b>%s</b>",
             PermissionEnum.DELETE_PROMOTION.val
     ),
+
+    CREATE_SIZE(
+            "Thêm kích thước thành công",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính kích thước",
+            PermissionEnum.ADD_SIZE.val
+    ),
+
+    UPDATE_SIZE(
+            "Cập nhật kích thước thành công",
+            "Đã cập nhật kích thước <b>%s</b> thành <b>%s</b>",
+            PermissionEnum.UPDATE_SIZE.val
+    ),
+
+    CREATE_MATERIAL(
+            "Thêm chất liệu thành công",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính chất liệu",
+            PermissionEnum.ADD_MATERIAL.val
+    ),
+
+    UPDATE_MATERIAL(
+            "Cập nhật chất liệu thành công",
+            "Đã cập nhật chất liệu <b>%s</b> thành <b>%s</b>",
+            PermissionEnum.UPDATE_MATERIAL.val
+    ),
+
+    CREATE_BRAND(
+            "Thêm thương hiệu thành công",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính thương hiệu",
+            PermissionEnum.ADD_BRAND.val
+    ),
+
+    UPDATE_BRAND(
+            "Cập nhật thương hiệu thành công",
+            "Đã cập nhật thương hiệu <b>%s</b> thành <b>%s</b>",
+            PermissionEnum.UPDATE_BRAND.val
+    ),
+
+    CREATE_CATEGORY(
+            "Thêm danh mục thành công",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính danh mục",
+            PermissionEnum.ADD_CATEGORY.val
+    ),
+
+    UPDATE_CATEGORY(
+            "Cập nhật danh mục thành công",
+            "Đã cập nhật danh mục <b>%s</b> thành <b>%s</b>",
+            PermissionEnum.UPDATE_CATEGORY.val
+    ),
+
+    CREATE_ROLE(
+            "Thêm vai trò thành công",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính vai trò",
+            PermissionEnum.ADD_ROLE.val
+    ),
+
+    UPDATE_ROLE(
+            "Cập nhật vai trò thành công",
+            "Đã cập nhật vai trò <b>%s</b> thành <b>%s</b>",
+            PermissionEnum.UPDATE_ROLE.val
+    ),
+
+    CREATE_ORIGIN(
+            "Thêm nguồn gốc thành công",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính nguồn gốc",
+            PermissionEnum.ADD_ORIGIN.val
+    ),
+
+    UPDATE_ORIGIN(
+            "Cập nhật nguồn gốc thành công",
+            "Đã cập nhật nguồn gốc <b>%s</b> thành <b>%s</b>",
+            PermissionEnum.UPDATE_ORIGIN.val
+    ),
+
+    
     ;
 
     private final String defaultTitle;

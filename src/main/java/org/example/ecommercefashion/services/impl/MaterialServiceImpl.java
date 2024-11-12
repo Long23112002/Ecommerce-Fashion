@@ -17,6 +17,7 @@ import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.MaterialService;
+import org.example.ecommercefashion.services.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,8 @@ public class MaterialServiceImpl implements MaterialService {
     private final JwtService jwtService;
 
     private final ProductRepository productRepository;
+
+    private final NotificationService notificationService;
 
     private UserResponse getInforUser(Long id) {
         if (id == null) {

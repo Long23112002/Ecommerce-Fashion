@@ -10,12 +10,14 @@ import org.example.ecommercefashion.dtos.response.SizeResponse;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Size;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.SizeRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
+import org.example.ecommercefashion.services.NotificationService;
 import org.example.ecommercefashion.services.SizeService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,8 @@ public class SizeServiceImpl implements SizeService {
     private final JwtService jwtService;
 
     private final ProductDetailRepository productDetailRepository;
+
+    private final NotificationService notificationService;
 
     private UserResponse getInforUser(Long id) {
         if (id == null) {
@@ -78,6 +82,7 @@ public class SizeServiceImpl implements SizeService {
             Size sizeCreate = mapSizeRequestToSize(size, sizeRequest);
             sizeCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             sizeRepository.save(sizeCreate);
+            notificationService.sendNotificationToUsersWithPermission(sizeCreate.getCreatedBy(), NotificationCode.CREATE_SIZE,sizeCreate.getName());
             SizeResponse sizeResponse = mapSizeToSizeResponse(sizeCreate);
             sizeResponse.setCreatedBy(getInforUser(jwtResponse.getUserId()));
             return sizeResponse;
@@ -93,6 +98,7 @@ public class SizeServiceImpl implements SizeService {
             Size size = sizeRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.SIZE_NOT_FOUND);
             });
+            String sizeName = size.getName();
             boolean isNameDuplicate = sizeRepository.existsByNameIgnoreCase(sizeRequest.getName().trim());
             if (isNameDuplicate && !size.getName().trim().equalsIgnoreCase(sizeRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.SIZE_NAME_EXISTED);
@@ -101,6 +107,7 @@ public class SizeServiceImpl implements SizeService {
             sizeUpdate.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             sizeUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             sizeRepository.save(sizeUpdate);
+            notificationService.sendNotificationToUsersWithPermission(sizeUpdate.getUpdatedBy(), NotificationCode.UPDATE_SIZE, sizeName, sizeUpdate.getName());
             SizeResponse sizeResponse = mapSizeToSizeResponse(sizeUpdate);
             sizeResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
             sizeResponse.setCreatedBy(getInforUser(size.getCreatedBy()));

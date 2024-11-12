@@ -61,7 +61,43 @@ public enum NotificationCode {
             "Test",
             "User: <b>%s</b> vừa test.",
             PermissionEnum.CUSTOMER_CHAT.val
-    )
+    ),
+
+    CREATE_COLOR(
+            "Thêm màu sắc thành công",
+            "<b>%s</b> vừa được thêm thành công vào thuộc tính",
+            PermissionEnum.ADD_COLOR.val
+    ),
+
+    UPDATE_COLOR(
+            "Cập nhật màu sắc thành công",
+            "Đã cập nhật <b>%s</b> thành <b>%s</b>",
+            PermissionEnum.UPDATE_COLOR.val
+    ),
+
+    CREATE_PROMOTION(
+            "Thêm mới đợt giảm giá thành công",
+            "Đã thêm mới đợt giảm giá từ <b>%s</b> đến <b>%s</b>",
+            PermissionEnum.ADD_PROMOTION.val
+    ),
+
+    UPDATE_PROMOTION(
+            "Cập nhật đợt giảm giá thành công",
+            "Cập nhật đợt giảm giá id: <b>%s</b>",
+            PermissionEnum.UPDATE_PROMOTION.val
+    ),
+
+    ADD_PRODUCT_DETAIL_TO_PROMOTION(
+            "Đã lên lịch giảm giá cho sản phẩm",
+            "Đã cập nhật chi tiết sản phẩm vào đợt giảm giá id: <b>%s</b>",
+            PermissionEnum.ADD_PROMOTION.val
+    ),
+
+    DELETE_PRODUCT_DETAIL_FROM_PROMOTION(
+            "Đã xóa chi tiết sản phẩm khỏi đợt giảm giá",
+            "Đã xóa tất cả sản phẩm cho đợt giảm giá id: <b>%s</b>",
+            PermissionEnum.DELETE_PROMOTION.val
+    ),
     ;
 
     private final String defaultTitle;

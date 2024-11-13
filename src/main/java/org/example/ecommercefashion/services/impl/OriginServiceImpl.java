@@ -108,7 +108,7 @@ public class OriginServiceImpl implements OriginService{
                 throw new RuntimeException("Failed to normalize string", e);
             }
             FnCommon.copyNonNullProperties(origin,request);
-            if(repository.existsByName(normalizedCategoryName)){
+            if(repository.existsByNameAndIdNot(normalizedCategoryName,origin.getId())){
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NAME_EXISTED);
             }
             origin.setUpdateBy(jwt.getUserId());

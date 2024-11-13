@@ -26,6 +26,6 @@ public class AvroUtils {
   public static <T> T deserializeAvro(byte[] data, Class<T> clazz) throws IOException {
     DatumReader<T> reader = new SpecificDatumReader<>(clazz);
     return reader.read(
-        null, DecoderFactory.get().binaryDecoder(new ByteArrayInputStream(data), null));
+            null, DecoderFactory.get().binaryDecoder(new ByteArrayInputStream(data), null));
   }
 }

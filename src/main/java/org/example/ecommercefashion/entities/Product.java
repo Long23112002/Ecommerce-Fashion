@@ -83,16 +83,16 @@ public class Product {
     ////    @JsonBackReference
     //    private List<ProductDetail> productDetails;
 
-  //  @PrePersist
-  //  public void generateCode() {
-  //    if (this.code == null || this.code.isEmpty()) {
-  //      this.code = UUID.randomUUID().toString();
-  //    }
-  //  }
+    //  @PrePersist
+    //  public void generateCode() {
+    //    if (this.code == null || this.code.isEmpty()) {
+    //      this.code = UUID.randomUUID().toString();
+    //    }
+    //  }
 
-  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "product"})
-  private List<ProductDetail> productDetails;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "product"})
+    private List<ProductDetail> productDetails;
 
 
     @ManyToOne(

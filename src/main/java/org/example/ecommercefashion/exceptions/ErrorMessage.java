@@ -3,6 +3,14 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  DISCOUNT_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
+  DISCOUNT_NAME_EXISTED("Tên Phiếu Giảm Giá Đã Tồn Tại"),
+  DISCOUNT_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
+  DISCOUNT_CONDITION_NOT_MET("Không đủ điều kiện để sử dụng Voucher"),
+  VOUCHER_ALREADY_USED("Voucher đã được sử dụng"),
+  VOUCHER_NOT_FOUND("Không Tìm thấy voucher"),
+  DISCOUNT_NOT_FOUND("Không tìm thấy mã giảm giá"),
   CATEGORY_NAME_EXISTED("Tên Danh Mục Đã Tồn Tại"),
   ORIGIN_NAME_EXISTED("Tên Xuất Xứ Đã Tồn Tại"),
   BRAND_NAME_EXISTED("Tên Thương Hiệu Đã Tồn Tại"),
@@ -43,7 +51,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   OTP_EXPIRED("OTP đã hết hạn"),
   PROMOTION_NOT_FOUND("Không tìm thấy khuyến mãi"),
   PROMOTION_PERCENTAGE_WRONG_FORMAT(
-      "Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
+          "Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
   PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
   PROMOTION_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   PRODUCT_NAME_EXISTED("Tên Sản Phẩm Đã Tồn Tại"),

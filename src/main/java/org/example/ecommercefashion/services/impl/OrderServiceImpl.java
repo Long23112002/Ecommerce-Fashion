@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.example.ecommercefashion.dtos.filter.OrderParam;
+import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
+import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
+import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
@@ -20,6 +23,7 @@ import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
+import org.example.ecommercefashion.services.GhtkService;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.services.PaymentService;
 import org.example.ecommercefashion.services.ProductDetailService;
@@ -51,16 +55,45 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private GhtkService ghtkService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Order createOrder(OrderCreateRequest dto, String token) {
         Order order = new Order();
-        JwtResponse user = jwtService.decodeToken(token);
+        JwtResponse userJWT = jwtService.decodeToken(token);
+        User user = getUserById(userJWT.getUserId());
         order.setStatus(OrderStatus.DRAFT);
         order.setTotalMoney(calculateTotalOrderMoney(dto.getOrderDetails()));
-        order.setUser(getUserById(user.getUserId()));
+        order.setUser(user);
+        order.setAddress("");
+        order.setPhoneNumber(user.getPhoneNumber());
+        order.setPaymentMethod(paymentService.getPaymentById(1L));
         order = orderRepository.save(order);
         order.setOrderDetails(createOrderDetailsWithStockDeduction(dto.getOrderDetails(), order));
+        orderRepository.save(order);
+        return order;
+    }
+
+    @Override
+    public Order updateAddress(Long id, OrderAddressUpdate dto) {
+        Order order = getOrderById(id);
+
+        int quantity = order.getOrderDetails().stream()
+                .mapToInt(OrderDetail::getQuantity)
+                .sum();
+
+        GhtkOrderRequest ghtkReq = GhtkOrderRequest.builder()
+                .totalMoney(order.getTotalMoney())
+                .quantity(quantity)
+                .toDistrictId(dto.getDistrictID())
+                .toWardCode(dto.getWardCode())
+                .build();
+
+        GhtkFeeResponse ghtkRes = ghtkService.getShippingFee(ghtkReq);
+        order.setMoneyShip(ghtkRes.getData().getService_fee());
+        order.setAddress("-"+dto.getWardName()+"-"+dto.getDistrictName()+"-"+dto.getProvinceName());
         orderRepository.save(order);
         return order;
     }

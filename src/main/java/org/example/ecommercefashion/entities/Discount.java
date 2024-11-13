@@ -12,10 +12,8 @@ import lombok.NoArgsConstructor;
 import org.example.ecommercefashion.enums.StatusDiscount;
 import org.example.ecommercefashion.enums.TypeDiscount;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.Column;
@@ -29,7 +27,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.sql.Timestamp;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 

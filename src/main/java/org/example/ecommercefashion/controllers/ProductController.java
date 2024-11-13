@@ -35,7 +35,7 @@ public class ProductController {
   @PostMapping
   @CheckPermission({"add_product"})
   public ResponseEntity<Product> createProduct(
-      @Valid @RequestBody ProductRequest request, @RequestHeader("Authorization") String token) {
+          @Valid @RequestBody ProductRequest request, @RequestHeader("Authorization") String token) {
     if (token.startsWith("Bearer ")) {
       token = token.substring(7);
     }
@@ -45,9 +45,9 @@ public class ProductController {
   @PutMapping("/{id}")
   @CheckPermission({"update_product"})
   public ResponseEntity<Product> updateProduct(
-      @PathVariable Long id,
-      @Valid @RequestBody ProductRequest request,
-      @RequestHeader("Authorization") String token) {
+          @PathVariable Long id,
+          @Valid @RequestBody ProductRequest request,
+          @RequestHeader("Authorization") String token) {
     if (token.startsWith("Bearer ")) {
       token = token.substring(7);
     }

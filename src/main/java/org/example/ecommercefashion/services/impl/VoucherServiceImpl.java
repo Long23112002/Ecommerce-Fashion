@@ -5,6 +5,7 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.VoucherParam;
 import org.example.ecommercefashion.dtos.request.VoucherRequest;
+import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
@@ -40,8 +41,9 @@ public class VoucherServiceImpl implements VoucherServise {
 
     @Override
     public ResponsePage<Voucher, VoucherResponse> filterVoucher(VoucherParam param, Pageable pageable) {
-        Page<Voucher> voucherResponsesPage = voucherRepository.getFilterVoucherPage(param,pageable);
-        return new ResponsePage<>(voucherResponsesPage, VoucherResponse.class);
+        Page<Voucher> voucherPage = voucherRepository.getFilterVoucherPage(param,pageable);
+        Page<VoucherResponse> voucherResponsesPage = voucherPage.map(voucher -> mapSizeToSizeResponse(voucher));
+        return new ResponsePage<>(voucherResponsesPage);
     }
 
     @Override
@@ -137,5 +139,16 @@ public class VoucherServiceImpl implements VoucherServise {
         return voucherRepository.findByCode(voucherCode).orElseThrow(
                 () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.VOUCHER_NOT_FOUND)
         );
+    }
+    private VoucherResponse mapSizeToSizeResponse(Voucher voucher) {
+        VoucherResponse voucherResponse = new VoucherResponse();
+        FnCommon.copyNonNullProperties(voucherResponse, voucher);
+        if (voucher.getCreateBy() != null) {
+            voucherResponse.setCreateBy(getInfoUser(voucher.getCreateBy()));
+        }
+        if (voucher.getUpdateBy() != null) {
+            voucherResponse.setUpdateBy(getInfoUser(voucher.getUpdateBy()));
+        }
+        return voucherResponse;
     }
 }

@@ -3,6 +3,9 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  DISCOUNT_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
+  DISCOUNT_NAME_EXISTED("Tên Phiếu Giảm Giá Đã Tồn Tại"),
   DISCOUNT_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   DISCOUNT_CONDITION_NOT_MET("Không đủ điều kiện để sử dụng Voucher"),
   VOUCHER_ALREADY_USED("Voucher đã được sử dụng"),
@@ -10,7 +13,6 @@ public enum ErrorMessage implements BaseErrorMessage {
   DISCOUNT_NOT_FOUND("Không tìm thấy mã giảm giá"),
   CATEGORY_NAME_EXISTED("Tên Danh Mục Đã Tồn Tại"),
   ORIGIN_NAME_EXISTED("Tên Xuất Xứ Đã Tồn Tại"),
-  DISCOUNT_NAME_EXISTED("Tên Phiếu Giảm Giá Đã Tồn Tại"),
   BRAND_NAME_EXISTED("Tên Thương Hiệu Đã Tồn Tại"),
   ORIGIN_NOT_FOUND("Không tìm thấy Xuất Xứ"),
   BRAND_NOT_FOUND("Không tìm thấy Thương Hiệu"),
@@ -49,7 +51,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   OTP_EXPIRED("OTP đã hết hạn"),
   PROMOTION_NOT_FOUND("Không tìm thấy khuyến mãi"),
   PROMOTION_PERCENTAGE_WRONG_FORMAT(
-      "Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
+          "Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
   PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
   PROMOTION_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   PRODUCT_NAME_EXISTED("Tên Sản Phẩm Đã Tồn Tại"),
@@ -62,13 +64,12 @@ public enum ErrorMessage implements BaseErrorMessage {
   BRAND_HAS_PRODUCT("Thương hiệu đang thuộc về 1 chi tiết sản phẩm"),
   CATEGORY_HAS_PRODUCT("Danh mục đang thuộc về 1 chi tiết sản phẩm"),
   ORIGIN_HAS_PRODUCT("Xuất xứ sản phẩm đang thuộc về 1 chi tiết sản phẩm"),
-  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 100"),
-  DISCOUNT_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
   CODE_COLOR_EXIST("Mã màu đã tồn tại"),
   PRODUCT_DETAIL_NOT_FOUND("Sản phẩm chi tiết không tồn tại"),
   PRODUCT_DETAIL_IDS_EMPTY("ID sản phẩm chi tiết trống"),
   PROMOTION_DATE_OVERLAP("Không được tạo đợt giảm giá có khoảng thời gian chồng nhau"),
-  PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ")
+  PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
+  EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
   ;
 
   public String val;

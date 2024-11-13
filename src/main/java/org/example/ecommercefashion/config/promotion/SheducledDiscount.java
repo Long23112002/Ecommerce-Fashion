@@ -20,24 +20,24 @@ public class SheducledDiscount {
 
     private final DiscountRepository discountRepository;
 
-//    @Scheduled(cron = "0 0 * * * *")
-//    @Transactional
-//    public void updateDiscountStatus(){
-//        int page = 0;
-//        int size = 100;
-//
-//        boolean hasNextPage = true;
-//        while (hasNextPage){
-//            Pageable pageable = PageRequest.of(page,size);
-//            Page<Discount> discountsPage = discountRepository.findAll(pageable);
-//            List<Discount> discountsToUpdate = discountsPage.getContent();
-//
-//            for (Discount discount : discountsToUpdate){
-//                DiscountServiceImpl.setDiscountStatus(discount);
-//            }
-//            discountRepository.saveAll(discountsToUpdate);
-//            hasNextPage = discountsPage.hasNext();
-//            page++;
-//        }
-//    }
+    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
+    public void updateDiscountStatus(){
+        int page = 0;
+        int size = 100;
+
+        boolean hasNextPage = true;
+        while (hasNextPage){
+            Pageable pageable = PageRequest.of(page,size);
+            Page<Discount> discountsPage = discountRepository.findAll(pageable);
+            List<Discount> discountsToUpdate = discountsPage.getContent();
+
+            for (Discount discount : discountsToUpdate){
+                DiscountServiceImpl.setDiscountStatus(discount);
+            }
+            discountRepository.saveAll(discountsToUpdate);
+            hasNextPage = discountsPage.hasNext();
+            page++;
+        }
+    }
 }

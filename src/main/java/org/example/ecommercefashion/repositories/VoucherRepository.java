@@ -12,8 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface VoucherRepository extends JpaRepository<Voucher, Long> {
-    @Query("SELECT s FROM Voucher s " +
-            "WHERE (:#{#param.createAt} IS NULL OR CAST(s.createAt AS string) Like %:#{#param.createAt}%) " +
+    @Query("SELECT s FROM Voucher s  WHERE " +
+            "    (:#{#param.createAt} IS NULL OR CAST(s.createAt AS string) Like %:#{#param.createAt}%) " +
             "AND (:#{#param.createBy} IS NULL OR s.createBy = :#{#param.createBy}) " +
             "AND (:#{#param.discountId} IS NULL OR s.discount.id = :#{#param.discountId})")
     Page<Voucher> getFilterVoucherPage(@Param("param")VoucherParam param,

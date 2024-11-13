@@ -99,7 +99,7 @@ public class BrandServiceImpl implements BrandService {
                 throw new RuntimeException("Failed to normalize string", e);
             }
             FnCommon.copyNonNullProperties(brand, request);
-            if(brandRepository.existsByName(normalizedCategoryName)){
+            if(brandRepository.existsByNameAndIdNot(normalizedCategoryName,brand.getId())){
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NAME_EXISTED);
             }
             brand.setUpdateBy(jwt.getUserId());

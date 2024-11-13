@@ -1,11 +1,10 @@
 package org.example.ecommercefashion.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import java.sql.Timestamp;
+import java.util.List;
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,8 +18,7 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.UUID;
+
 
 @Entity
 @Data
@@ -29,13 +27,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "product", schema = "products")
 @Where(clause = "deleted = false")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, nullable = false)
     private String code;
 
     @Column(name = "name")
@@ -56,27 +55,45 @@ public class Product {
 
     @Column(name = "create_by", updatable = false)
     private Long createBy;
+
     @Transient
     private UserValue createByUser;
+
     @Column(name = "update_by")
     private Long updateBy;
+
     @Transient
     private UserValue updateByUser;
+
     @Column(nullable = false)
     private Boolean deleted = false;
 
-    @PrePersist
-    public void generateCode() {
-        if (this.code == null || this.code.isEmpty()) {
-            this.code = UUID.randomUUID().toString();
-        }
-    }
+    @Column(name = "image")
+    private String image;
 
-//    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-//    @JsonManagedReference
-////    @JsonBackReference
-//    private List<ProductDetail> productDetails;
+    @Column(name = "min_price")
+    private Long minPrice;
+
+    @Column(name = "max_price")
+    private Long maxPrice;
+
+    //    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    //    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    //    @JsonManagedReference
+    ////    @JsonBackReference
+    //    private List<ProductDetail> productDetails;
+
+    //  @PrePersist
+    //  public void generateCode() {
+    //    if (this.code == null || this.code.isEmpty()) {
+    //      this.code = UUID.randomUUID().toString();
+    //    }
+    //  }
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "product"})
+    private List<ProductDetail> productDetails;
+
 
     @ManyToOne(
             cascade = {
@@ -85,7 +102,7 @@ public class Product {
             },
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_brand", nullable = false)
-//    @JsonBackReference
+    //    @JsonBackReference
     @Fetch(FetchMode.JOIN)
     private Brand brand;
 
@@ -96,7 +113,7 @@ public class Product {
             },
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_origin")
-//    @JsonBackReference
+    //    @JsonBackReference
     @Fetch(FetchMode.JOIN)
     private Origin origin;
 
@@ -107,7 +124,7 @@ public class Product {
             },
             fetch = FetchType.LAZY)
     @JoinColumn(name = "id_material")
-//    @JsonBackReference
+    //    @JsonBackReference
     @Fetch(FetchMode.JOIN)
     private Material material;
 
@@ -120,6 +137,6 @@ public class Product {
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "id_category")
     @JsonIgnoreProperties({"products"})
-//    @JsonBackReference
+    //    @JsonBackReference
     private Category category;
 }

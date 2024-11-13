@@ -2,28 +2,25 @@ package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.sql.Timestamp;
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.ecommercefashion.entities.value.Identifiable;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
-
-import javax.persistence.*;
-import java.sql.Timestamp;
-import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "material",schema = "products")
+@Table(name = "material", schema = "products")
 @Entity
 @Where(clause = "deleted = false")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Material {
+public class Material implements Identifiable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -49,5 +46,4 @@ public class Material {
 
     @Column(name = "deleted")
     private Boolean deleted = false;
-
 }

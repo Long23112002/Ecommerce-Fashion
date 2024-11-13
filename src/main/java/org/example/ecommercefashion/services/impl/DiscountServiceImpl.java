@@ -5,11 +5,13 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.DiscountParam;
 import org.example.ecommercefashion.dtos.request.DiscountRequest;
+import org.example.ecommercefashion.dtos.response.CategoryResponse;
 import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.entities.Category;
 import org.example.ecommercefashion.entities.Condition;
 import org.example.ecommercefashion.entities.Discount;
 import org.example.ecommercefashion.entities.Order;
@@ -55,7 +57,12 @@ public class DiscountServiceImpl implements DiscountService {
         Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
         return new ResponsePage<>(DiscountResponsePage);
     }
-
+    @Override
+    public ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable) {
+        Page<Discount> discountPage = discountRepository.findAll(pageable);
+        Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
+        return new ResponsePage<>(DiscountResponsePage);
+    }
     @Override
     public DiscountResponse add(DiscountRequest request, String token) {
 
@@ -126,11 +133,12 @@ public class DiscountServiceImpl implements DiscountService {
     public DiscountResponse update(DiscountRequest request, Long id, String token) {
         if (token != null) {
             JwtResponse jwt = jwtService.decodeToken(token);
+
             if (request.getType() == TypeDiscount.PERCENTAGE) {
                 if (request.getValue() < 0 || request.getValue() > 100) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
                 }
-            } else if (request.getType() == TypeDiscount.FIXED_AMOUNT) {
+            } else if (request.getType() == TypeDiscount.PERCENTAGE) {
                 if (request.getValue() < 1000) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
                 }
@@ -138,6 +146,7 @@ public class DiscountServiceImpl implements DiscountService {
             if (request.getCondition() != null && request.getCondition().getPrice() == 0.0) {
                 request.getCondition().setPrice(null);
             }
+
             String normalizedCategoryName;
             try {
                 normalizedCategoryName = normalizeString(request.getName());
@@ -151,6 +160,9 @@ public class DiscountServiceImpl implements DiscountService {
             FnCommon.copyNonNullProperties(discount, request);
             if (discountRepository.existsByNameAndIdNot(normalizedCategoryName,discount.getId())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_NAME_EXISTED);
+            }
+            if(discount.getType() == TypeDiscount.FIXED_AMOUNT){
+            discount.setMaxValue(null);
             }
             validateDiscountCondition(discount.getCondition());
             setDiscountStatus(discount);

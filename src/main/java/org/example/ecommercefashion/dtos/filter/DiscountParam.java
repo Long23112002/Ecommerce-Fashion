@@ -7,6 +7,6 @@ import org.example.ecommercefashion.enums.TypeDiscount;
 @Data
 public class DiscountParam {
     private TypeDiscount type;
-    private StatusDiscount status;
+    private  StatusDiscount status;
     private String name;
 }

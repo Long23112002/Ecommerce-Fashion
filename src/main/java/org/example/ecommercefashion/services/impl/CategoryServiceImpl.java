@@ -135,7 +135,7 @@ public class CategoryServiceImpl implements CategoryService {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to normalize string", e);
             }
-            if (categoryRepository.existsByName(normalizedCategoryName)) {
+            if (categoryRepository.existsByNameAndIdNot(normalizedCategoryName,category.getId())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
             }
             category.setUpdateBy(jwt.getUserId());

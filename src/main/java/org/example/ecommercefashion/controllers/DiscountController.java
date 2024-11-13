@@ -38,7 +38,10 @@ public class DiscountController {
     public ResponsePage<Discount, DiscountResponse> FilerDiscount(DiscountParam param , Pageable pageable){
         return discountService.filterDiscount(param,pageable);
     }
-
+    @GetMapping("/select")
+    public ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable) {
+        return discountService.getAll(pageable);
+    }
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<DiscountResponse> add(@Valid @RequestBody DiscountRequest request,

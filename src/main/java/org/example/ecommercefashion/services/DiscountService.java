@@ -15,6 +15,8 @@ import java.util.List;
 public interface DiscountService {
     ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam param, Pageable pageable);
 
+    ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable);
+
     DiscountResponse add(DiscountRequest request, String token);
 
     DiscountResponse getByDiscountId(Long id);

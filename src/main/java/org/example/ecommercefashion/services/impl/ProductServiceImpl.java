@@ -2,6 +2,7 @@ package org.example.ecommercefashion.services.impl;
 
 import static org.example.ecommercefashion.annotations.normalized.normalizeString;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +18,7 @@ import javax.persistence.criteria.*;
 import javax.persistence.criteria.Order;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -30,6 +32,7 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.*;
 import org.example.ecommercefashion.entities.Color;
 import org.example.ecommercefashion.entities.value.Identifiable;
+import org.example.ecommercefashion.entities.value.UserInfo;
 import org.example.ecommercefashion.entities.value.UserValue;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
@@ -50,9 +53,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -312,7 +318,6 @@ public class ProductServiceImpl implements ProductService {
       "Số lượng *",
       "Kích thước *",
       "Màu sắc *",
-      "Kết quả"
     };
 
     CellStyle headerStyle = sheet.getWorkbook().createCellStyle();
@@ -494,9 +499,13 @@ public class ProductServiceImpl implements ProductService {
     int savedProductCount = 0;
     int failedProductCount = 0;
     int totalRows = sheet.getLastRowNum();
+    List<String> resultMessages = new ArrayList<>();
 
+    // First pass: Validate and collect results
     for (int i = 1; i <= totalRows; i++) {
       Row row = sheet.getRow(i);
+      StringBuilder resultMessage = new StringBuilder();
+
       try {
         boolean isNewProduct =
             row.getCell(0) != null && !row.getCell(0).getStringCellValue().isEmpty();
@@ -529,40 +538,35 @@ public class ProductServiceImpl implements ProductService {
           String colorName = ExcelCommon.convertCell("color", String.class, row.getCell(9));
 
           buildProductDetail(price, quantity, sizeName, colorName, currentProductId, jwtResponse);
-
-          Cell successCell = row.createCell(10);
-          successCell.setCellValue("Thành công");
-          CellStyle successStyle = workbook.createCellStyle();
-          Font successFont = workbook.createFont();
-          successFont.setColor(IndexedColors.GREEN.getIndex());
-          successStyle.setFont(successFont);
-          successCell.setCellStyle(successStyle);
+          resultMessage.append("Thành công");
         } else {
-          throw new Exception("Không tìm thấy sản phẩm chính cho dòng chi tiết.");
+          resultMessage.append("Lỗi: Không tìm thấy sản phẩm chính cho dòng chi tiết.");
+          failedProductCount++;
         }
-
-        int progress = (i * 100) / totalRows;
-        System.out.println("Tiến trình nhập dữ liệu: " + progress + "%");
-
       } catch (Exception e) {
         failedProductCount++;
-        Cell resultCell = row.createCell(10);
-        resultCell.setCellValue("Lỗi: " + e.getMessage());
-        CellStyle style = workbook.createCellStyle();
-        Font font = workbook.createFont();
-        font.setColor(IndexedColors.RED.getIndex());
-        style.setFont(font);
-        resultCell.setCellStyle(style);
+        resultMessage.append("Lỗi: ").append(e.getMessage());
       }
+
+      resultMessages.add(resultMessage.toString());
+    }
+
+    Workbook resultWorkbook = new XSSFWorkbook();
+    Sheet resultSheet = resultWorkbook.createSheet("Result");
+    for (int i = 0; i < resultMessages.size(); i++) {
+      Row resultRow = resultSheet.createRow(i);
+      Cell resultCell = resultRow.createCell(0);
+      resultCell.setCellValue(resultMessages.get(i));
     }
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    workbook.write(outputStream);
+    resultWorkbook.write(outputStream);
     byte[] byteArray = outputStream.toByteArray();
 
     workbook.close();
     inputStream.close();
     outputStream.close();
+    resultWorkbook.close();
 
     MultipartFile fileResult =
         new InMemoryMultipartFile(
@@ -571,8 +575,9 @@ public class ProductServiceImpl implements ProductService {
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             byteArray);
 
+    User user = getUserId(jwtResponse.getUserId());
     sendExcelData(
-        "http://ecommerce-fashion.site/api/v1/files/upload",
+        "http://localhost:9099/api/v1/files/upload",
         ExcelDto.builder()
             .count(totalRows)
             .success(savedProductCount)
@@ -581,13 +586,10 @@ public class ProductServiceImpl implements ProductService {
             .fileResult(fileResult)
             .process(100L)
             .objectName("EXCEL_IMPORT_PRODUCT")
-            .userId(jwtResponse.getUserId())
+            .typeFile(failedProductCount > 0 ? "ERROR" : "SUCCESS")
+            .userInfo(
+                new UserInfo(user.getId(), user.getEmail(), user.getFullName(), user.getAvatar()))
             .build());
-  }
-
-  private Long parseIdFromInfo(String info) {
-    String[] parts = info.split(" - ");
-    return Long.parseLong(parts[0].trim());
   }
 
   @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
@@ -640,13 +642,17 @@ public class ProductServiceImpl implements ProductService {
 
     HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-    ResponseEntity<String> response =
-        restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
+    try {
+      ResponseEntity<String> response =
+          restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
 
-    if (response.getStatusCode() == HttpStatus.OK) {
-      System.out.println("File uploaded successfully: " + response.getBody());
-    } else {
-      System.out.println("Error uploading file: " + response.getStatusCode());
+      if (response.getStatusCode() == HttpStatus.OK) {
+        System.out.println("File uploaded successfully: " + response.getBody());
+      } else {
+        System.out.println("Error uploading file: " + response.getStatusCode());
+      }
+    } catch (HttpClientErrorException | HttpServerErrorException e) {
+      System.out.println(e.getMessage());
     }
   }
 
@@ -679,10 +685,24 @@ public class ProductServiceImpl implements ProductService {
     body.add("count", excelDto.getCount());
     body.add("success", excelDto.getSuccess());
     body.add("error", excelDto.getError());
+    body.add("typeFile", excelDto.getTypeFile());
     body.add("process", excelDto.getProcess());
-    body.add("userId", excelDto.getUserId());
     body.add("description", excelDto.getDescription());
 
+    ObjectMapper objectMapper = new ObjectMapper();
+    String userInfoJson = objectMapper.writeValueAsString(excelDto.getUserInfo());
+    body.add("userInfo", userInfoJson);
     return body;
+  }
+
+  private User getUserId(Long id) {
+    return userRepository
+        .findById(id)
+        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+  }
+
+  private Long parseIdFromInfo(String info) {
+    String[] parts = info.split(" - ");
+    return Long.parseLong(parts[0].trim());
   }
 }

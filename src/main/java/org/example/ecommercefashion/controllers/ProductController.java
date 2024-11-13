@@ -81,7 +81,7 @@ public class ProductController {
     }
   }
 
-  @GetMapping("/import")
+  @PostMapping("/import")
   public void importt(MultipartFile file, @RequestHeader("Authorization") String token)
       throws IOException {
     productService.importData(file, token);

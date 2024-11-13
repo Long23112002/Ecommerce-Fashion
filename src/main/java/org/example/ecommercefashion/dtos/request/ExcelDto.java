@@ -2,11 +2,11 @@ package org.example.ecommercefashion.dtos.request;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.ecommercefashion.entities.value.UserInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
@@ -21,15 +21,17 @@ public class ExcelDto {
 
   @NotBlank private String objectName;
 
-  private Integer count;
+  private Integer count = 0;
 
-  private Integer success;
+  private Integer success = 0;
 
-  private Integer error;
+  private Integer error = 0;
 
-  @NotNull private Long process;
+  private String typeFile;
 
-  @NotNull private Long userId;
+  private Long process;
+
+  private UserInfo userInfo;
 
   private String description;
 }

@@ -21,29 +21,29 @@ import org.hibernate.annotations.Where;
 @Where(clause = "deleted = false")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Material implements Identifiable {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-  @Column(name = "name")
-  private String name;
+    @Column(name = "name")
+    private String name;
 
-  @CreationTimestamp
-  @Column(name = "created_at", updatable = false)
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-  private Timestamp createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp createdAt;
 
-  @Column(name = "updated_at")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-  private Timestamp updatedAt;
+    @Column(name = "updated_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp updatedAt;
 
-  @Column(name = "created_by")
-  private Long createdBy;
+    @Column(name = "created_by")
+    private Long createdBy;
 
-  @Column(name = "updated_by")
-  private Long updatedBy;
+    @Column(name = "updated_by")
+    private Long updatedBy;
 
-  @Column(name = "deleted")
-  private Boolean deleted = false;
+    @Column(name = "deleted")
+    private Boolean deleted = false;
 }

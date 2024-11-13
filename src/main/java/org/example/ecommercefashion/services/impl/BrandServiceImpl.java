@@ -8,6 +8,7 @@ import org.example.ecommercefashion.dtos.request.BrandRequest;
 import org.example.ecommercefashion.dtos.response.*;
 import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.BrandRepository;
@@ -15,6 +16,7 @@ import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.BrandService;
+import org.example.ecommercefashion.services.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,8 @@ public class BrandServiceImpl implements BrandService {
     private final JwtService JwtService;
 
     private final ProductRepository productRepository;
+
+    private final NotificationService notificationService;
 
     @Override
     public ResponsePage<Brand, BrandResponse> filterCategory(BrandParam param, Pageable pageable) {
@@ -61,6 +65,7 @@ public class BrandServiceImpl implements BrandService {
             }
             brand.setCreateBy(jwt.getUserId());
             brand = brandRepository.save(brand);
+            notificationService.sendNotificationToUsersWithPermission(brand.getCreateBy(), NotificationCode.CREATE_BRAND, brand.getName());
             BrandResponse response = new BrandResponse();
             FnCommon.copyNonNullProperties(response, brand);
             return response;
@@ -93,18 +98,20 @@ public class BrandServiceImpl implements BrandService {
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.BRAND_NOT_FOUND)
             );
             String normalizedCategoryName;
+            String brandName = brand.getName();
             try {
                 normalizedCategoryName = normalizeString(request.getName());
             } catch (IOException e) {
                 throw new RuntimeException("Failed to normalize string", e);
             }
             FnCommon.copyNonNullProperties(brand, request);
-            if(brandRepository.existsByName(normalizedCategoryName)){
+            if(brandRepository.existsByNameAndIdNot(normalizedCategoryName,brand.getId())){
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NAME_EXISTED);
             }
             brand.setUpdateBy(jwt.getUserId());
             brand.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             brand = brandRepository.save(brand);
+            notificationService.sendNotificationToUsersWithPermission(brand.getUpdateBy(), NotificationCode.UPDATE_BRAND,brandName, brand.getName());
             BrandResponse response = new BrandResponse();
             FnCommon.copyNonNullProperties(response, brand);
             return response;

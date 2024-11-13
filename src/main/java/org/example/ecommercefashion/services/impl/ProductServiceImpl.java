@@ -6,6 +6,7 @@ import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -14,38 +15,43 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import javax.persistence.criteria.Order;
-
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.ecommercefashion.dtos.filter.ProductParam;
+import org.example.ecommercefashion.dtos.request.ExcelDto;
 import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
-import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.*;
+import org.example.ecommercefashion.entities.Color;
 import org.example.ecommercefashion.entities.value.Identifiable;
 import org.example.ecommercefashion.entities.value.UserValue;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
-import org.example.ecommercefashion.repositories.BrandRepository;
-import org.example.ecommercefashion.repositories.CategoryRepository;
-import org.example.ecommercefashion.repositories.MaterialRepository;
-import org.example.ecommercefashion.repositories.OriginRepository;
-import org.example.ecommercefashion.repositories.ProductRepository;
-import org.example.ecommercefashion.repositories.UserRepository;
+import org.example.ecommercefashion.repositories.*;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.ProductService;
+import org.example.ecommercefashion.utils.ExcelCommon;
+import org.example.ecommercefashion.utils.InMemoryMultipartFile;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -57,19 +63,12 @@ public class ProductServiceImpl implements ProductService {
   private final CategoryRepository categoryRepository;
   private final MaterialRepository materialRepository;
   private final OriginRepository originRepository;
+  private final SizeRepository sizeRepository;
+  private final ColorRepository colorRepository;
+  private final ProductDetailRepository productDetailRepository;
+  private final RestTemplate restTemplate;
 
   @PersistenceContext private EntityManager entityManager;
-
-  private UserResponse getInfoUser(Long id) {
-    User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
-    UserResponse userResponse = new UserResponse();
-    FnCommon.copyNonNullProperties(userResponse, user);
-    return userResponse;
-  }
 
   private UserValue getInfoUserValue(Long id) {
     User user =
@@ -258,7 +257,14 @@ public class ProductServiceImpl implements ProductService {
     List<String> originNames = loadEntityNamesByPage(0, originRepository, Origin::getName);
     setupDataValidation(sheet, originNames.toArray(new String[0]), 1, 100, 4, 4);
 
-    createSampleData(sheet, categoryNames, brandNames, materialNames, originNames);
+    List<String> sizeNames = loadEntityNamesByPage(0, sizeRepository, Size::getName);
+    setupDataValidation(sheet, sizeNames.toArray(new String[0]), 1, 100, 8, 8);
+
+    List<String> colorNames = loadEntityNamesByPage(0, colorRepository, Color::getName);
+    setupDataValidation(sheet, colorNames.toArray(new String[0]), 1, 100, 9, 9);
+
+    createSampleData(
+        sheet, categoryNames, brandNames, materialNames, originNames, sizeNames, colorNames);
 
     return writeWorkbookToByteArray(workbook);
   }
@@ -268,7 +274,9 @@ public class ProductServiceImpl implements ProductService {
       List<String> categoryNames,
       List<String> brandNames,
       List<String> materialNames,
-      List<String> originNames) {
+      List<String> originNames,
+      List<String> sizeNames,
+      List<String> colorNames) {
     Row row = sheet.createRow(1);
 
     row.createCell(0).setCellValue("Sản phẩm mẫu");
@@ -277,13 +285,34 @@ public class ProductServiceImpl implements ProductService {
     row.createCell(3).setCellValue(materialNames.isEmpty() ? "" : materialNames.get(0));
     row.createCell(4).setCellValue(originNames.isEmpty() ? "" : originNames.get(0));
     row.createCell(5).setCellValue("Mô tả sản phẩm mẫu");
+    row.createCell(6).setCellValue("1000000");
+    row.createCell(7).setCellValue("100");
+    row.createCell(8).setCellValue(sizeNames.isEmpty() ? "" : sizeNames.get(0));
+    row.createCell(9).setCellValue(colorNames.isEmpty() ? "" : colorNames.get(0));
+
+    Row row2 = sheet.createRow(2);
+    row2.createCell(6).setCellValue("2000000");
+    row2.createCell(7).setCellValue("100");
+    row2.createCell(8).setCellValue(sizeNames.isEmpty() ? "" : sizeNames.get(1));
+    row2.createCell(9).setCellValue(colorNames.isEmpty() ? "" : colorNames.get(1));
+
     autoSizeAndCenterColumns(sheet, 50);
   }
 
   private void createHeaderRow(Sheet sheet) {
     Row headerRow = sheet.createRow(0);
     String[] columns = {
-      "Tên sản phẩm *", "Danh mục *", "Thương hiệu *", "Chất liệu *", "Xuất xứ *", "Mô tả"
+      "Tên sản phẩm *",
+      "Danh mục *",
+      "Thương hiệu *",
+      "Chất liệu *",
+      "Xuất xứ *",
+      "Mô tả sản phẩm",
+      "Giá tiền *",
+      "Số lượng *",
+      "Kích thước *",
+      "Màu sắc *",
+      "Kết quả"
     };
 
     CellStyle headerStyle = sheet.getWorkbook().createCellStyle();
@@ -382,12 +411,12 @@ public class ProductServiceImpl implements ProductService {
     if (param.getKeyword() != null && !param.getKeyword().isEmpty()) {
       String keywordPattern = "%" + param.getKeyword().toLowerCase() + "%";
       predicates.add(
-              cb.or(
-                      cb.like(cb.lower(product.get("name")), keywordPattern),
-                      cb.like(cb.lower(product.get("brand").get("name")), keywordPattern),
-                      cb.like(cb.lower(product.get("material").get("name")), keywordPattern),
-                      cb.like(cb.lower(product.get("category").get("name")), keywordPattern),
-                      cb.like(cb.lower(product.get("origin").get("name")), keywordPattern)));
+          cb.or(
+              cb.like(cb.lower(product.get("name")), keywordPattern),
+              cb.like(cb.lower(product.get("brand").get("name")), keywordPattern),
+              cb.like(cb.lower(product.get("material").get("name")), keywordPattern),
+              cb.like(cb.lower(product.get("category").get("name")), keywordPattern),
+              cb.like(cb.lower(product.get("origin").get("name")), keywordPattern)));
     }
     if (param.getCode() != null && !param.getCode().isEmpty()) {
       String codePattern = "%" + param.getCode().toLowerCase() + "%";
@@ -403,30 +432,33 @@ public class ProductServiceImpl implements ProductService {
       Subquery<Long> colorSubquery = query.subquery(Long.class);
       Root<ProductDetail> productDetail = colorSubquery.from(ProductDetail.class);
       colorSubquery
-              .select(productDetail.get("product").get("id"))
-              .where(productDetail.get("color").get("id").in(param.getIdColors()));
+          .select(productDetail.get("product").get("id"))
+          .where(productDetail.get("color").get("id").in(param.getIdColors()));
       predicates.add(product.get("id").in(colorSubquery));
     }
     if (param.getIdSizes() != null && !param.getIdSizes().isEmpty()) {
       Subquery<Long> sizeSubquery = query.subquery(Long.class);
       Root<ProductDetail> productDetail = sizeSubquery.from(ProductDetail.class);
       sizeSubquery
-              .select(productDetail.get("product").get("id"))
-              .where(productDetail.get("size").get("id").in(param.getIdSizes()));
+          .select(productDetail.get("product").get("id"))
+          .where(productDetail.get("size").get("id").in(param.getIdSizes()));
       predicates.add(product.get("id").in(sizeSubquery));
     }
 
     query.where(cb.and(predicates.toArray(new Predicate[0])));
 
     List<Order> orders = new ArrayList<>();
-    pageable.getSort().forEach(order -> {
-      String property = order.getProperty();
-      if (order.isAscending()) {
-        orders.add(cb.asc(product.get(property)));
-      } else {
-        orders.add(cb.desc(product.get(property)));
-      }
-    });
+    pageable
+        .getSort()
+        .forEach(
+            order -> {
+              String property = order.getProperty();
+              if (order.isAscending()) {
+                orders.add(cb.asc(product.get(property)));
+              } else {
+                orders.add(cb.desc(product.get(property)));
+              }
+            });
 
     if (orders.isEmpty()) {
       orders.add(cb.desc(product.get("id")));
@@ -434,7 +466,8 @@ public class ProductServiceImpl implements ProductService {
 
     query.orderBy(orders);
 
-    List<Product> products = entityManager
+    List<Product> products =
+        entityManager
             .createQuery(query)
             .setFirstResult((int) pageable.getOffset())
             .setMaxResults(pageable.getPageSize())
@@ -446,5 +479,210 @@ public class ProductServiceImpl implements ProductService {
     Long count = entityManager.createQuery(countQuery).getSingleResult();
 
     return new PageImpl<>(products, pageable, count);
+  }
+
+  @SneakyThrows
+  @Transactional
+  @Override
+  public void importData(MultipartFile file, String token) {
+    InputStream inputStream = file.getInputStream();
+    Workbook workbook = new XSSFWorkbook(inputStream);
+    Sheet sheet = workbook.getSheetAt(0);
+    JwtResponse jwtResponse = jwtService.decodeToken(token);
+
+    Long currentProductId = null;
+    int savedProductCount = 0;
+    int failedProductCount = 0;
+    int totalRows = sheet.getLastRowNum();
+
+    for (int i = 1; i <= totalRows; i++) {
+      Row row = sheet.getRow(i);
+      try {
+        boolean isNewProduct =
+            row.getCell(0) != null && !row.getCell(0).getStringCellValue().isEmpty();
+
+        if (isNewProduct) {
+          String productName = ExcelCommon.convertCell("name", String.class, row.getCell(0));
+          String categoryName = ExcelCommon.convertCell("category", String.class, row.getCell(1));
+          String brandName = ExcelCommon.convertCell("brand", String.class, row.getCell(2));
+          String materialName = ExcelCommon.convertCell("material", String.class, row.getCell(3));
+          String originName = ExcelCommon.convertCell("origin", String.class, row.getCell(4));
+          String description = ExcelCommon.convertCell("description", String.class, row.getCell(5));
+
+          Product product =
+              buildProduct(
+                  productName,
+                  categoryName,
+                  brandName,
+                  materialName,
+                  originName,
+                  description,
+                  jwtResponse);
+          currentProductId = product.getId();
+          savedProductCount++;
+        }
+
+        if (currentProductId != null) {
+          double price = ExcelCommon.convertCell("price", Double.class, row.getCell(6));
+          int quantity = ExcelCommon.convertCell("quantity", Integer.class, row.getCell(7));
+          String sizeName = ExcelCommon.convertCell("size", String.class, row.getCell(8));
+          String colorName = ExcelCommon.convertCell("color", String.class, row.getCell(9));
+
+          buildProductDetail(price, quantity, sizeName, colorName, currentProductId, jwtResponse);
+
+          Cell successCell = row.createCell(10);
+          successCell.setCellValue("Thành công");
+          CellStyle successStyle = workbook.createCellStyle();
+          Font successFont = workbook.createFont();
+          successFont.setColor(IndexedColors.GREEN.getIndex());
+          successStyle.setFont(successFont);
+          successCell.setCellStyle(successStyle);
+        } else {
+          throw new Exception("Không tìm thấy sản phẩm chính cho dòng chi tiết.");
+        }
+
+        int progress = (i * 100) / totalRows;
+        System.out.println("Tiến trình nhập dữ liệu: " + progress + "%");
+
+      } catch (Exception e) {
+        failedProductCount++;
+        Cell resultCell = row.createCell(10);
+        resultCell.setCellValue("Lỗi: " + e.getMessage());
+        CellStyle style = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setColor(IndexedColors.RED.getIndex());
+        style.setFont(font);
+        resultCell.setCellStyle(style);
+      }
+    }
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    workbook.write(outputStream);
+    byte[] byteArray = outputStream.toByteArray();
+
+    workbook.close();
+    inputStream.close();
+    outputStream.close();
+
+    MultipartFile fileResult =
+        new InMemoryMultipartFile(
+            "fileResult",
+            "result.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            byteArray);
+
+    sendExcelData(
+        "http://ecommerce-fashion.site/api/v1/files/upload",
+        ExcelDto.builder()
+            .count(totalRows)
+            .success(savedProductCount)
+            .error(failedProductCount)
+            .file(file)
+            .fileResult(fileResult)
+            .process(100L)
+            .objectName("EXCEL_IMPORT_PRODUCT")
+            .userId(jwtResponse.getUserId())
+            .build());
+  }
+
+  private Long parseIdFromInfo(String info) {
+    String[] parts = info.split(" - ");
+    return Long.parseLong(parts[0].trim());
+  }
+
+  @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
+  public Product buildProduct(
+      String productName,
+      String categoryName,
+      String brandName,
+      String materialName,
+      String originName,
+      String description,
+      JwtResponse jwtResponse) {
+    Product product = new Product();
+    product.setName(productName);
+    product.setDescription(description);
+    product.setCode("PH" + productRepository.getLastValue());
+    product.setBrand(brandRepository.getById(parseIdFromInfo(brandName)));
+    product.setCategory(categoryRepository.getById(parseIdFromInfo(categoryName)));
+    product.setOrigin(originRepository.getById(parseIdFromInfo(originName)));
+    product.setMaterial(materialRepository.getById(parseIdFromInfo(materialName)));
+    product.setCreateBy(jwtResponse.getUserId());
+    return productRepository.save(product);
+  }
+
+  @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
+  public void buildProductDetail(
+      Double price,
+      Integer quantity,
+      String sizeName,
+      String colorName,
+      Long currentProductId,
+      JwtResponse jwtResponse) {
+    ProductDetail productDetail = new ProductDetail();
+    productDetail.setPrice(price);
+    productDetail.setQuantity(quantity);
+    productDetail.setCreateBy(jwtResponse.getUserId());
+    productDetail.setProduct(productRepository.getById(currentProductId));
+    productDetail.setSize(sizeRepository.getById(parseIdFromInfo(sizeName)));
+    productDetail.setColor(colorRepository.getById(parseIdFromInfo(colorName)));
+    productDetailRepository.save(productDetail);
+  }
+
+  public void sendExcelData(String apiUrl, ExcelDto excelDto) throws IOException {
+    if (excelDto.getFile() == null || excelDto.getFileResult() == null) {
+      throw new IllegalArgumentException("Both file and fileResult must not be null.");
+    }
+
+    MultiValueMap<String, Object> body = getStringObjectMultiValueMap(excelDto);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+    ResponseEntity<String> response =
+        restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
+
+    if (response.getStatusCode() == HttpStatus.OK) {
+      System.out.println("File uploaded successfully: " + response.getBody());
+    } else {
+      System.out.println("Error uploading file: " + response.getStatusCode());
+    }
+  }
+
+  private static MultiValueMap<String, Object> getStringObjectMultiValueMap(ExcelDto excelDto)
+      throws IOException {
+    MultipartFile multipartFile = excelDto.getFile();
+    MultipartFile multipartFileResult = excelDto.getFileResult();
+
+    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+    body.add(
+        "file",
+        new ByteArrayResource(multipartFile.getBytes()) {
+          @Override
+          public String getFilename() {
+            return multipartFile.getOriginalFilename();
+          }
+        });
+
+    body.add(
+        "fileResult",
+        new ByteArrayResource(multipartFileResult.getBytes()) {
+          @Override
+          public String getFilename() {
+            return multipartFileResult.getOriginalFilename();
+          }
+        });
+
+    body.add("objectName", excelDto.getObjectName());
+    body.add("count", excelDto.getCount());
+    body.add("success", excelDto.getSuccess());
+    body.add("error", excelDto.getError());
+    body.add("process", excelDto.getProcess());
+    body.add("userId", excelDto.getUserId());
+    body.add("description", excelDto.getDescription());
+
+    return body;
   }
 }

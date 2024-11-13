@@ -82,6 +82,11 @@ spring:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
     password:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
+    serialization:
+      fail-on-empty-beans: false
 
 server:
   port: ${PORT_SERVER}

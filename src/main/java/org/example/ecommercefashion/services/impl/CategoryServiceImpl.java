@@ -90,6 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
             category.setCreateBy(jwt.getUserId());
             category.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             category = categoryRepository.save(category);
+            notificationService.sendNotificationToUsersWithPermission(category.getCreateBy(),NotificationCode.CREATE_CATEGORY,category.getName());
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
 
@@ -130,6 +131,7 @@ public class CategoryServiceImpl implements CategoryService {
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
             );
             String normalizedCategoryName;
+            String categoryName = category.getName();
             try {
                 normalizedCategoryName = normalizeString(request.getName());
             } catch (IOException e) {
@@ -148,7 +150,7 @@ public class CategoryServiceImpl implements CategoryService {
             }
             category.setParentCategory(parent);
             category = categoryRepository.save(category);
-
+            notificationService.sendNotificationToUsersWithPermission(category.getUpdateBy(), NotificationCode.UPDATE_CATEGORY,categoryName, category.getName());
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
 

@@ -15,10 +15,12 @@ import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Brand;
 import org.example.ecommercefashion.entities.Origin;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OriginRepository;
 import org.example.ecommercefashion.repositories.ProductRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
+import org.example.ecommercefashion.services.NotificationService;
 import org.example.ecommercefashion.services.OriginService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +45,8 @@ public class OriginServiceImpl implements OriginService{
 
     private final ProductRepository productRepository;
 
+    private final NotificationService notificationService;
+
     @Override
     public ResponsePage<Origin, OriginResponse> filterOrigin(OriginParam param, Pageable pageable){
         Page<Origin> originPage = repository.FilterOrigin(param,pageable);
@@ -66,6 +70,7 @@ public class OriginServiceImpl implements OriginService{
             }
             origin.setCreateBy(jwt.getUserId());
             origin = repository.save(origin);
+            notificationService.sendNotificationToUsersWithPermission(origin.getCreateBy(), NotificationCode.CREATE_ORIGIN,origin.getName());
             OriginResponse response = new OriginResponse();
             FnCommon.copyNonNullProperties(response,origin);
             return response;
@@ -96,6 +101,7 @@ public class OriginServiceImpl implements OriginService{
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ORIGIN_NOT_FOUND)
             );
             String normalizedCategoryName;
+            String originName = origin.getName();
             try {
                 normalizedCategoryName = normalizeString(request.getName());
             } catch (IOException e) {
@@ -108,6 +114,7 @@ public class OriginServiceImpl implements OriginService{
             origin.setUpdateBy(jwt.getUserId());
             origin.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             origin = repository.save(origin);
+            notificationService.sendNotificationToUsersWithPermission(origin.getUpdateBy(), NotificationCode.UPDATE_ORIGIN,originName,origin.getName());
             OriginResponse response = new OriginResponse();
             FnCommon.copyNonNullProperties(response,origin);
             return response;

@@ -22,7 +22,7 @@ import org.hibernate.annotations.*;
 @Builder
 @Where(clause = "deleted = false")
 @TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
-public class Order implements Serializable {
+public class  Order implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

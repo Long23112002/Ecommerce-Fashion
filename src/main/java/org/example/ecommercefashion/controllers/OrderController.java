@@ -1,8 +1,11 @@
 package org.example.ecommercefashion.controllers;
 
 import javax.validation.Valid;
+
 import org.example.ecommercefashion.dtos.filter.OrderParam;
+import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
+import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.entities.Order;
@@ -15,32 +18,39 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 
-  @Autowired private OrderService orderService;
+    @Autowired
+    private OrderService orderService;
 
-  @PostMapping
-  public Order create(
-      @Valid @RequestBody OrderRequest orderRequest, @RequestHeader("Authorization") String token) {
-    return orderService.createOrder(orderRequest, token);
-  }
+    @PostMapping
+    public Order create(
+            @Valid @RequestBody OrderCreateRequest orderRequest, @RequestHeader("Authorization") String token) {
+        return orderService.createOrder(orderRequest, token);
+    }
 
-  @GetMapping("/{id}")
-  public Order getOrderById(@PathVariable Long id) {
-    return orderService.getOrderById(id);
-  }
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable Long id) {
+        return orderService.getOrderById(id);
+    }
 
-  @PutMapping("/{id}")
-  public Order updateStateOrder(
-      @PathVariable Long id, @Valid @RequestBody OrderChangeState orderChangeState) {
-    return orderService.updateStateOrder(id, orderChangeState);
-  }
+    @PutMapping("/update-address/{id}")
+    public Order updateAdress(@PathVariable Long id,
+                              @Valid @RequestBody OrderAddressUpdate orderAddressUpdate) {
+        return orderService.updateAddress(id, orderAddressUpdate);
+    }
 
-  @DeleteMapping("/{id}")
-  public void deleteOrder(@PathVariable Long id) {
-    orderService.deleteOrder(id);
-  }
+    @PutMapping("/{id}")
+    public Order updateStateOrder(
+            @PathVariable Long id, @Valid @RequestBody OrderChangeState orderChangeState) {
+        return orderService.updateStateOrder(id, orderChangeState);
+    }
 
-  @GetMapping
-  public ResponsePageV2<Order> filter(OrderParam param, PageableRequest pageableRequest) {
-    return new ResponsePageV2<>(orderService.filter(param, pageableRequest.toPageable()));
-  }
+    @DeleteMapping("/{id}")
+    public void deleteOrder(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+    }
+
+    @GetMapping
+    public ResponsePageV2<Order> filter(OrderParam param, PageableRequest pageableRequest) {
+        return new ResponsePageV2<>(orderService.filter(param, pageableRequest.toPageable()));
+    }
 }

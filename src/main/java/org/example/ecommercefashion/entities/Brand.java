@@ -21,28 +21,28 @@ import org.hibernate.annotations.Where;
 @Where(clause = "deleted = false")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Brand implements Identifiable {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(name = "name")
-  private String name;
+    @Column(name = "name")
+    private String name;
 
-  @CreationTimestamp
-  @Column(name = "create_at", updatable = false)
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-  private Timestamp createAt;
+    @CreationTimestamp
+    @Column(name = "create_at", updatable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp createAt;
 
-  @Column(name = "update_at")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-  private Timestamp updateAt;
+    @Column(name = "update_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp updateAt;
 
-  @Column(name = "create_by", updatable = false)
-  private Long createBy;
+    @Column(name = "create_by", updatable = false)
+    private Long createBy;
 
-  @Column(name = "update_by")
-  private Long updateBy;
+    @Column(name = "update_by")
+    private Long updateBy;
 
-  @Column(nullable = false)
-  private Boolean deleted = false;
+    @Column(nullable = false)
+    private Boolean deleted = false;
 }

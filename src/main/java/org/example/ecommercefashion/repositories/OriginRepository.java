@@ -15,4 +15,6 @@ public interface OriginRepository extends JpaRepository<Origin,Long> {
     Page<Origin> FilterOrigin (OriginParam param, Pageable pageable);
 
     Boolean existsByName(String name);
+
+    Boolean existsByNameAndIdNot(String name,Long id);
 }

@@ -14,4 +14,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Page<Category> filterCategories(CategoryParam param,
                                     Pageable pageable);
     Boolean existsByName(String name);
+
+    Boolean existsByNameAndIdNot(String name, Long id);
 }

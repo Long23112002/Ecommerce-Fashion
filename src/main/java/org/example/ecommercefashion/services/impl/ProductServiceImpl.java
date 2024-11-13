@@ -706,3 +706,4 @@ public class ProductServiceImpl implements ProductService {
     return Long.parseLong(parts[0].trim());
   }
 }
+

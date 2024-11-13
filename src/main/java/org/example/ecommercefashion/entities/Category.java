@@ -1,3 +1,4 @@
+
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -25,51 +26,51 @@ import org.hibernate.annotations.Where;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Category implements Identifiable {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(name = "name")
-  private String name;
+    @Column(name = "name")
+    private String name;
 
-  @Column(name = "lever")
-  private Integer lever;
+    @Column(name = "lever")
+    private Integer lever;
 
-  @Column(name = "create_at", updatable = false)
-  @CreationTimestamp
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-  private Timestamp createAt;
+    @Column(name = "create_at", updatable = false)
+    @CreationTimestamp
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp createAt;
 
-  @Column(name = "update_at")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-  private Timestamp updateAt;
+    @Column(name = "update_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp updateAt;
 
-  @Column(name = "create_by", updatable = false)
-  private Long createBy;
+    @Column(name = "create_by", updatable = false)
+    private Long createBy;
 
-  @Column(name = "update_by")
-  private Long updateBy;
+    @Column(name = "update_by")
+    private Long updateBy;
 
-  @Column(nullable = false)
-  private Boolean deleted = false;
+    @Column(nullable = false)
+    private Boolean deleted = false;
 
-  @ManyToOne
-  @JoinColumn(name = "parent_id")
-  @JsonBackReference
-  private Category parentCategory;
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    @JsonBackReference
+    private Category parentCategory;
 
-  @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonManagedReference
-  private List<Category> subCategories;
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Category> subCategories;
 
-  public int calculateLevel() {
-    int level = 1;
-    Category currentParent = this.parentCategory;
-    while (currentParent != null) {
-      level++;
-      currentParent = currentParent.getParentCategory();
+    public int calculateLevel() {
+        int level = 1;
+        Category currentParent = this.parentCategory;
+        while (currentParent != null) {
+            level++;
+            currentParent = currentParent.getParentCategory();
+        }
+        this.lever = level;
+        return this.lever;
     }
-    this.lever = level;
-    return this.lever;
-  }
 }

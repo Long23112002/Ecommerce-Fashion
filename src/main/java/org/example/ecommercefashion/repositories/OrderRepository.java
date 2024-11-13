@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
   @Query(
-      "SELECT p FROM Order p WHERE "
+      "SELECT p FROM Order p WHERE p.status <> 'DRAFT' And"
           + "(:#{#param.userId} IS NULL OR p.user.id = :#{#param.userId}) AND "
           + "(:#{#param.status} IS NULL OR p.status = :#{#param.status}) AND "
           + "(:#{#param.keyword} IS NULL OR p.phoneNumber = cast( :#{#param.phoneNumber} as string ) )"

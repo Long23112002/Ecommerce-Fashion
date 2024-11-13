@@ -49,7 +49,7 @@ public class CartServiceImpl implements CartService {
 
     Set<Long> requestedProductIds = extractRequestedProductIds(cartRequest);
     Set<CartValue> updatedCartValues =
-        updateExistingCartValues(existingCart, cartRequest, requestedProductIds);
+            updateExistingCartValues(existingCart, cartRequest, requestedProductIds);
 
     addNewCartValues(existingCart, cartRequest, updatedCartValues);
 
@@ -72,10 +72,10 @@ public class CartServiceImpl implements CartService {
   @Override
   public Cart getCartByUserId(Long userId) {
     Cart savedCart =
-        cartRepository
-            .getCartByUserId(userId)
-            .orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, "Không tìm thấy giỏ hàng"));
+            cartRepository
+                    .getCartByUserId(userId)
+                    .orElseThrow(
+                            () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, "Không tìm thấy giỏ hàng"));
 
     setCartValueInfos(savedCart);
     return savedCart;
@@ -83,55 +83,55 @@ public class CartServiceImpl implements CartService {
 
   private void setCartValueInfos(Cart cart) {
     cart.setCartValueInfos(
-        cart.getCartValues().stream()
-            .map(
-                value -> {
-                  ProductDetailCartResponse productDetail =
-                      productDetailRepository
-                          .findById(value.getProductDetailId())
-                          .map(
-                              productDetailEntity ->
-                                  new ProductDetailCartResponse(
-                                      productDetailEntity.getId(),
-                                      productDetailEntity.getPrice(),
-                                      productDetailEntity.getImages(),
-                                      productDetailEntity.getProduct(),
-                                      productDetailEntity.getSize(),
-                                      productDetailEntity.getColor(),
-                                      productDetailEntity.getOriginPrice(),
-                                      productDetailEntity.getQuantity()
-                                          ))
-                          .orElse(null);
-                  return new CartValueInfo(value.getQuantity(), productDetail);
-                })
-            .collect(Collectors.toSet()));
+            cart.getCartValues().stream()
+                    .map(
+                            value -> {
+                              ProductDetailCartResponse productDetail =
+                                      productDetailRepository
+                                              .findById(value.getProductDetailId())
+                                              .map(
+                                                      productDetailEntity ->
+                                                              new ProductDetailCartResponse(
+                                                                      productDetailEntity.getId(),
+                                                                      productDetailEntity.getPrice(),
+                                                                      productDetailEntity.getImages(),
+                                                                      productDetailEntity.getProduct(),
+                                                                      productDetailEntity.getSize(),
+                                                                      productDetailEntity.getColor(),
+                                                                      productDetailEntity.getOriginPrice(),
+                                                                      productDetailEntity.getQuantity()
+                                                              ))
+                                              .orElse(null);
+                              return new CartValueInfo(value.getQuantity(), productDetail);
+                            })
+                    .collect(Collectors.toSet()));
   }
 
   private Cart getCartById(Long id) {
     return cartRepository
-        .findById(id)
-        .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, "Không tìm thấy giỏ hàng"));
+            .findById(id)
+            .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, "Không tìm thấy giỏ hàng"));
   }
 
   private Set<Long> extractRequestedProductIds(CartRequest cartRequest) {
     return cartRequest.getCartValues().stream()
-        .map(CartValue::getProductDetailId)
-        .collect(Collectors.toSet());
+            .map(CartValue::getProductDetailId)
+            .collect(Collectors.toSet());
   }
 
   private Set<CartValue> updateExistingCartValues(
-      Cart existingCart, CartRequest cartRequest, Set<Long> requestedProductIds) {
+          Cart existingCart, CartRequest cartRequest, Set<Long> requestedProductIds) {
     Set<CartValue> updatedCartValues = new HashSet<>();
 
     for (CartValue existingValue : existingCart.getCartValues()) {
       if (requestedProductIds.contains(existingValue.getProductDetailId())) {
         CartValue requestedValue =
-            cartRequest.getCartValues().stream()
-                .filter(
-                    reqVal ->
-                        reqVal.getProductDetailId().equals(existingValue.getProductDetailId()))
-                .findFirst()
-                .orElse(null);
+                cartRequest.getCartValues().stream()
+                        .filter(
+                                reqVal ->
+                                        reqVal.getProductDetailId().equals(existingValue.getProductDetailId()))
+                        .findFirst()
+                        .orElse(null);
         if (requestedValue != null) {
           existingValue.setQuantity(requestedValue.getQuantity());
         }
@@ -142,11 +142,11 @@ public class CartServiceImpl implements CartService {
   }
 
   private void addNewCartValues(
-      Cart existingCart, CartRequest cartRequest, Set<CartValue> updatedCartValues) {
+          Cart existingCart, CartRequest cartRequest, Set<CartValue> updatedCartValues) {
     for (CartValue newValue : cartRequest.getCartValues()) {
       boolean exists =
-          existingCart.getCartValues().stream()
-              .anyMatch(val -> val.getProductDetailId().equals(newValue.getProductDetailId()));
+              existingCart.getCartValues().stream()
+                      .anyMatch(val -> val.getProductDetailId().equals(newValue.getProductDetailId()));
       if (!exists) {
         updatedCartValues.add(newValue);
       }

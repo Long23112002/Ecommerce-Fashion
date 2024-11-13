@@ -3,6 +3,7 @@ package org.example.ecommercefashion.controllers;
 import javax.validation.Valid;
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
+import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.entities.Order;
@@ -19,7 +20,7 @@ public class OrderController {
 
   @PostMapping
   public Order create(
-      @Valid @RequestBody OrderRequest orderRequest, @RequestHeader("Authorization") String token) {
+          @Valid @RequestBody OrderCreateRequest orderRequest, @RequestHeader("Authorization") String token) {
     return orderService.createOrder(orderRequest, token);
   }
 

@@ -60,7 +60,7 @@ public class ProductController {
   }
 
   @DeleteMapping("/{id}")
-  @CheckPermission({"delete_product"})
+  //  @CheckPermission({"delete_product"})
   public ResponseEntity<MessageResponse> deleteProduct(@PathVariable Long id) {
     MessageResponse messageResponse = productService.updateStatus(id);
     return ResponseEntity.ok(messageResponse);

@@ -55,6 +55,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
   @Override
   public AuthResponse refreshToken(HttpServletRequest request, HttpServletResponse response) {
+
     final String authHeader = request.getHeader("Authorization");
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN.val());
@@ -70,10 +71,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
     List<RefreshToken> tokens = refreshTokenRepository.findTokensByToken(refreshToken);
-    //    if (tokens.isEmpty()) {
-    //      throw new ExceptionHandle(HttpStatus.NOT_FOUND,
-    // ErrorMessage.REFRESH_TOKEN_NOT_FOUND.val());
-    //    }
+    if (tokens.isEmpty()) {
+      throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.REFRESH_TOKEN_NOT_FOUND.val());
+    }
 
     RefreshToken existRefreshToken = tokens.get(0);
 

@@ -12,13 +12,13 @@ import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Product;
-import org.example.ecommercefashion.enums.PermissionEnum;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.services.ProductService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/product")
@@ -67,7 +67,7 @@ public class ProductController {
   }
 
   @GetMapping("/export-sample-file")
-  @CheckPermission({"export_sample_product"})
+  //  @CheckPermission({"export_sample_product"})
   public ResponseEntity<byte[]> exportSampleFile() throws IOException {
     try {
       byte[] content = productService.exSampleTemplate();
@@ -79,5 +79,11 @@ public class ProductController {
     } catch (IOException e) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EXPORT_EXCEL_ERROR);
     }
+  }
+
+  @GetMapping("/import")
+  public void importt(MultipartFile file, @RequestHeader("Authorization") String token)
+      throws IOException {
+    productService.importData(file, token);
   }
 }

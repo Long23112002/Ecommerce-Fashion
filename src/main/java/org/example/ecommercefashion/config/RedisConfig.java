@@ -11,30 +11,37 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @Slf4j
 public class RedisConfig {
-    @Value("${spring.redis.host}")
-    private String url;
+  @Value("${spring.redis.host}")
+  private String url;
 
-    @Value("${spring.redis.port}")
-    private int port;
+  @Value("${spring.redis.port}")
+  private int port;
 
-    @Value("${spring.redis.password}")
-    private String password;
+  @Value("${spring.redis.password}")
+  private String password;
 
-    @Bean(destroyMethod = "shutdown")
-    ClientResources clientResources() {
-        return DefaultClientResources.create();
-    }
+  @Bean(destroyMethod = "shutdown")
+  ClientResources clientResources() {
+    return DefaultClientResources.create();
+  }
 
-    @Bean
-    @ConditionalOnMissingBean(name = "redisTemplate")
-    @Primary
-    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate template = new StringRedisTemplate();
-        template.setConnectionFactory(redisConnectionFactory);
-        return template;
-    }
+  @Bean
+  @ConditionalOnMissingBean(name = "redisTemplate")
+  @Primary
+  public RedisTemplate<String, String> redisTemplate(
+      RedisConnectionFactory redisConnectionFactory) {
+    RedisTemplate template = new StringRedisTemplate();
+    template.setConnectionFactory(redisConnectionFactory);
+    return template;
+  }
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
 }

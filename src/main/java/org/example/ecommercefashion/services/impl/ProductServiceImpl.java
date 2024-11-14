@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -494,6 +495,7 @@ public class ProductServiceImpl implements ProductService {
     InputStream inputStream = file.getInputStream();
     Workbook workbook = new XSSFWorkbook(inputStream);
     Sheet sheet = workbook.getSheetAt(0);
+    validateTemplate(sheet);
     JwtResponse jwtResponse = jwtService.decodeToken(token);
 
     Row headerRow = sheet.getRow(0);
@@ -525,16 +527,10 @@ public class ProductServiceImpl implements ProductService {
       StringBuilder resultMessage = new StringBuilder();
 
       try {
-        boolean isProductInfoFilled =
-            (row.getCell(1) != null && !row.getCell(1).getStringCellValue().isEmpty())
-                || (row.getCell(2) != null && !row.getCell(2).getStringCellValue().isEmpty())
-                || (row.getCell(3) != null && !row.getCell(3).getStringCellValue().isEmpty())
-                || (row.getCell(4) != null && !row.getCell(4).getStringCellValue().isEmpty());
+        validateRow(row, resultMessage);
 
-        if (isProductInfoFilled
-            && (row.getCell(0) == null || row.getCell(0).getStringCellValue().isEmpty())) {
-          resultMessage.append("Lỗi: tên sản phẩm không được để trống");
-          throw new Exception("Missing main product information.");
+        if (resultMessage.length() > 0) {
+          throw new Exception(resultMessage.toString());
         }
 
         boolean isNewProduct =
@@ -562,8 +558,9 @@ public class ProductServiceImpl implements ProductService {
         }
 
         if (currentProductId != null) {
-          double price = ExcelCommon.convertCell("price", Double.class, row.getCell(6));
-          int quantity = ExcelCommon.convertCell("quantity", Integer.class, row.getCell(7));
+          Double price = ExcelCommon.convertCell("price", Double.class, row.getCell(6));
+          Integer quantity = ExcelCommon.convertCell("quantity", Integer.class, row.getCell(7));
+
           String sizeName = ExcelCommon.convertCell("size", String.class, row.getCell(8));
           String colorName = ExcelCommon.convertCell("color", String.class, row.getCell(9));
 
@@ -591,7 +588,6 @@ public class ProductServiceImpl implements ProductService {
       }
     }
 
-    // Cập nhật kết quả theo trạng thái rollback
     for (int i = 1; i <= totalRows; i++) {
       Row row = sheet.getRow(i);
       Cell resultCell = row.getCell(10);
@@ -635,6 +631,66 @@ public class ProductServiceImpl implements ProductService {
             .userInfo(
                 new UserInfo(user.getId(), user.getEmail(), user.getFullName(), user.getAvatar()))
             .build());
+  }
+
+  @Override
+  public byte[] exportData(Pageable pageable, ProductParam param) throws IOException {
+    Workbook workbook = new XSSFWorkbook();
+    Sheet sheet = workbook.createSheet("Import Template");
+
+    createHeaderRow(sheet);
+
+    Page<Product> filter = buildQuery(param, pageable);
+
+    int rowIndex = 1;
+    for (Product product : filter.getContent()) {
+      boolean isFirstDetailRow = true; // Đánh dấu dòng đầu tiên của sản phẩm
+
+      for (ProductDetail detail : product.getProductDetails()) {
+        Row row = sheet.createRow(rowIndex++);
+
+        if (isFirstDetailRow) {
+          // Điền thông tin sản phẩm vào các ô từ cell 0 đến cell 5
+          row.createCell(0).setCellValue(formatWithIdAndName(product.getId(), product.getName()));
+          row.createCell(1)
+              .setCellValue(
+                  formatWithIdAndName(
+                      product.getCategory().getId(), product.getCategory().getName()));
+          row.createCell(2)
+              .setCellValue(
+                  formatWithIdAndName(product.getBrand().getId(), product.getBrand().getName()));
+          row.createCell(3)
+              .setCellValue(
+                  formatWithIdAndName(
+                      product.getMaterial().getId(), product.getMaterial().getName()));
+          row.createCell(4)
+              .setCellValue(
+                  formatWithIdAndName(product.getOrigin().getId(), product.getOrigin().getName()));
+          row.createCell(5).setCellValue(product.getDescription());
+
+          isFirstDetailRow = false; // Chỉ điền thông tin sản phẩm ở dòng đầu tiên
+        }
+
+        // Điền thông tin chi tiết sản phẩm vào các ô từ cell 6 đến cell 9
+        row.createCell(6).setCellValue(detail.getPrice());
+        row.createCell(7).setCellValue(detail.getQuantity());
+        row.createCell(8)
+            .setCellValue(
+                formatWithIdAndName(detail.getSize().getId(), detail.getSize().getName()));
+        row.createCell(9)
+            .setCellValue(
+                formatWithIdAndName(detail.getColor().getId(), detail.getColor().getName()));
+      }
+    }
+
+    // Tự động điều chỉnh kích thước cột và căn giữa
+    autoSizeAndCenterColumns(sheet, 50);
+
+    // Ghi ra byte array và trả về
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    workbook.write(bos);
+    bos.close();
+    return bos.toByteArray();
   }
 
   @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
@@ -750,5 +806,82 @@ public class ProductServiceImpl implements ProductService {
     String[] parts = info.split(" - ");
     return Long.parseLong(parts[0].trim());
   }
-}
 
+  private void validateRow(Row row, StringBuilder resultMessage) {
+    String productName = ExcelCommon.convertCell("name", String.class, row.getCell(0));
+    String categoryName = ExcelCommon.convertCell("category", String.class, row.getCell(1));
+    String brandName = ExcelCommon.convertCell("brand", String.class, row.getCell(2));
+    String materialName = ExcelCommon.convertCell("material", String.class, row.getCell(3));
+    String originName = ExcelCommon.convertCell("origin", String.class, row.getCell(4));
+    String description = ExcelCommon.convertCell("description", String.class, row.getCell(5));
+    Double price = ExcelCommon.convertCell("price", Double.class, row.getCell(6));
+    Integer quantity = ExcelCommon.convertCell("quantity", Integer.class, row.getCell(7));
+    String sizeName = ExcelCommon.convertCell("size", String.class, row.getCell(8));
+    String colorName = ExcelCommon.convertCell("color", String.class, row.getCell(9));
+
+    if (categoryName != null || brandName != null || materialName != null || originName != null) {
+
+      if (productName == null || productName.isEmpty()) {
+        resultMessage.append("Lỗi: Tên sản phẩm không được để trống.\n");
+      }
+    }
+    if (productName != null) {
+      if (categoryName == null || categoryName.isEmpty()) {
+        resultMessage.append("Lỗi: Danh mục không được để trống.\n");
+      }
+      if (brandName == null || brandName.isEmpty()) {
+        resultMessage.append("Lỗi: Thương hiệu không được để trống.\n");
+      }
+      if (materialName == null || materialName.isEmpty()) {
+        resultMessage.append("Lỗi: Chất liệu không được để trống.\n");
+      }
+      if (originName == null || originName.isEmpty()) {
+        resultMessage.append("Lỗi: Xuất xứ không được để trống.\n");
+      }
+    }
+
+    if (price == null || price <= 0) {
+      resultMessage.append("Lỗi: Giá phải lớn hơn 0.\n");
+    }
+    if (quantity == null || quantity <= 0) {
+      resultMessage.append("Lỗi: Số lượng phải lớn hơn 0.\n");
+    }
+    if (sizeName == null || sizeName.isEmpty()) {
+      resultMessage.append("Lỗi: Kích thước không được để trống.\n");
+    }
+    if (colorName == null || colorName.isEmpty()) {
+      resultMessage.append("Lỗi: Màu sắc không được để trống.\n");
+    }
+  }
+
+  private void validateTemplate(Sheet sheet) throws Exception {
+    Row headerRow = sheet.getRow(0);
+    if (headerRow == null) {
+      throw new Exception("Template does not contain any headers.");
+    }
+
+    List<String> expectedHeaders =
+        Arrays.asList(
+            "Tên sản phẩm *",
+            "Danh mục *",
+            "Thương hiệu *",
+            "Chất liệu *",
+            "Xuất xứ *",
+            "Mô tả sản phẩm",
+            "Giá tiền *",
+            "Số lượng *",
+            "Kích thước *",
+            "Màu sắc *");
+
+    for (int i = 0; i < expectedHeaders.size(); i++) {
+      Cell cell = headerRow.getCell(i);
+      if (cell == null || !cell.getStringCellValue().equals(expectedHeaders.get(i))) {
+        throw new Exception("Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
+      }
+    }
+  }
+
+  private String formatWithIdAndName(Long id, String name) {
+    return id + " - " + name;
+  }
+}

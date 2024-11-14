@@ -81,6 +81,21 @@ public class ProductController {
     }
   }
 
+  @GetMapping("/export")
+  public ResponseEntity<byte[]> exportData(ProductParam param, PageableRequest pageable)
+      throws IOException {
+    try {
+      byte[] content = productService.exportData(pageable.toPageable(), param);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.add("Content-Disposition", "attachment; filename=product.xlsx");
+
+      return new ResponseEntity<>(content, headers, HttpStatus.OK);
+    } catch (IOException e) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EXPORT_EXCEL_ERROR);
+    }
+  }
+
   @PostMapping("/import")
   public void importt(MultipartFile file, @RequestHeader("Authorization") String token)
       throws IOException {

@@ -644,13 +644,11 @@ public class ProductServiceImpl implements ProductService {
 
     int rowIndex = 1;
     for (Product product : filter.getContent()) {
-      boolean isFirstDetailRow = true; // Đánh dấu dòng đầu tiên của sản phẩm
-
+      boolean isFirstDetailRow = true;
       for (ProductDetail detail : product.getProductDetails()) {
         Row row = sheet.createRow(rowIndex++);
 
         if (isFirstDetailRow) {
-          // Điền thông tin sản phẩm vào các ô từ cell 0 đến cell 5
           row.createCell(0).setCellValue(formatWithIdAndName(product.getId(), product.getName()));
           row.createCell(1)
               .setCellValue(
@@ -668,10 +666,9 @@ public class ProductServiceImpl implements ProductService {
                   formatWithIdAndName(product.getOrigin().getId(), product.getOrigin().getName()));
           row.createCell(5).setCellValue(product.getDescription());
 
-          isFirstDetailRow = false; // Chỉ điền thông tin sản phẩm ở dòng đầu tiên
+          isFirstDetailRow = false;
         }
 
-        // Điền thông tin chi tiết sản phẩm vào các ô từ cell 6 đến cell 9
         row.createCell(6).setCellValue(detail.getPrice());
         row.createCell(7).setCellValue(detail.getQuantity());
         row.createCell(8)
@@ -683,10 +680,8 @@ public class ProductServiceImpl implements ProductService {
       }
     }
 
-    // Tự động điều chỉnh kích thước cột và căn giữa
     autoSizeAndCenterColumns(sheet, 50);
 
-    // Ghi ra byte array và trả về
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     workbook.write(bos);
     bos.close();

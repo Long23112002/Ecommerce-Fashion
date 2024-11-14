@@ -23,4 +23,6 @@ public interface ProductService {
   byte[] exSampleTemplate() throws IOException;
 
   void importData(MultipartFile file, String token) throws IOException;
+
+  byte[] exportData(Pageable pageable, ProductParam param) throws IOException;
 }

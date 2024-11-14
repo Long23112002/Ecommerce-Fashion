@@ -140,6 +140,13 @@ public class PromotionServiceImpl implements PromotionService {
                 }
             }
 
+            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotionsExceptCurrent(
+                    promotionRequest.getStartDate(), promotionRequest.getEndDate(), id);
+
+            if (!overlappingPromotions.isEmpty()) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_DATE_OVERLAP);
+            }
+
             Promotion promotion = promotionRepository.findById(id).orElseThrow(() ->
                     new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PROMOTION_NOT_FOUND)
             );

@@ -60,7 +60,7 @@ public class ProductController {
   }
 
   @DeleteMapping("/{id}")
-  @CheckPermission({"delete_product"})
+  //  @CheckPermission({"delete_product"})
   public ResponseEntity<MessageResponse> deleteProduct(@PathVariable Long id) {
     MessageResponse messageResponse = productService.updateStatus(id);
     return ResponseEntity.ok(messageResponse);
@@ -74,6 +74,21 @@ public class ProductController {
 
       HttpHeaders headers = new HttpHeaders();
       headers.add("Content-Disposition", "attachment; filename=example_import.xlsx");
+
+      return new ResponseEntity<>(content, headers, HttpStatus.OK);
+    } catch (IOException e) {
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EXPORT_EXCEL_ERROR);
+    }
+  }
+
+  @GetMapping("/export")
+  public ResponseEntity<byte[]> exportData(ProductParam param, PageableRequest pageable)
+      throws IOException {
+    try {
+      byte[] content = productService.exportData(pageable.toPageable(), param);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.add("Content-Disposition", "attachment; filename=product.xlsx");
 
       return new ResponseEntity<>(content, headers, HttpStatus.OK);
     } catch (IOException e) {

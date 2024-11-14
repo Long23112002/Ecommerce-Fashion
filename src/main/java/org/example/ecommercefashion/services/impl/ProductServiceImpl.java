@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -487,26 +489,50 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @SneakyThrows
-  @Transactional
+  @Transactional(rollbackFor = Exception.class)
   @Override
   public void importData(MultipartFile file, String token) {
     InputStream inputStream = file.getInputStream();
     Workbook workbook = new XSSFWorkbook(inputStream);
     Sheet sheet = workbook.getSheetAt(0);
+    validateTemplate(sheet);
     JwtResponse jwtResponse = jwtService.decodeToken(token);
+
+    Row headerRow = sheet.getRow(0);
+    if (headerRow == null) {
+      headerRow = sheet.createRow(0);
+    }
+    Cell resultHeaderCell = headerRow.createCell(10, CellType.STRING);
+    resultHeaderCell.setCellValue("Kết quả");
 
     Long currentProductId = null;
     int savedProductCount = 0;
     int failedProductCount = 0;
     int totalRows = sheet.getLastRowNum();
-    List<String> resultMessages = new ArrayList<>();
 
-    // First pass: Validate and collect results
+    CellStyle successStyle = workbook.createCellStyle();
+    Font successFont = workbook.createFont();
+    successFont.setColor(IndexedColors.GREEN.getIndex());
+    successStyle.setFont(successFont);
+
+    CellStyle errorStyle = workbook.createCellStyle();
+    Font errorFont = workbook.createFont();
+    errorFont.setColor(IndexedColors.RED.getIndex());
+    errorStyle.setFont(errorFont);
+
+    boolean hasError = false;
+
     for (int i = 1; i <= totalRows; i++) {
       Row row = sheet.getRow(i);
       StringBuilder resultMessage = new StringBuilder();
 
       try {
+        validateRow(row, resultMessage);
+
+        if (resultMessage.length() > 0) {
+          throw new Exception(resultMessage.toString());
+        }
+
         boolean isNewProduct =
             row.getCell(0) != null && !row.getCell(0).getStringCellValue().isEmpty();
 
@@ -532,41 +558,56 @@ public class ProductServiceImpl implements ProductService {
         }
 
         if (currentProductId != null) {
-          double price = ExcelCommon.convertCell("price", Double.class, row.getCell(6));
-          int quantity = ExcelCommon.convertCell("quantity", Integer.class, row.getCell(7));
+          Double price = ExcelCommon.convertCell("price", Double.class, row.getCell(6));
+          Integer quantity = ExcelCommon.convertCell("quantity", Integer.class, row.getCell(7));
+
           String sizeName = ExcelCommon.convertCell("size", String.class, row.getCell(8));
           String colorName = ExcelCommon.convertCell("color", String.class, row.getCell(9));
 
           buildProductDetail(price, quantity, sizeName, colorName, currentProductId, jwtResponse);
-          resultMessage.append("Thành công");
+          resultMessage.append("Thành công đã lưu vào hệ thống");
+
+          Cell resultCell = row.createCell(10, CellType.STRING);
+          resultCell.setCellValue(resultMessage.toString());
+          resultCell.setCellStyle(successStyle);
         } else {
-          resultMessage.append("Lỗi: Không tìm thấy sản phẩm chính cho dòng chi tiết.");
+          resultMessage.append("Lỗi: Không tìm thấy sản phẩm ");
           failedProductCount++;
+          Cell resultCell = row.createCell(10, CellType.STRING);
+          resultCell.setCellValue(resultMessage.toString());
+          resultCell.setCellStyle(errorStyle);
         }
       } catch (Exception e) {
+        hasError = true;
         failedProductCount++;
         resultMessage.append("Lỗi: ").append(e.getMessage());
+        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        Cell resultCell = row.createCell(10, CellType.STRING);
+        resultCell.setCellValue(resultMessage.toString());
+        resultCell.setCellStyle(errorStyle);
       }
-
-      resultMessages.add(resultMessage.toString());
     }
 
-    Workbook resultWorkbook = new XSSFWorkbook();
-    Sheet resultSheet = resultWorkbook.createSheet("Result");
-    for (int i = 0; i < resultMessages.size(); i++) {
-      Row resultRow = resultSheet.createRow(i);
-      Cell resultCell = resultRow.createCell(0);
-      resultCell.setCellValue(resultMessages.get(i));
+    for (int i = 1; i <= totalRows; i++) {
+      Row row = sheet.getRow(i);
+      Cell resultCell = row.getCell(10);
+      if (hasError
+          && resultCell != null
+          && resultCell.getStringCellValue().contains("Thành công")) {
+        resultCell.setCellValue("Thành công nhưng chưa được lưu vào hệ thống");
+        resultCell.setCellStyle(errorStyle);
+      }
     }
+
+    sheet.autoSizeColumn(10);
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    resultWorkbook.write(outputStream);
+    workbook.write(outputStream);
     byte[] byteArray = outputStream.toByteArray();
 
     workbook.close();
     inputStream.close();
     outputStream.close();
-    resultWorkbook.close();
 
     MultipartFile fileResult =
         new InMemoryMultipartFile(
@@ -577,7 +618,7 @@ public class ProductServiceImpl implements ProductService {
 
     User user = getUserId(jwtResponse.getUserId());
     sendExcelData(
-        "http://localhost:9099/api/v1/files/upload",
+        "http://ecommerce-fashion.site:9099/api/v1/files/upload",
         ExcelDto.builder()
             .count(totalRows)
             .success(savedProductCount)
@@ -590,6 +631,61 @@ public class ProductServiceImpl implements ProductService {
             .userInfo(
                 new UserInfo(user.getId(), user.getEmail(), user.getFullName(), user.getAvatar()))
             .build());
+  }
+
+  @Override
+  public byte[] exportData(Pageable pageable, ProductParam param) throws IOException {
+    Workbook workbook = new XSSFWorkbook();
+    Sheet sheet = workbook.createSheet("Import Template");
+
+    createHeaderRow(sheet);
+
+    Page<Product> filter = buildQuery(param, pageable);
+
+    int rowIndex = 1;
+    for (Product product : filter.getContent()) {
+      boolean isFirstDetailRow = true;
+      for (ProductDetail detail : product.getProductDetails()) {
+        Row row = sheet.createRow(rowIndex++);
+
+        if (isFirstDetailRow) {
+          row.createCell(0).setCellValue(formatWithIdAndName(product.getId(), product.getName()));
+          row.createCell(1)
+              .setCellValue(
+                  formatWithIdAndName(
+                      product.getCategory().getId(), product.getCategory().getName()));
+          row.createCell(2)
+              .setCellValue(
+                  formatWithIdAndName(product.getBrand().getId(), product.getBrand().getName()));
+          row.createCell(3)
+              .setCellValue(
+                  formatWithIdAndName(
+                      product.getMaterial().getId(), product.getMaterial().getName()));
+          row.createCell(4)
+              .setCellValue(
+                  formatWithIdAndName(product.getOrigin().getId(), product.getOrigin().getName()));
+          row.createCell(5).setCellValue(product.getDescription());
+
+          isFirstDetailRow = false;
+        }
+
+        row.createCell(6).setCellValue(detail.getPrice());
+        row.createCell(7).setCellValue(detail.getQuantity());
+        row.createCell(8)
+            .setCellValue(
+                formatWithIdAndName(detail.getSize().getId(), detail.getSize().getName()));
+        row.createCell(9)
+            .setCellValue(
+                formatWithIdAndName(detail.getColor().getId(), detail.getColor().getName()));
+      }
+    }
+
+    autoSizeAndCenterColumns(sheet, 50);
+
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    workbook.write(bos);
+    bos.close();
+    return bos.toByteArray();
   }
 
   @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
@@ -705,5 +801,82 @@ public class ProductServiceImpl implements ProductService {
     String[] parts = info.split(" - ");
     return Long.parseLong(parts[0].trim());
   }
-}
 
+  private void validateRow(Row row, StringBuilder resultMessage) {
+    String productName = ExcelCommon.convertCell("name", String.class, row.getCell(0));
+    String categoryName = ExcelCommon.convertCell("category", String.class, row.getCell(1));
+    String brandName = ExcelCommon.convertCell("brand", String.class, row.getCell(2));
+    String materialName = ExcelCommon.convertCell("material", String.class, row.getCell(3));
+    String originName = ExcelCommon.convertCell("origin", String.class, row.getCell(4));
+    String description = ExcelCommon.convertCell("description", String.class, row.getCell(5));
+    Double price = ExcelCommon.convertCell("price", Double.class, row.getCell(6));
+    Integer quantity = ExcelCommon.convertCell("quantity", Integer.class, row.getCell(7));
+    String sizeName = ExcelCommon.convertCell("size", String.class, row.getCell(8));
+    String colorName = ExcelCommon.convertCell("color", String.class, row.getCell(9));
+
+    if (categoryName != null || brandName != null || materialName != null || originName != null) {
+
+      if (productName == null || productName.isEmpty()) {
+        resultMessage.append("Lỗi: Tên sản phẩm không được để trống.\n");
+      }
+    }
+    if (productName != null) {
+      if (categoryName == null || categoryName.isEmpty()) {
+        resultMessage.append("Lỗi: Danh mục không được để trống.\n");
+      }
+      if (brandName == null || brandName.isEmpty()) {
+        resultMessage.append("Lỗi: Thương hiệu không được để trống.\n");
+      }
+      if (materialName == null || materialName.isEmpty()) {
+        resultMessage.append("Lỗi: Chất liệu không được để trống.\n");
+      }
+      if (originName == null || originName.isEmpty()) {
+        resultMessage.append("Lỗi: Xuất xứ không được để trống.\n");
+      }
+    }
+
+    if (price == null || price <= 0) {
+      resultMessage.append("Lỗi: Giá phải lớn hơn 0.\n");
+    }
+    if (quantity == null || quantity <= 0) {
+      resultMessage.append("Lỗi: Số lượng phải lớn hơn 0.\n");
+    }
+    if (sizeName == null || sizeName.isEmpty()) {
+      resultMessage.append("Lỗi: Kích thước không được để trống.\n");
+    }
+    if (colorName == null || colorName.isEmpty()) {
+      resultMessage.append("Lỗi: Màu sắc không được để trống.\n");
+    }
+  }
+
+  private void validateTemplate(Sheet sheet) throws Exception {
+    Row headerRow = sheet.getRow(0);
+    if (headerRow == null) {
+      throw new Exception("Template does not contain any headers.");
+    }
+
+    List<String> expectedHeaders =
+        Arrays.asList(
+            "Tên sản phẩm *",
+            "Danh mục *",
+            "Thương hiệu *",
+            "Chất liệu *",
+            "Xuất xứ *",
+            "Mô tả sản phẩm",
+            "Giá tiền *",
+            "Số lượng *",
+            "Kích thước *",
+            "Màu sắc *");
+
+    for (int i = 0; i < expectedHeaders.size(); i++) {
+      Cell cell = headerRow.getCell(i);
+      if (cell == null || !cell.getStringCellValue().equals(expectedHeaders.get(i))) {
+        throw new Exception("Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
+      }
+    }
+  }
+
+  private String formatWithIdAndName(Long id, String name) {
+    return id + " - " + name;
+  }
+}

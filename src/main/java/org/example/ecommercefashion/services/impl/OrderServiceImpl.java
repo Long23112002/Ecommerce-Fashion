@@ -3,6 +3,7 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
+import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.entities.Order;
@@ -19,6 +21,7 @@ import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.entities.value.OrderDetailValue;
 import org.example.ecommercefashion.enums.OrderStatus;
+import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
@@ -27,6 +30,7 @@ import org.example.ecommercefashion.services.GhtkService;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.services.PaymentService;
 import org.example.ecommercefashion.services.ProductDetailService;
+import org.example.ecommercefashion.services.VNPayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,11 +38,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Service
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
+    private HttpServletRequest httpServletRequest;
+
+    @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private VNPayService vnPayService;
 
     @Autowired
     private PaymentService paymentService;
@@ -67,8 +79,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.DRAFT);
         order.setTotalMoney(calculateTotalOrderMoney(dto.getOrderDetails()));
         order.setUser(user);
-        order.setAddress("");
-        order.setPhoneNumber(user.getPhoneNumber());
+        order.setAddress(" - - - ");
         order.setPaymentMethod(paymentService.getPaymentById(1L));
         order = orderRepository.save(order);
         order.setOrderDetails(createOrderDetailsWithStockDeduction(dto.getOrderDetails(), order));
@@ -92,10 +103,30 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         GhtkFeeResponse ghtkRes = ghtkService.getShippingFee(ghtkReq);
-        order.setMoneyShip(ghtkRes.getData().getService_fee());
-        order.setAddress("-"+dto.getWardName()+"-"+dto.getDistrictName()+"-"+dto.getProvinceName());
+        double moneyShip = ghtkRes.getData().getService_fee();
+        order.setMoneyShip(moneyShip);
+        order.setAddress(" -"+dto.getWardName()+"-"+dto.getDistrictName()+"-"+dto.getProvinceName());
+
+        double finalPrice = order.getTotalMoney()-moneyShip;
+        if(finalPrice<0){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.NON_NEGATIVE_AMOUNT);
+        }
+        order.setFinalPrice(finalPrice);
+
         orderRepository.save(order);
         return order;
+    }
+
+    @Override
+    public String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws UnsupportedEncodingException {
+        Order order = orderRepository.getById(id);
+        order.setFullName(dto.getFullName());
+        order.setPhoneNumber(dto.getPhoneNumber());
+        order.setAddress(updateAddress(dto, order));
+        order.setNote(dto.getNote());
+        orderRepository.save(order);
+        long finalPrice = order.getFinalPrice().longValue();
+        return vnPayService.createPayment(httpServletRequest, finalPrice, order.getId());
     }
 
     @Override
@@ -115,6 +146,18 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getPaymentMethodId() != null) {
             order.setPaymentMethod(paymentService.getPaymentById(dto.getPaymentMethodId()));
         }
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public Order confirm(Long orderId, String encode) {
+        Order order = getOrderById(orderId);
+        boolean match = vnPayService.match(order, encode);
+        if(!match){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SECURE_NOT_MATCH);
+        }
+        order.setStatus(OrderStatus.PENDING);
+        orderRepository.save(order);
         return orderRepository.save(order);
     }
 
@@ -197,5 +240,14 @@ public class OrderServiceImpl implements OrderService {
         return userRepository
                 .findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
+    }
+
+    private String updateAddress(OrderUpdateRequest dto, Order order) {
+        String[] address = order.getAddress().split("-");
+        if(address.length<=3){
+            throw new ExceptionHandle(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi address order");
+        }
+        address[0] = dto.getSpecificAddress();
+        return String.join("-",address);
     }
 }

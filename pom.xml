@@ -317,6 +317,17 @@
                             <configFile>services/discounts/config/dev/flyway.conf</configFile>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>orders</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                        <configuration>
+                            <configFile>services/orders/config/dev/flyway.conf</configFile>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 

@@ -12,17 +12,19 @@ import java.io.UnsupportedEncodingException;
 @RequestMapping("/api/v1/vnpay")
 public class VNPayController {
 
-  @Autowired private VNPayService vnPayService;
+    @Autowired
+    private VNPayService vnPayService;
 
-  @PostMapping("/create-payment")
-  public String createPayment(
-      HttpServletRequest request, @RequestParam("amount") long amountRequest)
-      throws UnsupportedEncodingException {
-    return vnPayService.createPayment(request, amountRequest);
-  }
+    @PostMapping("/create-payment")
+    public String createPayment(HttpServletRequest request,
+                                @RequestParam("amount") long amountRequest,
+                                @RequestParam("orderId") long orderId)
+            throws UnsupportedEncodingException {
+        return vnPayService.createPayment(request, amountRequest, orderId);
+    }
 
-  @GetMapping("/payment-info")
-  public ResponseEntity<?> paymentSuccess(@RequestParam("status") String status) {
-    return vnPayService.paymentSuccess(status);
-  }
+    @GetMapping("/payment-info")
+    public ResponseEntity<?> paymentSuccess(@RequestParam("status") String status) {
+        return vnPayService.paymentSuccess(status);
+    }
 }

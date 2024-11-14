@@ -45,7 +45,10 @@ public class  Order implements Serializable {
   @NotFound(action = NotFoundAction.IGNORE)
   private Payment paymentMethod;
 
-  @Column(name = "phone_number", nullable = false, length = 11)
+  @Column(name = "full_name")
+  private String fullName;
+
+  @Column(name = "phone_number")
   private String phoneNumber;
 
   @Column(name = "address", nullable = false)
@@ -57,11 +60,17 @@ public class  Order implements Serializable {
   @Column(name = "money_ship")
   private Double moneyShip = 0.0;
 
+  @Column(name = "discount_amount")
+  private Double discountAmount = 0.0;
+
   @Column(name = "note")
   private String note;
 
   @Column(name = "total_money")
   private Double totalMoney = 0.0;
+
+  @Column(name = "final_price")
+  private Double finalPrice = 0.0;
 
   @JoinColumn(name = "updated_by")
   @Fetch(FetchMode.JOIN)

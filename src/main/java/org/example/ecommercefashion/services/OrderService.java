@@ -7,6 +7,7 @@ import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.entities.Order;
+import org.quartz.JobExecutionException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -22,7 +23,7 @@ public interface OrderService {
 
   Order updateStateOrder(Long id, OrderChangeState dto);
 
-  Order confirm(Long orderId, String encode);
+  Order confirm(Long orderId, String encode) throws JobExecutionException;
 
   void deleteOrder(Long id);
 

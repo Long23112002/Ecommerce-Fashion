@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidPhoneNumber {
-    String message() default "Invalid phone number";
+    String message() default "Sai định dạng số điện thoại";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import lombok.*;
 import org.example.ecommercefashion.enums.OrderStatus;
+import org.example.ecommercefashion.enums.PaymentMethodEnum;
 import org.hibernate.annotations.*;
 
 @Entity
@@ -40,15 +41,20 @@ public class  Order implements Serializable {
   @Enumerated(EnumType.STRING)
   private OrderStatus status;
 
-  @JoinColumn(name = "payment_method_id", nullable = false)
-  @ManyToOne(fetch = FetchType.LAZY)
-  @NotFound(action = NotFoundAction.IGNORE)
-  private Payment paymentMethod;
+//  @JoinColumn(name = "payment_method_id", nullable = false)
+//  @ManyToOne(fetch = FetchType.LAZY)
+//  @NotFound(action = NotFoundAction.IGNORE)
+//  private Payment paymentMethod;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "payment_method")
+  @Type(type = "pgsql_enum")
+  private PaymentMethodEnum paymentMethod;
 
   @Column(name = "full_name")
   private String fullName;
 
-  @Column(name = "phone_number")
+  @Column(name = "phone_number", nullable = false)
   private String phoneNumber;
 
   @Column(name = "address", nullable = false)

@@ -22,7 +22,7 @@ public interface OrderService {
 
   Order updateStateOrder(Long id, OrderChangeState dto);
 
-  Order confirm(Long orderId, String encode);
+  Order confirm(Long orderId, String encode, String status);
 
   void deleteOrder(Long id);
 

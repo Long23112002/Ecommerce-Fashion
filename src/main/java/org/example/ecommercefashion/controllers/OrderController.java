@@ -43,14 +43,15 @@ public class OrderController {
 
     @PutMapping("/payment/{id}")
     public String orderUpdateAndPay(@PathVariable Long id,
-                              @Valid @RequestBody OrderUpdateRequest orderUpdateRequest) throws UnsupportedEncodingException {
+                                    @Valid @RequestBody OrderUpdateRequest orderUpdateRequest) throws UnsupportedEncodingException {
         return orderService.orderUpdateAndPay(id, orderUpdateRequest);
     }
 
     @PutMapping("/confirm")
     public Order orderUpdateAndPay(@RequestParam(name = "encode") String encode,
-                                   @RequestParam(name = "orderId") Long orderId) {
-        return orderService.confirm(orderId,encode);
+                                   @RequestParam(name = "orderId") Long orderId,
+                                   @RequestParam(name = "status") String status) {
+        return orderService.confirm(orderId, encode, status);
     }
 
     @PutMapping("/{id}")

@@ -10,6 +10,8 @@ import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import lombok.*;
+import org.example.ecommercefashion.annotations.ValidPhoneNumber;
+import org.example.ecommercefashion.entities.value.Address;
 import org.example.ecommercefashion.enums.OrderStatus;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
 import org.hibernate.annotations.*;
@@ -54,11 +56,13 @@ public class  Order implements Serializable {
   @Column(name = "full_name")
   private String fullName;
 
+  @ValidPhoneNumber
   @Column(name = "phone_number", nullable = false)
   private String phoneNumber;
 
-  @Column(name = "address", nullable = false)
-  private String address;
+  @Type(type = "jsonb")
+  @Column(name = "address", columnDefinition = "jsonb")
+  private Address address;
 
   @Column(name = "shipdate")
   private Timestamp shipdate;

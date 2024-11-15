@@ -19,6 +19,7 @@ import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.entities.value.Address;
 import org.example.ecommercefashion.entities.value.OrderDetailValue;
 import org.example.ecommercefashion.enums.OrderStatus;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
@@ -77,10 +78,11 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.DRAFT);
         order.setTotalMoney(calculateTotalOrderMoney(dto.getOrderDetails()));
         order.setUser(user);
-        order.setAddress(" - - - ");
+        order.setAddress(new Address());
         order.setPaymentMethod(PaymentMethodEnum.CASH);
         order = orderRepository.save(order);
         order.setOrderDetails(createOrderDetailsWithStockDeduction(dto.getOrderDetails(), order));
+        order.setFinalPrice(order.getTotalMoney());
         orderRepository.save(order);
         return order;
     }
@@ -88,7 +90,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order updateAddress(Long id, OrderAddressUpdate dto) {
         Order order = getOrderById(id);
-
+        if (order.getStatus() != OrderStatus.DRAFT) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORDER_NOT_IN_DRAFT);
+        }
         int quantity = order.getOrderDetails().stream()
                 .mapToInt(OrderDetail::getQuantity)
                 .sum();
@@ -103,10 +107,18 @@ public class OrderServiceImpl implements OrderService {
         GhtkFeeResponse ghtkRes = ghtkService.getShippingFee(ghtkReq);
         double moneyShip = ghtkRes.getData().getService_fee();
         order.setMoneyShip(moneyShip);
-        order.setAddress(" -"+dto.getWardName()+"-"+dto.getDistrictName()+"-"+dto.getProvinceName());
+        order.setAddress(Address.builder()
+                .districtID(dto.getDistrictID())
+                .districtName(dto.getDistrictName())
+                .provinceID(dto.getProvinceID())
+                .provinceName(dto.getProvinceName())
+                .wardCode(dto.getWardCode())
+                .wardName(dto.getWardName())
+                .specificAddress((order.getAddress().getSpecificAddress()))
+                .build());
 
-        double finalPrice = order.getTotalMoney()+moneyShip;
-        if(finalPrice<0){
+        double finalPrice = order.getTotalMoney() + moneyShip;
+        if (finalPrice < 0) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.NON_NEGATIVE_AMOUNT);
         }
         order.setFinalPrice(finalPrice);
@@ -117,12 +129,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws UnsupportedEncodingException {
-        Order order = orderRepository.getById(id);
+        Order order = getOrderById(id);
         order.setFullName(dto.getFullName());
         order.setPhoneNumber(dto.getPhoneNumber());
         order.setAddress(updateAddress(dto, order));
         order.setNote(dto.getNote());
         orderRepository.save(order);
+        if (!validateAddress(order)) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_ADDRESS);
+        }
         long finalPrice = order.getFinalPrice().longValue();
         return vnPayService.createPayment(httpServletRequest, finalPrice, order.getId());
     }
@@ -151,10 +166,10 @@ public class OrderServiceImpl implements OrderService {
     public Order confirm(Long orderId, String encode, String status) {
         Order order = getOrderById(orderId);
         boolean match = vnPayService.match(order, encode);
-        if(!status.equals("00")){
+        if (!status.equals("00")) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PAYMENT_FAILED);
         }
-        if(!match){
+        if (!match) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SECURE_NOT_MATCH);
         }
         order.setPaymentMethod(PaymentMethodEnum.VNPAY);
@@ -244,17 +259,17 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
     }
 
-    private String updateAddress(OrderUpdateRequest dto, Order order) {
-        String[] address = order.getAddress().split("-");
-        if(address.length<=3){
-            throw new ExceptionHandle(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi address order");
-        }
-        address[0] = dto.getSpecificAddress();
-        for(int i = 0 ; i<=3 ; i++) {
-            if(address[i].isBlank()){
-                throw new ExceptionHandle(HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.INVALID_ADDRESS);
-            }
-        }
-        return String.join("-",address);
+    private Address updateAddress(OrderUpdateRequest dto, Order order) {
+        Address address = order.getAddress();
+        address.setSpecificAddress(dto.getSpecificAddress());
+        return address;
+    }
+
+    private boolean validateAddress(Order order) {
+        Address address = order.getAddress();
+        return address.getProvinceID() != null
+                && address.getDistrictID() != null
+                && address.getWardCode() != null
+                && address.getSpecificAddress() != null;
     }
 }

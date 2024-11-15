@@ -87,6 +87,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(PaymentMethodEnum.CASH);
         order = orderRepository.save(order);
         order.setOrderDetails(createOrderDetailsWithStockDeduction(dto.getOrderDetails(), order));
+        order.setFinalPrice(order.getTotalMoney());
         orderRepository.save(order);
         return order;
     }
@@ -94,7 +95,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order updateAddress(Long id, OrderAddressUpdate dto) {
         Order order = getOrderById(id);
-
+        if (order.getStatus() != OrderStatus.DRAFT) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORDER_NOT_IN_DRAFT);
+        }
         int quantity = order.getOrderDetails().stream()
                 .mapToInt(OrderDetail::getQuantity)
                 .sum();
@@ -116,10 +119,11 @@ public class OrderServiceImpl implements OrderService {
                 .provinceName(dto.getProvinceName())
                 .wardCode(dto.getWardCode())
                 .wardName(dto.getWardName())
+                .specificAddress((order.getAddress().getSpecificAddress()))
                 .build());
 
-        double finalPrice = order.getTotalMoney()+moneyShip;
-        if(finalPrice<0){
+        double finalPrice = order.getTotalMoney() + moneyShip;
+        if (finalPrice < 0) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.NON_NEGATIVE_AMOUNT);
         }
         order.setFinalPrice(finalPrice);
@@ -130,14 +134,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws UnsupportedEncodingException {
-        Order order = orderRepository.getById(id);
+        Order order = getOrderById(id);
         order.setFullName(dto.getFullName());
         order.setPhoneNumber(dto.getPhoneNumber());
         order.setAddress(updateAddress(dto, order));
         order.setNote(dto.getNote());
         orderRepository.save(order);
-//        long finalPrice = order.getFinalPrice().longValue();
-        long finalPrice = 2000;
+        if (!validateAddress(order)) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_ADDRESS);
+        }
+        long finalPrice = order.getFinalPrice().longValue();
         return vnPayService.createPayment(httpServletRequest, finalPrice, order.getId());
     }
 
@@ -165,10 +171,10 @@ public class OrderServiceImpl implements OrderService {
     public Order confirm(Long orderId, String encode, String status) throws JobExecutionException {
         Order order = getOrderById(orderId);
         boolean match = vnPayService.match(order, encode);
-        if(!status.equals("00")){
+        if (!status.equals("00")) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PAYMENT_FAILED);
         }
-        if(!match){
+        if (!match) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SECURE_NOT_MATCH);
         }
         order.setPaymentMethod(PaymentMethodEnum.VNPAY);
@@ -263,5 +269,13 @@ public class OrderServiceImpl implements OrderService {
         Address address = order.getAddress();
         address.setSpecificAddress(dto.getSpecificAddress());
         return address;
+    }
+
+    private boolean validateAddress(Order order) {
+        Address address = order.getAddress();
+        return address.getProvinceID() != null
+                && address.getDistrictID() != null
+                && address.getWardCode() != null
+                && address.getSpecificAddress() != null;
     }
 }

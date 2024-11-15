@@ -4,7 +4,6 @@ import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
-import org.example.ecommercefashion.dtos.request.OrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.entities.Order;
 import org.quartz.JobExecutionException;
@@ -15,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 
 public interface OrderService {
 
+
   Order createOrder(OrderCreateRequest dto, String token);
 
   Order updateAddress(Long id, OrderAddressUpdate dto);
@@ -23,7 +23,7 @@ public interface OrderService {
 
   Order updateStateOrder(Long id, OrderChangeState dto);
 
-  Order confirm(Long orderId, String encode) throws JobExecutionException;
+  Order confirm(Long orderId, String encode, String status) throws JobExecutionException;
 
   void deleteOrder(Long id);
 

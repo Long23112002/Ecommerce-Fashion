@@ -57,6 +57,8 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
   PRODUCT_WAS_DISABLE("Sản Phẩm bị ẩn "),
   SECURE_NOT_MATCH("VNPAY secure không hợp lệ "),
+  PAYMENT_FAILED("Giao dịch thất bại"),
+  INVALID_ADDRESS("Địa chỉ không được trống"),
   ERROR_WHEN_CREATE("Lỗi khi tạo"),
   COLOR_HAS_PRODUCT_DETAIL("Màu sắc đang thuộc về 1 chi tiết sản phẩm"),
   SIZE_HAS_PRODUCT_DETAIL("Size đang thuộc về 1 chi tiết sản phẩm"),

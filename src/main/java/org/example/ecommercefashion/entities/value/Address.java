@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Address {
-    private int provinceID;
+    private Integer provinceID;
     private String provinceName;
-    private int districtID;
+    private Integer districtID;
     private String districtName;
     private String wardCode;
     private String wardName;

@@ -32,5 +32,6 @@ public interface OrderService {
 
   Page<Order> filter(OrderParam param, Pageable pageable);
 
-  Order createOrderAtStore(OrderAtStoreCreateRequest dto, String token);
+  Order createOrderAtStore(String token);
+
 }

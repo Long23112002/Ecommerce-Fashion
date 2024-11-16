@@ -274,23 +274,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order createOrderAtStore(OrderAtStoreCreateRequest dto, String token) {
+    public Order createOrderAtStore(String token) {
         JwtResponse userJWT = jwtService.decodeToken(token);
-        User user = getUserById(userJWT.getUserId());
 
         Order order = new Order();
         order.setStatus(OrderStatus.PENDING_AT_STORE);
-        order.setUser(user);
-
-        Order finalOrder = order;
-        if (dto.getIdGuest() != null) {
-            userRepository.findById(dto.getIdGuest()).ifPresent(guest -> {
-                finalOrder.setGuestId(guest.getId());
-                finalOrder.setFullName(guest.getFullName());
-            });
-        }
-
+        order.setStaffId(userJWT.getUserId());
         order.setFullName("Khách lẻ");
+
         order.setPaymentMethod(PaymentMethodEnum.CASH);
         order = orderRepository.save(order);
 

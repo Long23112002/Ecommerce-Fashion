@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class OrderAtStoreCreateRequest {
     private Long idGuest;
     private Long idVoucher;
+
 }

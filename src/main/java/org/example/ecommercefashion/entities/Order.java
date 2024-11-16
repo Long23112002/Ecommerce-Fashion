@@ -98,8 +98,8 @@ public class  Order implements Serializable {
   @Column(name = "deleted", nullable = false)
   private Boolean deleted = false;
 
-  @Column(name = "guest_id")
-  private Long guestId;
+  @Column(name = "staff_id")
+  private Long staffId;
 
   @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
   @JsonManagedReference

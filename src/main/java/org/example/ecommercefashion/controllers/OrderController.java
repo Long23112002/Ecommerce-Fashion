@@ -70,11 +70,9 @@ public class OrderController {
         return new ResponsePageV2<>(orderService.filter(param, pageableRequest.toPageable()));
     }
 
-
-    @PostMapping("/store")
-    public Order createOrderAtStore(
-            @RequestBody OrderAtStoreCreateRequest orderRequest, @RequestHeader("Authorization") String token) {
-        return orderService.createOrderAtStore(orderRequest, token);
+    @GetMapping("/store")
+    public Order createOrderAtStore( @RequestHeader("Authorization") String token) {
+        return orderService.createOrderAtStore(token);
     }
 }
 

@@ -12,6 +12,7 @@ import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.utils.ResponsePageV2;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +51,7 @@ public class OrderController {
     @PutMapping("/confirm")
     public Order orderUpdateAndPay(@RequestParam(name = "encode") String encode,
                                    @RequestParam(name = "orderId") Long orderId,
-                                   @RequestParam(name = "status") String status) {
+                                   @RequestParam(name = "status") String status) throws JobExecutionException {
         return orderService.confirm(orderId, encode, status);
     }
 

@@ -1,9 +1,9 @@
 package org.example.ecommercefashion.controllers;
 
 import io.swagger.annotations.Api;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.annotations.CheckPermission;
 import org.example.ecommercefashion.dtos.request.AssignPermissionRequest;
 import org.example.ecommercefashion.dtos.request.PermissionRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -50,6 +50,7 @@ public class PermissionController {
   }
 
   @PatchMapping("/assign-permission-to-role")
+  @CheckPermission({"assign_role_permission"})
   public MessageResponse assignPermissionToRole(
       @Valid @RequestBody AssignPermissionRequest assignPermissionRequest) {
     return permissionService.assignPermissionToRole(assignPermissionRequest);

@@ -85,6 +85,7 @@ public class ColorServiceImpl implements ColorService {
             Color colorCreate = mapColorRequestToColor(color, colorRequest);
             colorCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             colorRepository.save(colorCreate);
+            notificationService.sendNotificationToUsersWithPermission(colorCreate.getCreatedBy(),NotificationCode.CREATE_COLOR,colorCreate.getName());
             ColorResponse colorResponse = mapColorToColorResponse(colorCreate);
             colorResponse.setCreatedBy(getInforUser(jwtResponse.getUserId()));
             return colorResponse;
@@ -100,12 +101,13 @@ public class ColorServiceImpl implements ColorService {
             Color color = colorRepository.findById(id).orElseThrow(() -> {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, AttributeErrorMessage.COLOR_NOT_FOUND);
             });
+            String colorName = color.getName();
             boolean isNameDuplicate = colorRepository.existsByNameIgnoreCase(colorRequest.getName().trim());
-            if (isNameDuplicate && !colorRequest.getName().trim().equals(color.getName().trim())) {
+            if (isNameDuplicate && !color.getName().trim().equalsIgnoreCase(colorRequest.getName().trim())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NAME_EXISTED);
             }
-
-            if(colorRepository.existsByCode(colorRequest.getCode().trim())){
+            boolean isCodeDuplicate = colorRepository.existsByCode(colorRequest.getCode().trim());
+            if(isCodeDuplicate && !color.getCode().trim().equalsIgnoreCase(colorRequest.getCode().trim())){
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CODE_COLOR_EXIST);
             }
 
@@ -113,6 +115,7 @@ public class ColorServiceImpl implements ColorService {
             colorUpdate.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             colorUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             colorRepository.save(colorUpdate);
+            notificationService.sendNotificationToUsersWithPermission(colorUpdate.getUpdatedBy(),NotificationCode.UPDATE_COLOR,colorName,colorUpdate.getName());
             ColorResponse colorResponse = mapColorToColorResponse(colorUpdate);
             colorResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
             colorResponse.setCreatedBy(getInforUser(color.getCreatedBy()));

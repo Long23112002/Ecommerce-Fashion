@@ -12,6 +12,7 @@ import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Promotion;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.enums.promotion.StatusPromotionEnum;
 import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
@@ -20,6 +21,7 @@ import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.PromotionRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
+import org.example.ecommercefashion.services.NotificationService;
 import org.example.ecommercefashion.services.PromotionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,8 @@ public class PromotionServiceImpl implements PromotionService {
     private final JwtService jwtService;
 
     private final ProductDetailRepository productDetailRepository;
+
+    private final NotificationService notificationService;
 
     private final DecimalFormat decimalFormat = new DecimalFormat("#,###");
 
@@ -107,6 +112,10 @@ public class PromotionServiceImpl implements PromotionService {
             promotionCreate.setCreatedBy(getInforUser(jwtResponse.getUserId()).getId());
             setPromotionStatus(promotionCreate);
             promotionRepository.save(promotionCreate);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+            String startDateFormatted = promotionCreate.getStartDate().toLocalDateTime().format(formatter);
+            String endDateFormatted = promotionCreate.getEndDate().toLocalDateTime().format(formatter);
+            notificationService.sendNotificationToUsersWithPermission(promotionCreate.getCreatedBy(), NotificationCode.CREATE_PROMOTION, startDateFormatted,endDateFormatted);
             PromotionResponse promotionResponse = mapPromotionToPromotionResponse(promotionCreate);
             promotionResponse.setCreatedBy(getInforUser(jwtResponse.getUserId()));
             return promotionResponse;
@@ -139,6 +148,7 @@ public class PromotionServiceImpl implements PromotionService {
             promotionUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             setPromotionStatus(promotionUpdate);
             promotionRepository.save(promotionUpdate);
+            notificationService.sendNotificationToUsersWithPermission(promotionUpdate.getUpdatedBy(), NotificationCode.UPDATE_PROMOTION,promotionUpdate.getId());
             PromotionResponse promotionResponse = mapPromotionToPromotionResponse(promotionUpdate);
             promotionResponse.setCreatedBy(getInforUser(promotion.getCreatedBy()));
             promotionResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
@@ -210,12 +220,16 @@ public class PromotionServiceImpl implements PromotionService {
                     new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PROMOTION_NOT_FOUND)
             );
 
+            promotion.setUpdatedBy(jwtResponse.getUserId());
+            promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
             if (productDetailIds == null || productDetailIds.isEmpty()) {
                 promotion.getProductDetailList().clear();
 
                 promotion.setUpdatedBy(jwtResponse.getUserId());
                 promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
                 promotionRepository.save(promotion);
+                notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(),NotificationCode.DELETE_PRODUCT_DETAIL_FROM_PROMOTION,promotionId);
                 return mapPromotionToPromotionResponse(promotion);
             }
 
@@ -249,7 +263,7 @@ public class PromotionServiceImpl implements PromotionService {
             promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
             promotionRepository.save(promotion);
-
+            notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(),NotificationCode.ADD_PRODUCT_DETAIL_TO_PROMOTION,promotionId);
             return mapPromotionToPromotionResponse(promotion);
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);

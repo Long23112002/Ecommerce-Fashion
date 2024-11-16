@@ -14,32 +14,37 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ProductDetailRepository extends JpaRepository<ProductDetail, Long> {
-    Boolean existsProductDetailByColorAndProductAndSize(Product product, Color color, Size size);
+  Boolean existsProductDetailByColorAndProductAndSize(Product product, Color color, Size size);
 
-    @Query("SELECT p FROM ProductDetail p "
-            + "WHERE "
-            + "(lower(:#{#param.keyword}) IS NULL OR lower(p.size.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR lower(p.color.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%') "
-            + " OR lower(p.product.name) LIKE CONCAT('%', CAST(lower(:#{#param.keyword}) AS string), '%')) AND "
-            + "(:#{#param.idColor} IS NULL OR p.color.id = :#{#param.idColor}) AND "
-            + "(:#{#param.idProduct} IS NULL OR p.product.id = :#{#param.idProduct}) AND "
-            + "(:#{#param.minPrice} IS NULL OR (p.price IS NOT NULL AND p.price >= :#{#param.minPrice})) AND "
-            + "(:#{#param.maxPrice} IS NULL OR p.price <= :#{#param.maxPrice}) AND "
-            + "(:#{#param.idSize} IS NULL OR p.size.id = :#{#param.idSize})"
-            + "ORDER BY p.id DESC ")
-    Page<ProductDetail> filterProductDetail(ProductDetailParam param, Pageable pageable);
+  @Query(
+      "SELECT p FROM ProductDetail p "
+          + "WHERE "
+          + "(:#{#param.keyword} IS NULL OR LOWER(p.size.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.color.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
+          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.product.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
+          + "AND (:#{#param.idColor} IS NULL OR p.color.id = :#{#param.idColor}) "
+          + "AND (:#{#param.idProduct} IS NULL OR p.product.id = :#{#param.idProduct}) "
+          + "AND (:#{#param.minPrice} IS NULL OR (p.price IS NOT NULL AND p.price >= :#{#param.minPrice})) "
+          + "AND (:#{#param.maxPrice} IS NULL OR p.price <= :#{#param.maxPrice}) "
+          + "AND (:#{#param.idSize} IS NULL OR p.size.id = :#{#param.idSize}) "
+          + "ORDER BY p.id DESC")
+  Page<ProductDetail> filterProductDetail(ProductDetailParam param, Pageable pageable);
 
-    Boolean existsByColor(Color color);
+  Boolean existsByColor(Color color);
 
-    Boolean existsBySize(Size size);
+  Boolean existsBySize(Size size);
 
-    @Query("SELECT pd FROM ProductDetail pd JOIN pd.promotionList p WHERE p.id = :promotionId")
-    Page<ProductDetail> findByPromotionId(@Param("promotionId") Long promotionId, Pageable pageable);
+  @Query("SELECT pd FROM ProductDetail pd JOIN pd.promotionList p WHERE p.id = :promotionId")
+  Page<ProductDetail> findByPromotionId(@Param("promotionId") Long promotionId, Pageable pageable);
 
-    @Query("SELECT pd " +
-            "FROM Product p " +
-            "JOIN ProductDetail pd ON p.id = pd.product.id " +
-            "WHERE p.id = :idProduct " +
-            "GROUP BY p.id, pd.id")
-    Page<ProductDetail> getDetailByIdProduct(Long idProduct, Pageable pageable);
+
+  @Query("SELECT pd "
+         + "FROM ProductDetail pd "
+         + "WHERE pd.product.id = :idProduct AND pd.deleted = false")
+  List<ProductDetail> getDetailByIdProduct(Long idProduct);
+
+  Page<ProductDetail> findAllByProductId(Long idProduct, Pageable pageable);
+
+  Boolean existsByProduct(Product product);
+
 }

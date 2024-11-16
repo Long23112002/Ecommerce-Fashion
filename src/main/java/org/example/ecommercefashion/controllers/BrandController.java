@@ -35,7 +35,7 @@ public class BrandController {
     @PostMapping
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<BrandResponse> add(@Valid @RequestBody BrandRequest request,
-                                                @RequestHeader("Authorization") String token) {
+                                             @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -44,7 +44,7 @@ public class BrandController {
     @PutMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
     public ResponseEntity<BrandResponse> update(@PathVariable long id, @Valid @RequestBody BrandRequest request,
-                                                   @RequestHeader("Authorization") String token) {
+                                                @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }

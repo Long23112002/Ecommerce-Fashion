@@ -30,8 +30,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -91,6 +94,25 @@ public class ProductDetailServiceImpl implements ProductDetailService {
                                             new ExceptionHandle(
                                                     HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NOT_FOUND));
 
+            List<ProductDetail> productDetailList = productDetailRepository.getDetailByIdProduct(request.getIdProduct());
+
+            if (!productDetailList.isEmpty()) {
+                Optional<ProductDetail> minPriceProduct = productDetailList.stream()
+                        .min(Comparator.comparing(ProductDetail::getPrice));
+                Optional<ProductDetail> maxPriceProduct = productDetailList.stream()
+                        .max(Comparator.comparing(ProductDetail::getPrice));
+
+                if (minPriceProduct.get().getPrice() >= request.getPrice()) {
+                    product.setMinPrice(request.getPrice().longValue());
+                } else if (maxPriceProduct.get().getPrice() <= request.getPrice()) {
+                    product.setMaxPrice(request.getPrice().longValue());
+                }
+            } else {
+                // nếu chưa có detail nào trong product thì set maxPrice là price trong request
+                product.setMaxPrice(request.getPrice().longValue());
+            }
+            productRepository.save(product);
+
             ProductDetail detail = new ProductDetail();
             FnCommon.copyNonNullProperties(detail, request);
             detail.setProduct(product);
@@ -119,21 +141,34 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     }
 
     @Override
-    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(Long idProduct, Pageable pageable) {
+    public ResponsePage<ProductDetail, ProductDetail> getDetailByIdProduct(
+            Long idProduct, Pageable pageable) {
         Page<ProductDetail> productDetailPage =
-                productDetailRepository.getDetailByIdProduct(idProduct, pageable)
-                        .map(detail -> {
-                            if(detail.getCreateBy() != null){
-                                detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
-                            }
-                            if(detail.getUpdateBy() != null){
-                                detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
-                            }
-                            return detail;
-                        });
+                productDetailRepository
+                        .findAllByProductId(idProduct, pageable)
+                        .map(
+                                detail -> {
+                                    if (detail.getCreateBy() != null) {
+                                        detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
+                                    }
+                                    if (detail.getUpdateBy() != null) {
+                                        detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
+                                    }
+                                    return detail;
+                                });
         return new ResponsePage<>(productDetailPage);
 
-//        return productDetailRepository.getDetailByIdProduct(idProduct, pageable);
+        //        return productDetailRepository.getDetailByIdProduct(idProduct, pageable);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void handleMinusQuantity(Integer quantityBuy, ProductDetail productDetail) {
+        if (productDetail.getQuantity() < quantityBuy) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_ENOUGH);
+        }
+        productDetail.setQuantity(productDetail.getQuantity() - quantityBuy);
+        productDetailRepository.save(productDetail);
     }
 
     private ProductDetail findById(Long id) {
@@ -144,8 +179,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     }
 
     @Override
-    public ProductDetail updateProductDetail(
-            Long id, ProductDetailRequest request, String token) {
+    public ProductDetail updateProductDetail(Long id, ProductDetailRequest request, String token) {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
 
@@ -193,19 +227,20 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     public ResponsePage<ProductDetail, ProductDetail> getAllPage(
             Pageable pageable, ProductDetailParam productDetailParam) {
         Page<ProductDetail> productDetailPage =
-                productDetailRepository.filterProductDetail(productDetailParam, pageable)
-                        .map(detail -> {
-                            if(detail.getCreateBy() != null){
-                                detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
-                            }
-                            if(detail.getUpdateBy() != null){
-                                detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
-                            }
-                            return detail;
-                        });
+                productDetailRepository.filterProductDetail(productDetailParam, pageable);
+        //                        .map(detail -> {
+        //                            if(detail.getCreateBy() != null){
+        //
+        // detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
+        //                            }
+        //                            if(detail.getUpdateBy() != null){
+        //
+        // detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
+        //                            }
+        //                            return detail;
+        //                        });
         return new ResponsePage<>(productDetailPage);
     }
-
 
     @Override
     public MessageResponse delete(Long id) {

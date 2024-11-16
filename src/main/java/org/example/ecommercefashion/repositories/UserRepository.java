@@ -65,4 +65,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByEmailAndDeleted(String email , boolean deleted);
 
   boolean existsByPhoneNumberAndDeleted(String phoneNumber , boolean deleted);
+
 }

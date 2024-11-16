@@ -90,6 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
             category.setCreateBy(jwt.getUserId());
             category.setUpdateAt(new Timestamp(System.currentTimeMillis()));
             category = categoryRepository.save(category);
+            notificationService.sendNotificationToUsersWithPermission(category.getCreateBy(),NotificationCode.CREATE_CATEGORY,category.getName());
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
 
@@ -130,12 +131,13 @@ public class CategoryServiceImpl implements CategoryService {
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.CATEGORY_NOT_FOUND)
             );
             String normalizedCategoryName;
+            String categoryName = category.getName();
             try {
                 normalizedCategoryName = normalizeString(request.getName());
             } catch (IOException e) {
                 throw new RuntimeException("Failed to normalize string", e);
             }
-            if (categoryRepository.existsByName(normalizedCategoryName)) {
+            if (categoryRepository.existsByNameAndIdNot(normalizedCategoryName,category.getId())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NAME_EXISTED);
             }
             category.setUpdateBy(jwt.getUserId());
@@ -148,7 +150,7 @@ public class CategoryServiceImpl implements CategoryService {
             }
             category.setParentCategory(parent);
             category = categoryRepository.save(category);
-
+            notificationService.sendNotificationToUsersWithPermission(category.getUpdateBy(), NotificationCode.UPDATE_CATEGORY,categoryName, category.getName());
             CategoryResponse response = new CategoryResponse();
             FnCommon.copyNonNullProperties(response, category);
 

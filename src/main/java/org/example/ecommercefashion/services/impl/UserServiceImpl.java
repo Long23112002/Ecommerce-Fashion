@@ -59,11 +59,11 @@ public class UserServiceImpl implements UserService {
     String email = userRequest.getEmail();
 
     String emailStatus = redisTemplate.opsForValue().get(email);
-    //
-    //    if (!"done".equals(emailStatus)) {
-    //      throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
-    // ErrorMessage.EMAIL_NOT_VERIFIED.val());
-    //    }
+
+        if (!"done".equals(emailStatus)) {
+          throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
+     ErrorMessage.EMAIL_NOT_VERIFIED.val());
+        }
 
     validateEmail(userRequest.getEmail());
     validatePhone(userRequest.getPhoneNumber());

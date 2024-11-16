@@ -25,4 +25,8 @@ public class ProductDetailCartResponse {
   private Size size;
 
   private Color color;
+
+  private Double originPrice;
+
+  private Integer quantity;
 }

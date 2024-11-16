@@ -27,9 +27,12 @@ public class CartController {
     return cartService.update(cartRequest, token);
   }
 
-  @DeleteMapping("/{id}")
-  public void delete(@PathVariable Long id) {
-    cartService.delete(id);
+  @DeleteMapping
+  public void delete(@RequestHeader("Authorization") String token) {
+    if (token.startsWith("Bearer ")) {
+      token = token.substring(7);
+    }
+    cartService.delete(token);
   }
 
   @GetMapping("/{userId}")

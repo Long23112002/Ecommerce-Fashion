@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
@@ -102,6 +103,7 @@ public class EmailJob implements Job {
     return emailSendLog;
   }
 
+  @Async
   public void sendOtpEmail(String email) throws JobExecutionException {
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();

@@ -108,7 +108,7 @@ public class EmailJob implements Job {
     return emailSendLog;
   }
 
-  @Async
+//  @Async
   public void sendOtpEmail(String email) throws JobExecutionException {
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -117,21 +117,14 @@ public class EmailJob implements Job {
       if (template == null) {
         throw new JobExecutionException("Template for 'Verification code' not found");
       }
-
-      User user = userRepository.findByEmail(email);
-      String name = user != null ? user.getFullName() : "Người dùng";
       String otp = otpService.generateOTP();
       otpService.saveOtp(email, otp);
-      Time timenow = Time.valueOf(LocalTime.now());
 
       log.info("Email user: {}", email);
       log.info("OTP user: {}", otp);
-      log.info("name user: {}", name);
       String content = template.getHtml()
               .replace("{{email}}", email)
-              .replace("{{OTP}}", otp)
-              .replace("{{name}}", name)
-              .replace("{{timenow}}", timenow.toString());
+              .replace("{{OTP}}", otp);
 
       Email emailLog = createEmail(template.getSubject());
       emailLog.setContent(template.getHtml());
@@ -155,7 +148,7 @@ public class EmailJob implements Job {
     }
   }
 
-  @Async
+//  @Async
   public void orderSuccessfulEmail(Order order) throws JobExecutionException { //
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();

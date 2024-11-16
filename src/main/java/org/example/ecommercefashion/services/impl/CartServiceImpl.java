@@ -83,6 +83,7 @@ public class CartServiceImpl implements CartService {
                     Cart newCart = Cart.builder()
                             .userId(userId)
                             .cartValues(new HashSet<>())
+                            .cartValueInfos(new HashSet<>())
                             .build();
                     return cartRepository.save(newCart);
                 });

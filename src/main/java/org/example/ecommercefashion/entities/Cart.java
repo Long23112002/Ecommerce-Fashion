@@ -43,5 +43,5 @@ public class Cart {
   private Timestamp createAt;
 
   @Column(name = "is_deleted")
-  private Boolean isDeleted = false;
+  private boolean isDeleted = false;
 }

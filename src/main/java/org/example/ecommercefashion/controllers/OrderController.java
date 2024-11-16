@@ -1,21 +1,20 @@
 package org.example.ecommercefashion.controllers;
 
-import javax.validation.Valid;
-
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
-import org.example.ecommercefashion.dtos.request.OrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.utils.ResponsePageV2;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 
 @RestController
@@ -51,7 +50,7 @@ public class OrderController {
     @PutMapping("/confirm")
     public Order orderUpdateAndPay(@RequestParam(name = "encode") String encode,
                                    @RequestParam(name = "orderId") Long orderId,
-                                   @RequestParam(name = "status") String status) {
+                                   @RequestParam(name = "status") String status) throws JobExecutionException {
         return orderService.confirm(orderId, encode, status);
     }
 
@@ -71,9 +70,13 @@ public class OrderController {
         return new ResponsePageV2<>(orderService.filter(param, pageableRequest.toPageable()));
     }
 
+
     @PostMapping("/store")
     public Order createOrderAtStore(
             @RequestBody OrderAtStoreCreateRequest orderRequest, @RequestHeader("Authorization") String token) {
         return orderService.createOrderAtStore(orderRequest, token);
     }
 }
+
+
+

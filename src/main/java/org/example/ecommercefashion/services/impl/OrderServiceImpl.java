@@ -2,14 +2,14 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
@@ -31,7 +31,6 @@ import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.GhtkService;
 import org.example.ecommercefashion.services.OrderService;
-import org.example.ecommercefashion.services.PaymentService;
 import org.example.ecommercefashion.services.ProductDetailService;
 import org.example.ecommercefashion.services.VNPayService;
 import org.quartz.JobExecutionException;
@@ -43,33 +42,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private HttpServletRequest httpServletRequest;
-
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private VNPayService vnPayService;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-
-    @Autowired
-    private ProductDetailService productDetailService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private GhtkService ghtkService;
+    private final HttpServletRequest httpServletRequest;
+    private final OrderRepository orderRepository;
+    private final VNPayService vnPayService;
+    private final JwtService jwtService;
+    private final OrderDetailRepository orderDetailRepository;
+    private final ProductDetailService productDetailService;
+    private final UserRepository userRepository;
+    private final GhtkService ghtkService;
+    private final CartServiceImpl cartService;
 
     @Autowired
     private EmailJob emailJob;
@@ -177,6 +166,12 @@ public class OrderServiceImpl implements OrderService {
         if (!match) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SECURE_NOT_MATCH);
         }
+        for(OrderDetail orderDetail: order.getOrderDetails()){
+            ProductDetail productDetail =
+                    productDetailService.detail(orderDetail.getProductDetail().getId());
+            productDetailService.handleMinusQuantity(orderDetail.getQuantity(), productDetail);
+
+        }
         order.setPaymentMethod(PaymentMethodEnum.VNPAY);
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
@@ -219,7 +214,6 @@ public class OrderServiceImpl implements OrderService {
         for (OrderDetailValue orderDetailValue : orderDetailValues) {
             ProductDetail productDetail =
                     productDetailService.detail(orderDetailValue.getProductDetailId());
-            productDetailService.handleMinusQuantity(orderDetailValue.getQuantity(), productDetail);
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setProductDetail(productDetail);
@@ -277,5 +271,20 @@ public class OrderServiceImpl implements OrderService {
                 && address.getDistrictID() != null
                 && address.getWardCode() != null
                 && address.getSpecificAddress() != null;
+    }
+
+    @Override
+    public Order createOrderAtStore(String token) {
+        JwtResponse userJWT = jwtService.decodeToken(token);
+
+        Order order = new Order();
+        order.setStatus(OrderStatus.PENDING_AT_STORE);
+        order.setStaffId(userJWT.getUserId());
+        order.setFullName("Khách lẻ");
+
+        order.setPaymentMethod(PaymentMethodEnum.CASH);
+        order = orderRepository.save(order);
+
+        return order;
     }
 }

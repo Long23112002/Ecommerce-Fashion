@@ -6,7 +6,9 @@ import org.example.ecommercefashion.enums.email.EmailTypeEnum;
 import org.example.ecommercefashion.enums.email.LogStatusEnum;
 import org.example.ecommercefashion.repositories.EmailRepository;
 import org.example.ecommercefashion.repositories.EmailSendLogRepository;
+import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.TemplateRepository;
+import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.services.OTPService;
 import org.quartz.*;
 import org.quartz.spi.OperableTrigger;
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +40,7 @@ public class EmailJob implements Job {
   private final EmailSendLogRepository emailSendLogRepository;
   private MimeMessage mimeMessage;
   private MimeMessageHelper helper;
-
+  private UserRepository userRepository;
   @Override
   public void execute(JobExecutionContext context) throws JobExecutionException {
     String email = (String) context.getMergedJobDataMap().get("email");
@@ -84,8 +88,7 @@ public class EmailJob implements Job {
   }
 
   public Email createEmail(String subject) {
-    Email email = emailRepository.findEmailBySubjectIgnoreCase(subject);
-
+    Email email = emailRepository.findFirstBySubjectIgnoreCase(subject);
     if (email == null) {
       email = new Email();
       email.setSendFrom(sendFrom);
@@ -140,6 +143,74 @@ public class EmailJob implements Job {
       throw new JobExecutionException("Failed to send email", e);
     } catch (Exception e) {
       throw new JobExecutionException("An error occurred while sending OTP email", e);
+    }
+  }
+
+  @Async
+  public void orderSuccessfulEmail(Order order) throws JobExecutionException { //
+    try {
+      MimeMessage mimeMessage = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+      Template template = templateRepository.findTemplateBySubjectIgnoreCase("Order Confirmation");
+      if (template == null) {
+        throw new JobExecutionException("Template for 'Order Confirmation' not found");
+      }
+      String email = order.getUser().getEmail();
+      String fullName = order.getUser().getFullName();
+      String orderDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(order.getCreatedAt());
+      String finalPrice = String.valueOf(order.getFinalPrice());
+      String shipping = String.valueOf(order.getMoneyShip());
+
+      StringBuilder productDetailsHtml = new StringBuilder();
+      for (OrderDetail detail : order.getOrderDetails()) {
+        String productName = detail.getProductDetail().getProduct().getName();
+        String quantity = String.valueOf(detail.getQuantity());
+        String price = String.valueOf(detail.getPrice());
+        String image = String.valueOf(detail.getProductDetail().getProduct().getImage());
+        String color = String.valueOf(detail.getProductDetail().getColor().getName());
+        String size = String.valueOf(detail.getProductDetail().getSize().getName());
+
+        productDetailsHtml
+                .append("<div style=\"display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;\">")
+                .append("<img src=\"").append(image).append("\" alt=\"Product 2\"")
+                .append("style=\"border-radius: 8px; width: 80px; height: auto;\" />")
+                .append("<div style=\"flex-grow: 1; margin-left: 15px;\">")
+                .append("<p style=\"margin: 0; font-size: 16px; font-weight: bold; color: #333;\">").append(productName).append("</p>")
+                .append("<p style=\"margin: 5px 0 0; font-size: 14px; color: #666;\">Size: ").append(size).append("</p>")
+                .append("<p style=\"margin: 5px 0 0; font-size: 14px; color: #666;\">màu sắc: ").append(color).append("</p>")
+                .append(" <p style=\"margin: 0; font-size: 14px; color: #666;\">số lượng: ").append(quantity).append("</p>")
+                .append("</div>")
+                .append("<p style=\"margin: 0; font-size: 16px; font-weight: bold; color: #333;\">").append(price).append(" đ</p>")
+                .append("</div>")
+                ;
+      }
+
+      String content = template.getHtml()
+              .replace("{{fullName}}", fullName)
+              .replace("{{orderDate}}", orderDate)
+              .replace("{{productDetails}}", productDetailsHtml.toString())
+              .replace("{{finalPrice}}", finalPrice)
+              .replace("{{shipping}}", shipping);
+
+      Email emailLog = createEmail(template.getSubject());
+      emailLog.setContent(template.getHtml());
+
+      EmailSendLog sentLog = createEmailLog(emailLog);
+      sentLog.setEmail(emailLog);
+      sentLog.setSendTo(email);
+
+      helper.setTo(email);
+      helper.setSubject(template.getSubject());
+      helper.setText(content, true);
+      helper.setFrom(sendFrom);
+      mailSender.send(mimeMessage);
+
+      sentLog.setStatus(LogStatusEnum.SUCCESS);
+      emailSendLogRepository.save(sentLog);
+    } catch (MessagingException e) {
+      throw new JobExecutionException("Không gửi được email", e);
+    } catch (Exception e) {
+      throw new JobExecutionException("Đã xảy ra lỗi khi gửi email xác nhận đơn hàng", e);
     }
   }
 }

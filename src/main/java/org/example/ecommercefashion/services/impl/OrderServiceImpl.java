@@ -180,7 +180,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(PaymentMethodEnum.VNPAY);
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
-        emailJob.OrdersuccessfulEmail(order);
+        emailJob.orderSuccessfulEmail(order);
         return orderRepository.save(order);
     }
 

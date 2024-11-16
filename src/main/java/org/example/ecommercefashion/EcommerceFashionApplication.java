@@ -4,12 +4,14 @@ import com.longnh.annotions.EnableCommon;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableCommon
 @EnableFeignClients
 @EnableScheduling
+@EnableAsync(proxyTargetClass = true)
 public class EcommerceFashionApplication {
 
     public static void main(String[] args) {

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
@@ -107,6 +108,7 @@ public class EmailJob implements Job {
     return emailSendLog;
   }
 
+  @Async
   public void sendOtpEmail(String email) throws JobExecutionException {
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -152,7 +154,9 @@ public class EmailJob implements Job {
       throw new JobExecutionException("An error occurred while sending OTP email", e);
     }
   }
-  public void OrdersuccessfulEmail(Order order) throws JobExecutionException { //
+
+  @Async
+  public void orderSuccessfulEmail(Order order) throws JobExecutionException { //
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -189,8 +193,6 @@ public class EmailJob implements Job {
                 .append("</div>")
                 ;
       }
-      log.info("Sending order confirmation email - fullName: {}, orderDate: {}, finalPrice: {}, shipping: {}, email: {}",
-              fullName, orderDate, finalPrice, shipping, email);
 
       String content = template.getHtml()
               .replace("{{fullName}}", fullName)
@@ -199,8 +201,6 @@ public class EmailJob implements Job {
               .replace("{{finalPrice}}", finalPrice)
               .replace("{{shipping}}", shipping);
 
-      log.info("Generated email content: {}", content);
-      System.out.println("Subject: " + template.getSubject());
       Email emailLog = createEmail(template.getSubject());
       emailLog.setContent(template.getHtml());
 

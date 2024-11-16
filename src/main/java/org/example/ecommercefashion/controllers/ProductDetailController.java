@@ -68,4 +68,10 @@ public class ProductDetailController {
       @PathVariable Long id, PageableRequest pageable) {
     return service.getDetailByIdProduct(id, pageable.toPageable());
   }
+
+  @GetMapping("/all")
+  public ResponsePage<ProductDetail, ProductDetail> getAllProductDetails(
+          ProductDetailParam param, PageableRequest pageable) {
+    return service.getAllPage(pageable.toPageable(), param);
+  }
 }

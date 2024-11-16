@@ -45,4 +45,6 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
 
   Page<ProductDetail> findAllByProductId(Long idProduct, Pageable pageable);
 
+  Boolean existsByProduct(Product product);
+
 }

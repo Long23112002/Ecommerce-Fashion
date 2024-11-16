@@ -74,6 +74,8 @@ public enum ErrorMessage implements BaseErrorMessage {
   PROMOTION_DATE_OVERLAP("Không được tạo đợt giảm giá có khoảng thời gian chồng nhau"),
   PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
   EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
+  PRODUCT_HAS_PRODUCT_DETAIL("Sản phẩm đang có từ một chi tiết sản phẩm"),
+
   ;
 
   public String val;

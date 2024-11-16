@@ -90,6 +90,10 @@ public class PromotionServiceImpl implements PromotionService {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
 
+            if (promotionRequest.getEndDate().before(new Timestamp(System.currentTimeMillis()))) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_END_DATE_WRONG);
+            }
+
             if (promotionRequest.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
                 if (promotionRequest.getValue() < 0 || promotionRequest.getValue() > 100) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_PERCENTAGE_WRONG_FORMAT);
@@ -129,6 +133,10 @@ public class PromotionServiceImpl implements PromotionService {
 
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
+
+            if (promotionRequest.getEndDate().before(new Timestamp(System.currentTimeMillis()))) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_END_DATE_WRONG);
+            }
 
             if (promotionRequest.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
                 if (promotionRequest.getValue() < 0 || promotionRequest.getValue() > 100) {

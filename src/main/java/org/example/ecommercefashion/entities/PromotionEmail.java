@@ -110,8 +110,7 @@ public class PromotionEmail extends QuartzJobBean {
     }
 
     public Email createEmail(String subject) {
-        Email email = emailRepository.findEmailBySubjectIgnoreCase(subject);
-
+        Email email = emailRepository.findFirstBySubjectIgnoreCase(subject);
         if (email == null) {
             email = new Email();
             email.setSendFrom(sendFrom);

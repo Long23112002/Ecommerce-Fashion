@@ -87,8 +87,7 @@ public class EmailJob implements Job {
   }
 
   public Email createEmail(String subject) {
-    Email email = emailRepository.findEmailBySubjectIgnoreCase(subject);
-
+    Email email = emailRepository.findFirstBySubjectIgnoreCase(subject);
     if (email == null) {
       email = new Email();
       email.setSendFrom(sendFrom);
@@ -144,7 +143,7 @@ public class EmailJob implements Job {
       throw new JobExecutionException("An error occurred while sending OTP email", e);
     }
   }
-  public void OrdersuccessfulEmail(Order order) throws JobExecutionException {
+  public void OrdersuccessfulEmail(Order order) throws JobExecutionException { //
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -155,9 +154,6 @@ public class EmailJob implements Job {
       String email = order.getUser().getEmail();
       String fullName = order.getUser().getFullName();
       String orderDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(order.getCreatedAt());
-//      String productName = String.valueOf(order.getOrderDetails().get(0).getProductDetail().getProduct().getName()) ;
-//      String quantity = String.valueOf(order.getOrderDetails().get(0).getQuantity());
-//      String price = String.valueOf(order.getOrderDetails().get(0).getPrice());
       String finalPrice = String.valueOf(order.getFinalPrice());
       String shipping = String.valueOf(order.getMoneyShip());
 
@@ -166,17 +162,27 @@ public class EmailJob implements Job {
         String productName = detail.getProductDetail().getProduct().getName();
         String quantity = String.valueOf(detail.getQuantity());
         String price = String.valueOf(detail.getPrice());
+        String image = String.valueOf(detail.getProductDetail().getProduct().getImage());
+        String color = String.valueOf(detail.getProductDetail().getColor().getName());
+        String size = String.valueOf(detail.getProductDetail().getSize().getName());
 
-        productDetailsHtml.append("<div class='item'>")
-                .append("<div class='item-details'>")
-                .append("<div>").append(productName).append("</div>")
-                .append("<div>Số lượng: ").append(quantity).append("</div>")
+        productDetailsHtml
+                .append("<div style=\"display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;\">")
+                .append("<img src=\"").append(image).append("\" alt=\"Product 2\"")
+                .append("style=\"border-radius: 8px; width: 80px; height: auto;\" />")
+                .append("<div style=\"flex-grow: 1; margin-left: 15px;\">")
+                .append("<p style=\"margin: 0; font-size: 16px; font-weight: bold; color: #333;\">").append(productName).append("</p>")
+                .append("<p style=\"margin: 5px 0 0; font-size: 14px; color: #666;\">Size: ").append(size).append("</p>")
+                .append("<p style=\"margin: 5px 0 0; font-size: 14px; color: #666;\">màu sắc: ").append(color).append("</p>")
+                .append(" <p style=\"margin: 0; font-size: 14px; color: #666;\">số lượng: ").append(quantity).append("</p>")
                 .append("</div>")
-                .append("<div class='item-price'>").append(price).append(" đ</div>")
-                .append("</div>");
+                .append("<p style=\"margin: 0; font-size: 16px; font-weight: bold; color: #333;\">").append(price).append(" đ</p>")
+                .append("</div>")
+                ;
       }
       log.info("Sending order confirmation email - fullName: {}, orderDate: {}, finalPrice: {}, shipping: {}, email: {}",
               fullName, orderDate, finalPrice, shipping, email);
+
       String content = template.getHtml()
               .replace("{{fullName}}", fullName)
               .replace("{{orderDate}}", orderDate)
@@ -184,6 +190,8 @@ public class EmailJob implements Job {
               .replace("{{finalPrice}}", finalPrice)
               .replace("{{shipping}}", shipping);
 
+      log.info("Generated email content: {}", content);
+      System.out.println("Subject: " + template.getSubject());
       Email emailLog = createEmail(template.getSubject());
       emailLog.setContent(template.getHtml());
 

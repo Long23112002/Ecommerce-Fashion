@@ -56,8 +56,7 @@ public class  Order implements Serializable {
   @Column(name = "full_name")
   private String fullName;
 
-  @ValidPhoneNumber
-  @Column(name = "phone_number", nullable = false)
+  @Column(name = "phone_number")
   private String phoneNumber;
 
   @Type(type = "jsonb")

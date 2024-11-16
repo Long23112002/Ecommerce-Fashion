@@ -22,8 +22,10 @@ import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 
 @Component
 @RequiredArgsConstructor
@@ -106,7 +108,7 @@ public class EmailJob implements Job {
     return emailSendLog;
   }
 
-  @Async
+//  @Async
   public void sendOtpEmail(String email) throws JobExecutionException {
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -115,14 +117,14 @@ public class EmailJob implements Job {
       if (template == null) {
         throw new JobExecutionException("Template for 'Verification code' not found");
       }
-
       String otp = otpService.generateOTP();
       otpService.saveOtp(email, otp);
 
       log.info("Email user: {}", email);
       log.info("OTP user: {}", otp);
-
-      String content = template.getHtml().replace("{{email}}", email).replace("{{OTP}}", otp);
+      String content = template.getHtml()
+              .replace("{{email}}", email)
+              .replace("{{OTP}}", otp);
 
       Email emailLog = createEmail(template.getSubject());
       emailLog.setContent(template.getHtml());
@@ -146,7 +148,7 @@ public class EmailJob implements Job {
     }
   }
 
-  @Async
+//  @Async
   public void orderSuccessfulEmail(Order order) throws JobExecutionException { //
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();

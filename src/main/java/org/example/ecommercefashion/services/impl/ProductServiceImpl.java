@@ -192,7 +192,7 @@ public class ProductServiceImpl implements ProductService {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to normalize string", e);
             }
-            if (productRepository.existsByNameIgnoreCase(normalizedProductName)) {
+            if (productRepository.existsByNameAndIdNot(normalizedProductName, product.getId())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NAME_EXISTED);
             }
 

@@ -16,6 +16,7 @@ import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
+import org.example.ecommercefashion.entities.EmailJob;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.entities.ProductDetail;
@@ -34,6 +35,7 @@ import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.services.PaymentService;
 import org.example.ecommercefashion.services.ProductDetailService;
 import org.example.ecommercefashion.services.VNPayService;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,6 +58,9 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final GhtkService ghtkService;
     private final CartServiceImpl cartService;
+
+    @Autowired
+    private EmailJob emailJob;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -151,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order confirm(Long orderId, String encode, String status) {
+    public Order confirm(Long orderId, String encode, String status) throws JobExecutionException {
         Order order = getOrderById(orderId);
         boolean match = vnPayService.match(order, encode);
         if (!status.equals("00")) {
@@ -169,6 +174,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(PaymentMethodEnum.VNPAY);
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
+        emailJob.orderSuccessfulEmail(order);
         return orderRepository.save(order);
     }
 

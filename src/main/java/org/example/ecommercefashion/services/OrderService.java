@@ -4,15 +4,16 @@ import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
-import org.example.ecommercefashion.dtos.request.OrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.entities.Order;
+import org.quartz.JobExecutionException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.UnsupportedEncodingException;
 
 public interface OrderService {
+
 
   Order createOrder(OrderCreateRequest dto, String token);
 
@@ -22,7 +23,7 @@ public interface OrderService {
 
   Order updateStateOrder(Long id, OrderChangeState dto);
 
-  Order confirm(Long orderId, String encode, String status);
+  Order confirm(Long orderId, String encode, String status) throws JobExecutionException;
 
   void deleteOrder(Long id);
 

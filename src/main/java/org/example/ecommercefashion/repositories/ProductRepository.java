@@ -26,4 +26,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
   @Query(value = "select last_value + 1 from products.product_id_seq", nativeQuery = true)
   Long getLastValue();
+
+  boolean existsByNameAndIdNot(String name, Long id);
 }

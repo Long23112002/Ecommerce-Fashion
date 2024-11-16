@@ -1,15 +1,10 @@
 package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
-import com.longnh.utils.FnCommon;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
@@ -30,7 +25,6 @@ import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.GhtkService;
 import org.example.ecommercefashion.services.OrderService;
-import org.example.ecommercefashion.services.PaymentService;
 import org.example.ecommercefashion.services.ProductDetailService;
 import org.example.ecommercefashion.services.VNPayService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +35,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -271,5 +268,29 @@ public class OrderServiceImpl implements OrderService {
                 && address.getDistrictID() != null
                 && address.getWardCode() != null
                 && address.getSpecificAddress() != null;
+    }
+
+    @Override
+    public Order createOrderAtStore(OrderAtStoreCreateRequest dto, String token) {
+        JwtResponse userJWT = jwtService.decodeToken(token);
+        User user = getUserById(userJWT.getUserId());
+
+        Order order = new Order();
+        order.setStatus(OrderStatus.PENDING_AT_STORE);
+        order.setUser(user);
+
+        Order finalOrder = order;
+        if (dto.getIdGuest() != null) {
+            userRepository.findById(dto.getIdGuest()).ifPresent(guest -> {
+                finalOrder.setGuestId(guest.getId());
+                finalOrder.setFullName(guest.getFullName());
+            });
+        }
+
+        order.setFullName("Khách lẻ");
+        order.setPaymentMethod(PaymentMethodEnum.CASH);
+        order = orderRepository.save(order);
+
+        return order;
     }
 }

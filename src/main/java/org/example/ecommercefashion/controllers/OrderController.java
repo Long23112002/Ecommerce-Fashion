@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderRequest;
@@ -68,5 +69,11 @@ public class OrderController {
     @GetMapping
     public ResponsePageV2<Order> filter(OrderParam param, PageableRequest pageableRequest) {
         return new ResponsePageV2<>(orderService.filter(param, pageableRequest.toPageable()));
+    }
+
+    @PostMapping("/store")
+    public Order createOrderAtStore(
+            @RequestBody OrderAtStoreCreateRequest orderRequest, @RequestHeader("Authorization") String token) {
+        return orderService.createOrderAtStore(orderRequest, token);
     }
 }

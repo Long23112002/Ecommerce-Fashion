@@ -2,6 +2,7 @@ package org.example.ecommercefashion.services;
 
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderRequest;
@@ -29,4 +30,6 @@ public interface OrderService {
   Order getOrderById(Long id);
 
   Page<Order> filter(OrderParam param, Pageable pageable);
+
+  Order createOrderAtStore(OrderAtStoreCreateRequest dto, String token);
 }

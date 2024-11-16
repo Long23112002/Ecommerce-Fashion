@@ -99,6 +99,9 @@ public class  Order implements Serializable {
   @Column(name = "deleted", nullable = false)
   private Boolean deleted = false;
 
+  @Column(name = "guest_id")
+  private Long guestId;
+
   @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
   @JsonManagedReference
   private List<OrderDetail> orderDetails;

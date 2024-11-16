@@ -6,5 +6,6 @@ public enum OrderStatus {
   SHIPPING,
   SUCCESS,
   DRAFT,
-  REFUND
+  REFUND,
+  PENDING_AT_STORE,
 }

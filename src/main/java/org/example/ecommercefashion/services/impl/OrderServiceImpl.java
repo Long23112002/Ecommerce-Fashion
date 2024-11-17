@@ -1,15 +1,10 @@
 package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
-import com.longnh.utils.FnCommon;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
-import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
@@ -166,7 +161,7 @@ public class OrderServiceImpl implements OrderService {
         if (!match) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SECURE_NOT_MATCH);
         }
-        for(OrderDetail orderDetail: order.getOrderDetails()){
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
             ProductDetail productDetail =
                     productDetailService.detail(orderDetail.getProductDetail().getId());
             productDetailService.handleMinusQuantity(orderDetail.getQuantity(), productDetail);
@@ -276,7 +271,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order createOrderAtStore(String token) {
         JwtResponse userJWT = jwtService.decodeToken(token);
-
+        if (orderRepository.countOrderPendingStore() >= 4) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Đã đạt giới hạn lượng hóa đơn chờ");
+        }
         Order order = new Order();
         order.setStatus(OrderStatus.PENDING_AT_STORE);
         order.setStaffId(userJWT.getUserId());
@@ -286,5 +283,10 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order);
 
         return order;
+    }
+
+    @Override
+    public List<Order> getOrderPendingAtStore(String token) {
+        return orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
     }
 }

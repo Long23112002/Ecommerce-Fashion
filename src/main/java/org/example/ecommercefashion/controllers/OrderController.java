@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -73,6 +74,11 @@ public class OrderController {
     @GetMapping("/store")
     public Order createOrderAtStore( @RequestHeader("Authorization") String token) {
         return orderService.createOrderAtStore(token);
+    }
+
+    @GetMapping("/list-pending")
+    public List<Order> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
+        return orderService.getOrderPendingAtStore(token);
     }
 }
 

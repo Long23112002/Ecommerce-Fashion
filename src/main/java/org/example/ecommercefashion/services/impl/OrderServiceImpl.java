@@ -184,29 +184,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order confirm(Long orderId, String encode, String status) throws JobExecutionException {
-        Order order = getOrderById(orderId);
-        boolean match = vnPayService.match(order, encode);
-        if (!status.equals("00")) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PAYMENT_FAILED);
-        }
-        if (!match) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SECURE_NOT_MATCH);
-        }
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            ProductDetail productDetail =
-                    productDetailService.detail(orderDetail.getProductDetail().getId());
-            productDetailService.handleMinusQuantity(orderDetail.getQuantity(), productDetail);
-
-        }
-        order.setPaymentMethod(PaymentMethodEnum.VNPAY);
-        order.setStatus(OrderStatus.PENDING);
-        orderRepository.save(order);
-        emailJob.orderSuccessfulEmail(order);
-        return orderRepository.save(order);
-    }
-
-    @Override
     public void deleteOrder(Long id) {
         Order order =
                 orderRepository

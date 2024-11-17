@@ -10,11 +10,7 @@ import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
-import org.example.ecommercefashion.entities.EmailJob;
-import org.example.ecommercefashion.entities.Order;
-import org.example.ecommercefashion.entities.OrderDetail;
-import org.example.ecommercefashion.entities.ProductDetail;
-import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.entities.*;
 import org.example.ecommercefashion.entities.value.Address;
 import org.example.ecommercefashion.entities.value.OrderDetailValue;
 import org.example.ecommercefashion.enums.OrderStatus;
@@ -25,19 +21,22 @@ import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.GhtkService;
+import org.example.ecommercefashion.services.OrderLogService;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.services.ProductDetailService;
 import org.example.ecommercefashion.services.VNPayService;
+import org.example.ecommercefashion.strategies.TransactionDTO;
+import org.example.ecommercefashion.strategies.TransactionRequest;
+import org.example.ecommercefashion.strategies.TransactionStrategy;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +44,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    private final HttpServletRequest httpServletRequest;
+    private final ApplicationContext applicationContext;
     private final OrderRepository orderRepository;
     private final VNPayService vnPayService;
     private final JwtService jwtService;
@@ -53,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductDetailService productDetailService;
     private final UserRepository userRepository;
     private final GhtkService ghtkService;
-    private final CartServiceImpl cartService;
+    private final OrderLogService orderLogService;
 
     @Autowired
     private EmailJob emailJob;
@@ -117,23 +116,48 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws UnsupportedEncodingException {
+    public String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws JobExecutionException {
+        TransactionStrategy strategy = (TransactionStrategy) applicationContext.getBean(dto.getPaymentMethod().getVal());
         Order order = getOrderById(id);
         order.setFullName(dto.getFullName());
         order.setPhoneNumber(dto.getPhoneNumber());
         order.setAddress(updateAddress(dto, order));
-        order.setNote(dto.getNote());
-        orderRepository.save(order);
         if (!validateAddress(order)) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_ADDRESS);
         }
-        long finalPrice = order.getFinalPrice().longValue();
-        return vnPayService.createPayment(httpServletRequest, finalPrice, order.getId());
+        order.setNote(dto.getNote());
+        String redirect = strategy.processPayment(order);
+        orderRepository.save(order);
+        return redirect;
+    }
+
+    @Override
+    public Order confirmOrder(TransactionRequest request) throws JobExecutionException {
+        Order order = getOrderById(request.getOrderId());
+        TransactionStrategy strategy = (TransactionStrategy) applicationContext.getBean(request.getPaymentMethod().getVal());
+        TransactionDTO dto = TransactionDTO.builder()
+                .order(order)
+                .confirmationCode(request.getConfirmationCode())
+                .status(request.getStatus())
+                .build();
+        order = strategy.confirmPayment(dto);
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            ProductDetail productDetail =
+                    productDetailService.detail(orderDetail.getProductDetail().getId());
+            productDetailService.handleMinusQuantity(orderDetail.getQuantity(), productDetail);
+        }
+        order.setStatus(OrderStatus.PENDING);
+        orderRepository.save(order);
+        emailJob.orderSuccessfulEmail(order);
+        return orderRepository.save(order);
     }
 
     @Override
     public Order updateStateOrder(Long id, OrderChangeState dto) {
         Order order = getOrderById(id);
+        Order prev = order.clone();
+
+
         order.setStatus(dto.getStatus());
         if (dto.getAddress() != null) {
             order.setAddress(dto.getAddress());
@@ -148,29 +172,14 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getPaymentMethod() != null) {
             order.setPaymentMethod(dto.getPaymentMethod());
         }
-        return orderRepository.save(order);
-    }
 
-    @Override
-    public Order confirm(Long orderId, String encode, String status) throws JobExecutionException {
-        Order order = getOrderById(orderId);
-        boolean match = vnPayService.match(order, encode);
-        if (!status.equals("00")) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PAYMENT_FAILED);
-        }
-        if (!match) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SECURE_NOT_MATCH);
-        }
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            ProductDetail productDetail =
-                    productDetailService.detail(orderDetail.getProductDetail().getId());
-            productDetailService.handleMinusQuantity(orderDetail.getQuantity(), productDetail);
+     orderLogService.create(OrderLog.builder()
+                    .newValue(order.getStatus())
+                    .oldStatus(prev.getStatus())
+                    .order(order)
+                    .user(order.getUser())
+            .build());
 
-        }
-        order.setPaymentMethod(PaymentMethodEnum.VNPAY);
-        order.setStatus(OrderStatus.PENDING);
-        orderRepository.save(order);
-        emailJob.orderSuccessfulEmail(order);
         return orderRepository.save(order);
     }
 

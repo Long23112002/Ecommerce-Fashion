@@ -48,7 +48,6 @@ public class SecurityConfig {
                     request -> {
                       CorsConfiguration corsConfig = new CorsConfiguration();
                       corsConfig.addAllowedOrigin("http://localhost:5173");
-                      corsConfig.addAllowedOrigin("https://ecommerce-fashion.site");
                       corsConfig.addAllowedOrigin("http://ecommerce-fashion.site");
                       corsConfig.setAllowedMethods(
                           Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

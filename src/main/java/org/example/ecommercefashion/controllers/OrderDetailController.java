@@ -3,11 +3,14 @@ package org.example.ecommercefashion.controllers;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
+import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.services.OrderDetailService;
 import org.example.ecommercefashion.utils.ResponsePageV2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,5 +35,10 @@ public class OrderDetailController {
     public OrderDetail create(
             @Valid @RequestBody OrderDetailCreateRequest request, @RequestHeader("Authorization") String token) {
         return service.addProductDetailToOrderDetail(request, token);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MessageResponse> delete(@PathVariable Long id) {
+       return ResponseEntity.ok( service.deleteOrderDetail(id));
     }
 }

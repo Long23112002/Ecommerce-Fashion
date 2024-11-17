@@ -4,6 +4,7 @@ import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
+import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.entities.ProductDetail;
@@ -63,6 +64,18 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         detail.setCreatedBy(user.getId());
 
         return repository.save(detail);
+    }
+
+    @Override
+    public MessageResponse deleteOrderDetail(Long id) {
+        OrderDetail detail =
+                repository
+                        .findById(id)
+                        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order detail"));
+        detail.setDeleted(true);
+        repository.save(detail);
+        return MessageResponse.builder().message("Order detail deleted successfully").build();
+
     }
 
     private void countQuantity(Integer requestQuantity, Integer productQuantity) {

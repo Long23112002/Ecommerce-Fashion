@@ -9,6 +9,7 @@ import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.services.OrderService;
+import org.example.ecommercefashion.strategies.TransactionRequest;
 import org.example.ecommercefashion.utils.ResponsePageV2;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,15 +45,13 @@ public class OrderController {
 
     @PutMapping("/payment/{id}")
     public String orderUpdateAndPay(@PathVariable Long id,
-                                    @Valid @RequestBody OrderUpdateRequest orderUpdateRequest) throws UnsupportedEncodingException {
+                                    @Valid @RequestBody OrderUpdateRequest orderUpdateRequest) throws UnsupportedEncodingException, JobExecutionException {
         return orderService.orderUpdateAndPay(id, orderUpdateRequest);
     }
 
     @PutMapping("/confirm")
-    public Order orderUpdateAndPay(@RequestParam(name = "encode") String encode,
-                                   @RequestParam(name = "orderId") Long orderId,
-                                   @RequestParam(name = "status") String status) throws JobExecutionException {
-        return orderService.confirm(orderId, encode, status);
+    public Order orderUpdateAndPay(@RequestBody TransactionRequest request) throws JobExecutionException {
+        return orderService.confirmOrder(request);
     }
 
     @PutMapping("/{id}")

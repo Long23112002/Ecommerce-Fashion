@@ -62,4 +62,7 @@ public class OrderDetail implements Serializable {
 
   @Column(name = "updated_by")
   private Long updatedBy;
+
+  @Column(name = "code")
+  private String code;
 }

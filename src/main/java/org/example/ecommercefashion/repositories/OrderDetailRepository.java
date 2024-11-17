@@ -14,4 +14,7 @@ import org.springframework.stereotype.Repository;
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
     @Query("SELECT od FROM OrderDetail od WHERE od.order.id =:orderId")
     Page<OrderDetail> filter(@Param("orderId") Long orderId,Pageable pageable);
+
+    @Query(value = "select last_value + 1 from orders.order_detail_id_seq", nativeQuery = true)
+    Long getLastValue();
 }

@@ -10,7 +10,12 @@ import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
-import org.example.ecommercefashion.entities.*;
+import org.example.ecommercefashion.entities.EmailJob;
+import org.example.ecommercefashion.entities.Order;
+import org.example.ecommercefashion.entities.OrderDetail;
+import org.example.ecommercefashion.entities.OrderLog;
+import org.example.ecommercefashion.entities.ProductDetail;
+import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.entities.value.Address;
 import org.example.ecommercefashion.entities.value.OrderDetailValue;
 import org.example.ecommercefashion.enums.OrderStatus;
@@ -173,12 +178,12 @@ public class OrderServiceImpl implements OrderService {
             order.setPaymentMethod(dto.getPaymentMethod());
         }
 
-     orderLogService.create(OrderLog.builder()
-                    .newValue(order.getStatus())
-                    .oldStatus(prev.getStatus())
-                    .order(order)
-                    .user(order.getUser())
-            .build());
+        orderLogService.create(OrderLog.builder()
+                .newValue(order.getStatus())
+                .oldStatus(prev.getStatus())
+                .order(order)
+                .user(order.getUser())
+                .build());
 
         return orderRepository.save(order);
     }
@@ -284,6 +289,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Đã đạt giới hạn lượng hóa đơn chờ");
         }
         Order order = new Order();
+        order.setCode("HD" + orderRepository.getLastValue());
         order.setStatus(OrderStatus.PENDING_AT_STORE);
         order.setStaffId(userJWT.getUserId());
         order.setFullName("Khách lẻ");

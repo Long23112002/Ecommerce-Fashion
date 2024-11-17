@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 public interface OrderService {
 
@@ -33,5 +34,7 @@ public interface OrderService {
   Page<Order> filter(OrderParam param, Pageable pageable);
 
   Order createOrderAtStore(String token);
+
+  List<Order> getOrderPendingAtStore(String token);
 
 }

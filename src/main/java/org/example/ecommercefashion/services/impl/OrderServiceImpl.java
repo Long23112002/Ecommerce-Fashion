@@ -10,11 +10,7 @@ import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
-import org.example.ecommercefashion.entities.EmailJob;
-import org.example.ecommercefashion.entities.Order;
-import org.example.ecommercefashion.entities.OrderDetail;
-import org.example.ecommercefashion.entities.ProductDetail;
-import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.entities.*;
 import org.example.ecommercefashion.entities.value.Address;
 import org.example.ecommercefashion.entities.value.OrderDetailValue;
 import org.example.ecommercefashion.enums.OrderStatus;
@@ -24,10 +20,7 @@ import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
-import org.example.ecommercefashion.services.GhtkService;
-import org.example.ecommercefashion.services.OrderService;
-import org.example.ecommercefashion.services.ProductDetailService;
-import org.example.ecommercefashion.services.VNPayService;
+import org.example.ecommercefashion.services.*;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -54,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final GhtkService ghtkService;
     private final CartServiceImpl cartService;
+    private final OrderLogService orderLogService;
 
     @Autowired
     private EmailJob emailJob;
@@ -134,6 +128,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order updateStateOrder(Long id, OrderChangeState dto) {
         Order order = getOrderById(id);
+        Order prev = order.clone();
+
+
         order.setStatus(dto.getStatus());
         if (dto.getAddress() != null) {
             order.setAddress(dto.getAddress());
@@ -148,6 +145,14 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getPaymentMethod() != null) {
             order.setPaymentMethod(dto.getPaymentMethod());
         }
+
+     orderLogService.create(OrderLog.builder()
+                    .newValue(order.getStatus())
+                    .oldStatus(prev.getStatus())
+                    .order(order)
+                    .user(order.getUser())
+            .build());
+
         return orderRepository.save(order);
     }
 

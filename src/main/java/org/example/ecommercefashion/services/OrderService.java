@@ -2,6 +2,7 @@ package org.example.ecommercefashion.services;
 
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 public interface OrderService {
 
@@ -31,4 +33,9 @@ public interface OrderService {
   Order getOrderById(Long id);
 
   Page<Order> filter(OrderParam param, Pageable pageable);
+
+  Order createOrderAtStore(String token);
+
+  List<Order> getOrderPendingAtStore(String token);
+
 }

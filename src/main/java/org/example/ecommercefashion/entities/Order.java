@@ -25,7 +25,7 @@ import org.hibernate.annotations.*;
 @Builder
 @Where(clause = "deleted = false")
 @TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
-public class  Order implements Serializable {
+public class  Order implements Serializable , Cloneable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -98,7 +98,25 @@ public class  Order implements Serializable {
   @Column(name = "deleted", nullable = false)
   private Boolean deleted = false;
 
+  @Column(name = "staff_id")
+  private Long staffId;
+
   @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
   @JsonManagedReference
   private List<OrderDetail> orderDetails;
+
+  @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+  @JsonManagedReference
+  @JsonIgnoreProperties({"order" , "user"})
+  private List<OrderLog> orderLogs;
+
+    @Override
+    public Order clone() {
+        try {
+            Order clone = (Order) super.clone();
+            return clone;
+        } catch (Exception e) {
+      throw new RuntimeException(e);
+        }
+    }
 }

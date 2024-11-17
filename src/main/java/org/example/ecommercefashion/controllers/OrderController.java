@@ -1,12 +1,10 @@
 package org.example.ecommercefashion.controllers;
 
-import javax.validation.Valid;
-
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
-import org.example.ecommercefashion.dtos.request.OrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.entities.Order;
@@ -17,7 +15,9 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -69,4 +69,17 @@ public class OrderController {
     public ResponsePageV2<Order> filter(OrderParam param, PageableRequest pageableRequest) {
         return new ResponsePageV2<>(orderService.filter(param, pageableRequest.toPageable()));
     }
+
+    @GetMapping("/store")
+    public Order createOrderAtStore( @RequestHeader("Authorization") String token) {
+        return orderService.createOrderAtStore(token);
+    }
+
+    @GetMapping("/list-pending")
+    public List<Order> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
+        return orderService.getOrderPendingAtStore(token);
+    }
 }
+
+
+

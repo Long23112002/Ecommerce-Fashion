@@ -4,6 +4,7 @@ import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
+import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.entities.ProductDetail;
@@ -34,6 +35,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .findById(id)
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
     }
+
     @Override
     public Page<OrderDetail> filter(Long orderId, Pageable pageable) {
         return repository.filter(orderId, pageable);
@@ -53,6 +55,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         countQuantity(request.getQuantity(), productDetail.getQuantity());
 
         OrderDetail detail = new OrderDetail();
+        detail.setCode("HDCT" + repository.getLastValue());
         detail.setOrder(order);
         detail.setProductDetail(productDetail);
         detail.setQuantity(request.getQuantity());
@@ -63,7 +66,19 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return repository.save(detail);
     }
 
-    private void countQuantity(Integer requestQuantity, Integer productQuantity){
+    @Override
+    public MessageResponse deleteOrderDetail(Long id) {
+        OrderDetail detail =
+                repository
+                        .findById(id)
+                        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order detail"));
+        detail.setDeleted(true);
+        repository.save(detail);
+        return MessageResponse.builder().message("Order detail deleted successfully").build();
+
+    }
+
+    private void countQuantity(Integer requestQuantity, Integer productQuantity) {
         if (requestQuantity > productQuantity) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productQuantity);
         }

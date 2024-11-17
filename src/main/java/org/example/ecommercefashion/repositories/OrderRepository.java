@@ -28,4 +28,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
   @Query("SELECT o FROM Order o WHERE o.status = :status ORDER BY o.createdAt DESC")
   List<Order> findPendingOrders(@Param("status") OrderStatus status);
+
+  @Query(value = "select last_value + 1 from orders.order_id_seq", nativeQuery = true)
+  Long getLastValue();
 }

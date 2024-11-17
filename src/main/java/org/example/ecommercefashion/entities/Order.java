@@ -119,4 +119,7 @@ public class  Order implements Serializable , Cloneable {
       throw new RuntimeException(e);
         }
     }
+
+  @Column(name = "code")
+  private String code;
 }

@@ -105,6 +105,11 @@ public class  Order implements Serializable , Cloneable {
   @JsonManagedReference
   private List<OrderDetail> orderDetails;
 
+  @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+  @JsonManagedReference
+  @JsonIgnoreProperties({"order" , "user"})
+  private List<OrderLog> orderLogs;
+
     @Override
     public Order clone() {
         try {

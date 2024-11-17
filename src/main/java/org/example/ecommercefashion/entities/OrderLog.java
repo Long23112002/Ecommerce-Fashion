@@ -1,5 +1,7 @@
 package org.example.ecommercefashion.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import lombok.*;
 import org.apache.poi.ss.formula.functions.T;
@@ -19,7 +21,6 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Where(clause = "deleted = false")
 @TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
 public class OrderLog {
 
@@ -33,6 +34,7 @@ public class OrderLog {
 
     @JoinColumn(name = "order_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("orderLogs")
     private Order order;
 
     @JoinColumn(name = "user_id", nullable = false)

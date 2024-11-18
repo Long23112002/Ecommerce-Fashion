@@ -16,11 +16,10 @@ public class VNPayController {
     private VNPayService vnPayService;
 
     @PostMapping("/create-payment")
-    public String createPayment(HttpServletRequest request,
-                                @RequestParam("amount") long amountRequest,
+    public String createPayment(@RequestParam("amount") long amountRequest,
                                 @RequestParam("orderId") long orderId)
             throws UnsupportedEncodingException {
-        return vnPayService.createPayment(request, amountRequest, orderId);
+        return vnPayService.createPayment(amountRequest, orderId);
     }
 
     @GetMapping("/payment-info")

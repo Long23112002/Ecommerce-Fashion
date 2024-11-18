@@ -3,13 +3,16 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.OrderParam;
+import org.example.ecommercefashion.dtos.request.CartRequest;
 import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
+import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
+import org.example.ecommercefashion.entities.Cart;
 import org.example.ecommercefashion.entities.EmailJob;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
@@ -17,24 +20,26 @@ import org.example.ecommercefashion.entities.OrderLog;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.entities.value.Address;
+import org.example.ecommercefashion.entities.value.CartValue;
 import org.example.ecommercefashion.entities.value.OrderDetailValue;
 import org.example.ecommercefashion.enums.OrderStatus;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
+import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
+import org.example.ecommercefashion.services.CartService;
+import org.example.ecommercefashion.services.DiscountService;
 import org.example.ecommercefashion.services.GhtkService;
 import org.example.ecommercefashion.services.OrderLogService;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.services.ProductDetailService;
-import org.example.ecommercefashion.services.VNPayService;
 import org.example.ecommercefashion.strategies.TransactionDTO;
 import org.example.ecommercefashion.strategies.TransactionRequest;
 import org.example.ecommercefashion.strategies.TransactionStrategy;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +49,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,16 +60,15 @@ public class OrderServiceImpl implements OrderService {
 
     private final ApplicationContext applicationContext;
     private final OrderRepository orderRepository;
-    private final VNPayService vnPayService;
     private final JwtService jwtService;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductDetailService productDetailService;
     private final UserRepository userRepository;
     private final GhtkService ghtkService;
     private final OrderLogService orderLogService;
-
-    @Autowired
-    private EmailJob emailJob;
+    private final DiscountService discountService;
+    private final EmailJob emailJob;
+    private final CartService cartService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -110,7 +118,7 @@ public class OrderServiceImpl implements OrderService {
                 .specificAddress((order.getAddress().getSpecificAddress()))
                 .build());
 
-        double finalPrice = order.getTotalMoney() + moneyShip;
+        double finalPrice = (order.getTotalMoney() - order.getDiscountAmount()) + moneyShip;
         if (finalPrice < 0) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.NON_NEGATIVE_AMOUNT);
         }
@@ -137,6 +145,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Order updateDiscount(Long id, Long discountId) {
+        Order order = getOrderById(id);
+        DiscountResponse discount = discountService.getByDiscountId(discountId);
+        order.setDiscountId(discountId);
+        Double total = order.getTotalMoney();
+        if (discount.getType() == TypeDiscount.PERCENTAGE) {
+            Double value = discount.getValue();
+            Double discountAmount = Math.min(total * (value / 100), discount.getMaxValue());
+            Double finalPrice = total - discountAmount;
+            order.setDiscountAmount(discountAmount);
+            order.setFinalPrice(finalPrice + order.getMoneyShip());
+        } else {
+            Double discountAmount = discount.getValue();
+            total -= discountAmount;
+            order.setDiscountAmount(discountAmount);
+            order.setFinalPrice(total + order.getMoneyShip());
+        }
+        return orderRepository.save(order);
+    }
+
+    @Override
     public Order confirmOrder(TransactionRequest request) throws JobExecutionException {
         Order order = getOrderById(request.getOrderId());
         TransactionStrategy strategy = (TransactionStrategy) applicationContext.getBean(request.getPaymentMethod().getVal());
@@ -153,6 +182,7 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
+        updateCartAfterPayment(order);
         emailJob.orderSuccessfulEmail(order);
         return orderRepository.save(order);
     }
@@ -280,6 +310,46 @@ public class OrderServiceImpl implements OrderService {
                 && address.getDistrictID() != null
                 && address.getWardCode() != null
                 && address.getSpecificAddress() != null;
+    }
+
+    private void updateCartAfterPayment(Order order) {
+        Long userId = order.getUser().getId();
+        Cart cart = cartService.getCartByUserId(userId);
+
+        Map<Long, CartValue> mapCartValue = order.getOrderDetails()
+                .stream()
+                .collect(Collectors.toMap(
+                        o -> o.getProductDetail().getId(),
+                        o -> CartValue.builder()
+                                .productDetailId(o.getProductDetail().getId())
+                                .quantity(o.getQuantity())
+                                .build()
+                ));
+
+        List<CartValue> cartValues = cart.getCartValues();
+
+        Set<CartValue> newCartValues =
+                cartValues.stream()
+                        .map(c -> {
+                            CartValue cv = mapCartValue.get(c.getProductDetailId());
+                            if (cv == null) {
+                                return c;
+                            }
+                            Integer quantity = c.getQuantity() - cv.getQuantity();
+                            if (quantity <= 0) {
+                                return null;
+                            }
+                            c.setQuantity(quantity);
+                            return c;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+
+        CartRequest request = CartRequest.builder()
+                .userId(userId)
+                .cartValues(newCartValues)
+                .build();
+        cartService.update(request, userId);
     }
 
     @Override

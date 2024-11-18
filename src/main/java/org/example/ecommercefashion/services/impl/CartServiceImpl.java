@@ -53,7 +53,18 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public Cart update(CartRequest cartRequest, String token) {
         JwtResponse jwtResponse = jwtService.decodeToken(token);
-        Cart existingCart = getCartByUserId(jwtResponse.getUserId());
+        Long userId = jwtResponse.getUserId();
+        return updateCart(cartRequest, userId);
+    }
+
+    @Override
+    @Transactional
+    public Cart update(CartRequest cartRequest, Long userId) {
+        return updateCart(cartRequest, userId);
+    }
+
+    private Cart updateCart(CartRequest cartRequest, Long userId) {
+        Cart existingCart = getCartByUserId(userId);
 
         Set<Long> requestedProductIds = extractRequestedProductIds(cartRequest);
         List<CartValue> updatedCartValues =

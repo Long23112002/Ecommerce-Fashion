@@ -9,6 +9,8 @@ public interface CartService {
 
   Cart update(CartRequest cartRequest, String token);
 
+  Cart update(CartRequest cartRequest, Long userId);
+
   void delete(String token);
 
   Cart getCartByUserId(Long userId);

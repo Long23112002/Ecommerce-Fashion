@@ -8,5 +8,5 @@ import org.example.ecommercefashion.enums.TypeDiscount;
 public class DiscountParam {
     private TypeDiscount type;
     private  StatusDiscount status;
-    private String name;
+    private String name = "";
 }

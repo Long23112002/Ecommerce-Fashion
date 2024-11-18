@@ -3,7 +3,9 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,7 +56,7 @@ public class CartServiceImpl implements CartService {
         Cart existingCart = getCartByUserId(jwtResponse.getUserId());
 
         Set<Long> requestedProductIds = extractRequestedProductIds(cartRequest);
-        Set<CartValue> updatedCartValues =
+        List<CartValue> updatedCartValues =
                 updateExistingCartValues(existingCart, cartRequest, requestedProductIds);
 
         addNewCartValues(existingCart, cartRequest, updatedCartValues);
@@ -71,7 +73,7 @@ public class CartServiceImpl implements CartService {
     public void delete(String token) {
         JwtResponse jwtResponse = jwtService.decodeToken(token);
         Cart cart = getCartById(jwtResponse.getUserId());
-        cart.setCartValues(new HashSet<>());
+        cart.setCartValues(new ArrayList<>());
         cartRepository.save(cart);
     }
 
@@ -82,8 +84,8 @@ public class CartServiceImpl implements CartService {
                 .orElseGet(()->{
                     Cart newCart = Cart.builder()
                             .userId(userId)
-                            .cartValues(new HashSet<>())
-                            .cartValueInfos(new HashSet<>())
+                            .cartValues(new ArrayList<>())
+                            .cartValueInfos(new ArrayList<>())
                             .build();
                     return cartRepository.save(newCart);
                 });
@@ -114,7 +116,7 @@ public class CartServiceImpl implements CartService {
                                                     .orElse(null);
                                     return new CartValueInfo(value.getQuantity(), productDetail);
                                 })
-                        .collect(Collectors.toSet()));
+                        .toList());
     }
 
     private Cart getCartById(Long id) {
@@ -129,9 +131,9 @@ public class CartServiceImpl implements CartService {
                 .collect(Collectors.toSet());
     }
 
-    private Set<CartValue> updateExistingCartValues(
+    private List<CartValue> updateExistingCartValues(
             Cart existingCart, CartRequest cartRequest, Set<Long> requestedProductIds) {
-        Set<CartValue> updatedCartValues = new HashSet<>();
+        List<CartValue> updatedCartValues = new ArrayList<>();
 
         for (CartValue existingValue : existingCart.getCartValues()) {
             if (requestedProductIds.contains(existingValue.getProductDetailId())) {
@@ -152,7 +154,7 @@ public class CartServiceImpl implements CartService {
     }
 
     private void addNewCartValues(
-            Cart existingCart, CartRequest cartRequest, Set<CartValue> updatedCartValues) {
+            Cart existingCart, CartRequest cartRequest, List<CartValue> updatedCartValues) {
         for (CartValue newValue : cartRequest.getCartValues()) {
             boolean exists =
                     existingCart.getCartValues().stream()

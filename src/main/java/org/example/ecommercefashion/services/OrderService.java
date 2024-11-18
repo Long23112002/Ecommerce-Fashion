@@ -24,6 +24,8 @@ public interface OrderService {
 
   String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws UnsupportedEncodingException, JobExecutionException;
 
+  Order updateDiscount(Long id, Long discountId);
+
   Order updateStateOrder(Long id, OrderChangeState dto);
 
   Order confirmOrder(TransactionRequest request) throws JobExecutionException;

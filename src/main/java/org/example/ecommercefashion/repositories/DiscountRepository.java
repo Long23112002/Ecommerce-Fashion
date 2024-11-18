@@ -18,4 +18,7 @@ public interface DiscountRepository extends JpaRepository<Discount, Long> {
 
     boolean existsByName(String name);
     boolean existsByNameAndIdNot(String name , long id);
+
+    @Query(value = "select last_value + 1 from discounts.discount_id_seq", nativeQuery = true)
+    Long getLastValue();
 }

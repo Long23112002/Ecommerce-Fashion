@@ -56,4 +56,13 @@ public class OrderDetail implements Serializable {
 
   @Column(name = "deleted", nullable = false)
   private Boolean deleted = false;
+
+  @Column(name = "created_by")
+  private Long createdBy;
+
+  @Column(name = "updated_by")
+  private Long updatedBy;
+
+  @Column(name = "code")
+  private String code;
 }

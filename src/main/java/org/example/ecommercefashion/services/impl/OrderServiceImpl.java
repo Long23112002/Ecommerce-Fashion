@@ -359,6 +359,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Đã đạt giới hạn lượng hóa đơn chờ");
         }
         Order order = new Order();
+        order.setCode("HD" + orderRepository.getLastValue());
         order.setStatus(OrderStatus.PENDING_AT_STORE);
         order.setStaffId(userJWT.getUserId());
         order.setFullName("Khách lẻ");

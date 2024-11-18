@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.example.ecommercefashion.annotations.normalized.normalizeString;
@@ -95,6 +96,8 @@ public class DiscountServiceImpl implements DiscountService {
             setDiscountStatus(discount);
             validateDiscountCondition(discount.getCondition());
             discount.setCreateBy(jwt.getUserId());
+            String randomPart = getRandomString(6);
+            discount.setCode("PPHH"+discountRepository.getLastValue()+randomPart);
             discount = discountRepository.save(discount);
             DiscountResponse discountResponse = new DiscountResponse();
             FnCommon.copyNonNullProperties(discountResponse, discount);
@@ -261,5 +264,13 @@ public class DiscountServiceImpl implements DiscountService {
         }
         return discountResponse;
     }
-
+    private String getRandomString(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder result = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            result.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        return result.toString();
+    }
 }

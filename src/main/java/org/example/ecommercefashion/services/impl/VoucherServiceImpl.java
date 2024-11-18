@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.Random;
 
 
 @Service
@@ -56,6 +57,12 @@ public class VoucherServiceImpl implements VoucherServise {
             Discount discount = discountRepository.findById(request.getDiscountId()).orElseThrow(
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND));
 
+            boolean isDiscountUsed = voucherRepository.existsByDiscountId(discount.getId());
+            if (isDiscountUsed) {
+                throw new ExceptionHandle(HttpStatus.CONFLICT, ErrorMessage.DISCOUNT_ALREADY_USED);
+            }
+            String randomPart = getRandomString(6);
+            voucher.setCode("PPHH"+ voucherRepository.getLastValue()+randomPart);
             voucher.setDiscount(discount);
             voucher.setCreateBy(jwt.getUserId());
             voucher = voucherRepository.save(voucher);
@@ -109,6 +116,10 @@ public class VoucherServiceImpl implements VoucherServise {
                 Discount discount = discountRepository.findById(request.getDiscountId()).orElseThrow(
                         () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND)
                 );
+                boolean isDiscountUsed = voucherRepository.existsByDiscountId(discount.getId());
+                if (isDiscountUsed) {
+                    throw new ExceptionHandle(HttpStatus.CONFLICT, ErrorMessage.DISCOUNT_ALREADY_USED);
+                }
                 voucher.setDiscount(discount);
             }
             voucher.setUpdateBy(jwt.getUserId());
@@ -150,5 +161,14 @@ public class VoucherServiceImpl implements VoucherServise {
             voucherResponse.setUpdateBy(getInfoUser(voucher.getUpdateBy()));
         }
         return voucherResponse;
+    }
+    private String getRandomString(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder result = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            result.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        return result.toString();
     }
 }

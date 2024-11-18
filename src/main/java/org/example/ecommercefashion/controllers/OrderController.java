@@ -43,6 +43,12 @@ public class OrderController {
         return orderService.updateAddress(id, orderAddressUpdate);
     }
 
+    @PutMapping("/update-discount/{id}")
+    public Order updateDiscount(@PathVariable Long id,
+                                @RequestParam Long discountId) {
+        return orderService.updateDiscount(id, discountId);
+    }
+
     @PutMapping("/payment/{id}")
     public String orderUpdateAndPay(@PathVariable Long id,
                                     @Valid @RequestBody OrderUpdateRequest orderUpdateRequest) throws UnsupportedEncodingException, JobExecutionException {
@@ -71,7 +77,7 @@ public class OrderController {
     }
 
     @GetMapping("/store")
-    public Order createOrderAtStore( @RequestHeader("Authorization") String token) {
+    public Order createOrderAtStore(@RequestHeader("Authorization") String token) {
         return orderService.createOrderAtStore(token);
     }
 

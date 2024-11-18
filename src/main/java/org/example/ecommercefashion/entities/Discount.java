@@ -103,10 +103,4 @@ public class Discount {
     @JsonIgnoreProperties("discount")
     private List<Voucher> voucher;
 
-    @PrePersist
-    public void generateCode() {
-        if (this.code == null || this.code.isEmpty()) {
-            this.code = UUID.randomUUID().toString();
-        }
-    }
 }

@@ -23,8 +23,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
   @Query("SELECT COUNT(*) " +
           "FROM Order o " +
-          "WHERE o.status = 'PENDING_AT_STORE'")
-  Long countOrderPendingStore();
+          "WHERE o.status = 'PENDING_AT_STORE' and o.deleted = false and o.staffId = :staffId ")
+  Long countOrderPendingStore(Long staffId);
 
   @Query("SELECT o FROM Order o WHERE o.status = :status ORDER BY o.createdAt DESC")
   List<Order> findPendingOrders(@Param("status") OrderStatus status);

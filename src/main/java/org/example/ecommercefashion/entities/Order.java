@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
@@ -88,10 +89,12 @@ public class  Order implements Serializable , Cloneable {
   private User updatedBy;
 
   @Column(name = "created_at", updatable = false)
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   @CreationTimestamp
   private Timestamp createdAt;
 
   @Column(name = "updated_at")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   @UpdateTimestamp
   private Timestamp updatedAt;
 

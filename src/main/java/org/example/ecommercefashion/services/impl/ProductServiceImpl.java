@@ -728,6 +728,8 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(product);
     }
 
+
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
     public void buildProductDetail(
             Double price,
@@ -744,7 +746,29 @@ public class ProductServiceImpl implements ProductService {
         productDetail.setSize(sizeRepository.getById(parseIdFromInfo(sizeName)));
         productDetail.setColor(colorRepository.getById(parseIdFromInfo(colorName)));
         productDetailRepository.save(productDetail);
+        updateProductPriceRange(currentProductId);
     }
+
+    private void updateProductPriceRange(Long productId) {
+        List<ProductDetail> productDetails = productDetailRepository.getDetailByIdProduct(productId);
+
+        Double minPrice = productDetails.stream()
+                .map(ProductDetail::getPrice)
+                .min(Double::compare)
+                .orElse(null);
+
+        Double maxPrice = productDetails.stream()
+                .map(ProductDetail::getPrice)
+                .max(Double::compare)
+                .orElse(null);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        product.setMinPrice(Long.valueOf(String.valueOf(minPrice)));
+        product.setMaxPrice(Long.valueOf(String.valueOf(maxPrice)));
+        productRepository.save(product);
+    }
+
 
     public void sendExcelData(String apiUrl, ExcelDto excelDto) throws IOException {
         if (excelDto.getFile() == null || excelDto.getFileResult() == null) {

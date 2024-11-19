@@ -160,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
             Double discountAmount = discount.getValue();
             total -= discountAmount;
             order.setDiscountAmount(discountAmount);
-            order.setFinalPrice(total + order.getMoneyShip());
+            order.setFinalPrice(Math.max(total,0) + order.getMoneyShip());
         }
         return orderRepository.save(order);
     }

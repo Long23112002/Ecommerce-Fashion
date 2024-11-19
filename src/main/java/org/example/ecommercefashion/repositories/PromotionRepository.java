@@ -29,6 +29,17 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             "(:startDate BETWEEN p.startDate AND p.endDate OR " +
             ":endDate BETWEEN p.startDate AND p.endDate OR " +
             "p.startDate BETWEEN :startDate AND :endDate)")
-    List<Promotion> findOverlappingPromotions(@Param("startDate") Timestamp startDate, @Param("endDate") Timestamp endDate);
+    List<Promotion> findOverlappingPromotions(
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate
+    );
 
+    @Query("SELECT p FROM Promotion p WHERE p.id <> :currentId AND "
+            + "((:startDate BETWEEN p.startDate AND p.endDate) "
+            + "OR (:endDate BETWEEN p.startDate AND p.endDate) "
+            + "OR (p.startDate BETWEEN :startDate AND :endDate))")
+    List<Promotion> findOverlappingPromotionsExceptCurrent(
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate,
+            @Param("currentId") Long currentId);
 }

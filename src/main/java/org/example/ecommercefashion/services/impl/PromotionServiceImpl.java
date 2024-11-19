@@ -90,6 +90,10 @@ public class PromotionServiceImpl implements PromotionService {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
 
+            if (promotionRequest.getEndDate().before(new Timestamp(System.currentTimeMillis()))) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_END_DATE_WRONG);
+            }
+
             if (promotionRequest.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
                 if (promotionRequest.getValue() < 0 || promotionRequest.getValue() > 100) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_PERCENTAGE_WRONG_FORMAT);
@@ -130,6 +134,10 @@ public class PromotionServiceImpl implements PromotionService {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);
 
+            if (promotionRequest.getEndDate().before(new Timestamp(System.currentTimeMillis()))) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_END_DATE_WRONG);
+            }
+
             if (promotionRequest.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
                 if (promotionRequest.getValue() < 0 || promotionRequest.getValue() > 100) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_PERCENTAGE_WRONG_FORMAT);
@@ -138,6 +146,13 @@ public class PromotionServiceImpl implements PromotionService {
                 if (promotionRequest.getValue() < 1000) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_AMOUNT_WRONG_FORMAT);
                 }
+            }
+
+            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotionsExceptCurrent(
+                    promotionRequest.getStartDate(), promotionRequest.getEndDate(), id);
+
+            if (!overlappingPromotions.isEmpty()) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_DATE_OVERLAP);
             }
 
             Promotion promotion = promotionRepository.findById(id).orElseThrow(() ->

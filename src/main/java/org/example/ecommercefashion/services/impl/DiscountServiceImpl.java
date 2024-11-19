@@ -53,8 +53,8 @@ public class DiscountServiceImpl implements DiscountService {
     private final ProductDetailRepository productDetailRepository;
 
     @Override
-    public ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam param, Pageable pageable) {
-        Page<Discount> discountPage = discountRepository.getFilterDiscountPage(param, pageable);
+    public ResponsePage<Discount, DiscountResponse> filterDiscount(  TypeDiscount type,StatusDiscount status,String name,List<Long> idProductDetails,Double prices,Pageable pageable) {
+        Page<Discount> discountPage = discountRepository.getFilterDiscountPage(type,status,name,idProductDetails,prices,pageable);
         Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
         return new ResponsePage<>(DiscountResponsePage);
     }

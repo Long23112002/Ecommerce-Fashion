@@ -9,6 +9,8 @@ import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.entities.Discount;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.ProductDetail;
+import org.example.ecommercefashion.enums.StatusDiscount;
+import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.services.DiscountService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -35,8 +38,13 @@ public class DiscountController {
     private final DiscountService discountService;
 
     @GetMapping
-    public ResponsePage<Discount, DiscountResponse> FilerDiscount(DiscountParam param , Pageable pageable){
-        return discountService.filterDiscount(param,pageable);
+    public ResponsePage<Discount, DiscountResponse> FilerDiscount(@RequestParam(required = false) TypeDiscount type,
+                                                                  @RequestParam(required = false) StatusDiscount status,
+                                                                  @RequestParam(required = false, defaultValue = "") String name,
+                                                                  @RequestParam(required = false) List<Long> idProductDetails,
+                                                                  @RequestParam(required = false) Double prices,
+                                                                  @RequestParam(required = false) Pageable pageable){
+        return discountService.filterDiscount(type,status,name,idProductDetails,prices,pageable);
     }
     @GetMapping("/select")
     public ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable) {

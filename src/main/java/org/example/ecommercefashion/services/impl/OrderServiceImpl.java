@@ -355,13 +355,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order createOrderAtStore(String token) {
         JwtResponse userJWT = jwtService.decodeToken(token);
-        if (orderRepository.countOrderPendingStore() >= 4) {
+        User user = getUserById(userJWT.getUserId());
+        if (orderRepository.countOrderPendingStore(user.getId()) >= 4) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Đã đạt giới hạn lượng hóa đơn chờ");
         }
         Order order = new Order();
         order.setCode("HD" + orderRepository.getLastValue());
         order.setStatus(OrderStatus.PENDING_AT_STORE);
-        order.setStaffId(userJWT.getUserId());
+        order.setStaffId(user.getId());
         order.setFullName("Khách lẻ");
 
         order.setPaymentMethod(PaymentMethodEnum.CASH);

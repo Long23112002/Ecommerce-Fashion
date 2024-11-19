@@ -76,6 +76,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
   EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
   PRODUCT_HAS_PRODUCT_DETAIL("Sản phẩm đang có từ một chi tiết sản phẩm"),
+  PROMOTION_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày hiện tại"),
 
   ;
 

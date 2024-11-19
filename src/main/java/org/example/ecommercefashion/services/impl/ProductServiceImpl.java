@@ -764,8 +764,8 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        product.setMinPrice(Long.valueOf(String.valueOf(minPrice)));
-        product.setMaxPrice(Long.valueOf(String.valueOf(maxPrice)));
+        product.setMinPrice(minPrice != null ? minPrice.longValue() : null);
+        product.setMaxPrice(maxPrice != null ? maxPrice.longValue() : null);
         productRepository.save(product);
     }
 

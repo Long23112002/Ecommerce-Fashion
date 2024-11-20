@@ -7,6 +7,7 @@ import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.services.OrderDetailService;
+import org.example.ecommercefashion.services.PaymentService;
 import org.example.ecommercefashion.utils.ResponsePageV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,9 @@ import javax.validation.Valid;
 public class OrderDetailController {
     @Autowired
     private OrderDetailService service;
+
+
+
     @GetMapping("/{orderId}")
     public ResponsePageV2<OrderDetail> filter(PageableRequest pageableRequest, @PathVariable Long orderId) {
         return new ResponsePageV2<>(service.filter(orderId, pageableRequest.toPageable()));
@@ -41,4 +45,8 @@ public class OrderDetailController {
     public ResponseEntity<MessageResponse> delete(@PathVariable Long id) {
        return ResponseEntity.ok( service.deleteOrderDetail(id));
     }
+
+
+
+
 }

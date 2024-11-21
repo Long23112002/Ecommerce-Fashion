@@ -69,7 +69,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             existedOrderDetail.setUpdatedBy(user.getId());
             return repository.save(existedOrderDetail);
         } else {
-
+            System.out.println("ff");
             // Tạo mới hóa đơn chi tiết nếu sản phẩm chưa tồn tại
             OrderDetail newDetail = new OrderDetail();
             newDetail.setCode("HDCT" + repository.getLastValue());

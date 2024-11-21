@@ -2,6 +2,8 @@ package org.example.ecommercefashion.repositories;
 
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.entities.Order;
+import org.example.ecommercefashion.entities.Origin;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +22,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                     + "(:#{#param.keyword} IS NULL OR p.phoneNumber = cast( :#{#param.phoneNumber} as string ) )"
                     + "AND (:#{#param.keyword} IS NULL OR LOWER(p.user.fullName) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))")
     Page<Order> filter(OrderParam param, Pageable pageable);
-
 
     @Query("SELECT COUNT(*) " +
             "FROM Order o " +
@@ -140,4 +141,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                     	total DESC
                     """, nativeQuery = true)
     List<Object[]> getSoldProducts(int year, int month);
+
 }

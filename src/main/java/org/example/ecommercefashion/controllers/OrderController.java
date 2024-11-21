@@ -9,6 +9,7 @@ import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.services.OrderService;
+import org.example.ecommercefashion.services.PaymentService;
 import org.example.ecommercefashion.strategies.TransactionRequest;
 import org.example.ecommercefashion.utils.ResponsePageV2;
 import org.quartz.JobExecutionException;
@@ -25,6 +26,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private PaymentService paymentService;
 
     @PostMapping
     public Order create(
@@ -85,6 +89,13 @@ public class OrderController {
     public List<Order> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
         return orderService.getOrderPendingAtStore(token);
     }
+
+    @GetMapping("/checksum")
+    public boolean checkTransaction(Double amount, String description) {
+        return paymentService.handelPaymentApi(amount, description);
+    }
+
+
 }
 
 

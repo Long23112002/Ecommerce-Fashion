@@ -31,8 +31,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -42,28 +49,26 @@ import static org.example.ecommercefashion.annotations.normalized.normalizeStrin
 @Service
 @RequiredArgsConstructor
 public class DiscountServiceImpl implements DiscountService {
-    private final VoucherRepository voucherRepository;
 
     private final UserRepository userRepository;
-
     private final JwtService jwtService;
-
     private final DiscountRepository discountRepository;
-
     private final ProductDetailRepository productDetailRepository;
 
     @Override
-    public ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam param, Pageable pageable) {
-        Page<Discount> discountPage = discountRepository.getFilterDiscountPage(param, pageable);
+    public ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam params, Pageable pageable) {
+        Page<Discount> discountPage = discountRepository.getFilterDiscountPage(params, pageable);
         Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
         return new ResponsePage<>(DiscountResponsePage);
     }
+
     @Override
     public ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable) {
         Page<Discount> discountPage = discountRepository.findAll(pageable);
         Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
         return new ResponsePage<>(DiscountResponsePage);
     }
+
     @Override
     public DiscountResponse add(DiscountRequest request, String token) {
 
@@ -97,7 +102,7 @@ public class DiscountServiceImpl implements DiscountService {
             validateDiscountCondition(discount.getCondition());
             discount.setCreateBy(jwt.getUserId());
             String randomPart = getRandomString(6);
-            discount.setCode("PPHH"+discountRepository.getLastValue()+randomPart);
+            discount.setCode("PPHH" + discountRepository.getLastValue() + randomPart);
             discount = discountRepository.save(discount);
             DiscountResponse discountResponse = new DiscountResponse();
             FnCommon.copyNonNullProperties(discountResponse, discount);
@@ -161,11 +166,11 @@ public class DiscountServiceImpl implements DiscountService {
                     () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.DISCOUNT_NOT_FOUND)
             );
             FnCommon.copyNonNullProperties(discount, request);
-            if (discountRepository.existsByNameAndIdNot(normalizedCategoryName,discount.getId())) {
+            if (discountRepository.existsByNameAndIdNot(normalizedCategoryName, discount.getId())) {
                 throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_NAME_EXISTED);
             }
-            if(discount.getType() == TypeDiscount.FIXED_AMOUNT){
-            discount.setMaxValue(null);
+            if (discount.getType() == TypeDiscount.FIXED_AMOUNT) {
+                discount.setMaxValue(null);
             }
             validateDiscountCondition(discount.getCondition());
             setDiscountStatus(discount);
@@ -264,6 +269,7 @@ public class DiscountServiceImpl implements DiscountService {
         }
         return discountResponse;
     }
+
     private String getRandomString(int length) {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder result = new StringBuilder();

@@ -764,8 +764,8 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        product.setMinPrice(Long.valueOf(String.valueOf(minPrice)));
-        product.setMaxPrice(Long.valueOf(String.valueOf(maxPrice)));
+        product.setMinPrice(minPrice != null ? minPrice.longValue() : null);
+        product.setMaxPrice(maxPrice != null ? maxPrice.longValue() : null);
         productRepository.save(product);
     }
 
@@ -895,7 +895,7 @@ public class ProductServiceImpl implements ProductService {
     private void validateTemplate(Sheet sheet) throws Exception {
         Row headerRow = sheet.getRow(0);
         if (headerRow == null) {
-            throw new Exception("Template does not contain any headers.");
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST,"Template does not contain any headers.");
         }
 
         List<String> expectedHeaders =
@@ -914,7 +914,7 @@ public class ProductServiceImpl implements ProductService {
         for (int i = 0; i < expectedHeaders.size(); i++) {
             Cell cell = headerRow.getCell(i);
             if (cell == null || !cell.getStringCellValue().equals(expectedHeaders.get(i))) {
-                throw new Exception("Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
+        throw new ExceptionHandle(HttpStatus.BAD_REQUEST,"Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
             }
         }
     }

@@ -7,6 +7,7 @@ import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
+import org.example.ecommercefashion.dtos.response.OrderResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.services.PaymentService;
@@ -31,24 +32,24 @@ public class OrderController {
     private PaymentService paymentService;
 
     @PostMapping
-    public Order create(
+    public OrderResponse create(
             @Valid @RequestBody OrderCreateRequest orderRequest, @RequestHeader("Authorization") String token) {
         return orderService.createOrder(orderRequest, token);
     }
 
     @GetMapping("/{id}")
-    public Order getOrderById(@PathVariable Long id) {
+    public OrderResponse getOrderById(@PathVariable Long id) {
         return orderService.getOrderById(id);
     }
 
     @PutMapping("/update-address/{id}")
-    public Order updateAdress(@PathVariable Long id,
+    public OrderResponse updateAdress(@PathVariable Long id,
                               @Valid @RequestBody OrderAddressUpdate orderAddressUpdate) {
         return orderService.updateAddress(id, orderAddressUpdate);
     }
 
     @PutMapping("/update-discount/{id}")
-    public Order updateDiscount(@PathVariable Long id,
+    public OrderResponse updateDiscount(@PathVariable Long id,
                                 @RequestParam Long discountId) {
         return orderService.updateDiscount(id, discountId);
     }
@@ -60,12 +61,12 @@ public class OrderController {
     }
 
     @PutMapping("/confirm")
-    public Order orderUpdateAndPay(@RequestBody TransactionRequest request) throws JobExecutionException {
+    public OrderResponse orderUpdateAndPay(@RequestBody TransactionRequest request) throws JobExecutionException {
         return orderService.confirmOrder(request);
     }
 
     @PutMapping("/{id}")
-    public Order updateStateOrder(
+    public OrderResponse updateStateOrder(
             @PathVariable Long id, @Valid @RequestBody OrderChangeState orderChangeState) {
         return orderService.updateStateOrder(id, orderChangeState);
     }
@@ -76,7 +77,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponsePageV2<Order> filter(OrderParam param, PageableRequest pageableRequest) {
+    public ResponsePageV2<OrderResponse> filter(OrderParam param, PageableRequest pageableRequest) {
         return new ResponsePageV2<>(orderService.filter(param, pageableRequest.toPageable()));
     }
 
@@ -86,7 +87,7 @@ public class OrderController {
     }
 
     @GetMapping("/list-pending")
-    public List<Order> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
+    public List<OrderResponse> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
         return orderService.getOrderPendingAtStore(token);
     }
 

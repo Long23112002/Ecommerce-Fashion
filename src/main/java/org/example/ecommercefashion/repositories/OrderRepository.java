@@ -42,7 +42,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                     )
                     SELECT
                         to_char(all_days.day, 'DD/MM/YYYY'),
-                        COALESCE(SUM(o.final_price), 0) AS total_revenue
+                        COALESCE(SUM(o.total_money - o.discount_amount), 0) AS total_revenue
                     FROM
                         all_days
                     LEFT JOIN
@@ -68,7 +68,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                     )
                     SELECT
                         TO_CHAR(all_months.month, 'Month') AS name,
-                        COALESCE(SUM(o.final_price), 0) AS total_revenue
+                        COALESCE(SUM(o.total_money - o.discount_amount), 0) AS total_revenue
                     FROM
                         all_months
                     LEFT JOIN
@@ -99,7 +99,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                     )
                     SELECT
                         TO_CHAR(all_days.day, 'FMDD') AS day, 
-                        COALESCE(SUM(o.final_price), 0) AS revenue 
+                        COALESCE(SUM(o.total_money - o.discount_amount), 0) AS revenue 
                     FROM
                         all_days
                     LEFT JOIN

@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -53,8 +54,19 @@ public class DiscountServiceImpl implements DiscountService {
     private final ProductDetailRepository productDetailRepository;
 
     @Override
-    public ResponsePage<Discount, DiscountResponse> filterDiscount(  TypeDiscount type,StatusDiscount status,String name,List<Long> idProductDetails,Double prices,Pageable pageable) {
-        Page<Discount> discountPage = discountRepository.getFilterDiscountPage(type,status,name,idProductDetails,prices,pageable);
+    public ResponsePage<Discount, DiscountResponse> filterDiscount(  TypeDiscount type,
+                                                                     StatusDiscount status,
+                                                                     String name,
+                                                                     List<Long> idProductDetail,
+                                                                     Double prices,
+                                                                     Pageable pageable) {
+        if (idProductDetail == null) {
+            idProductDetail = new ArrayList<>();
+        }
+        if (prices == null) {
+            prices = 0d;
+        }
+        Page<Discount> discountPage = discountRepository.getFilterDiscountPage(type,status,name,idProductDetail,prices,pageable);
         Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
         return new ResponsePage<>(DiscountResponsePage);
     }
@@ -64,6 +76,7 @@ public class DiscountServiceImpl implements DiscountService {
         Page<DiscountResponse> DiscountResponsePage = discountPage.map(discount -> mapSizeToSizeResponse(discount));
         return new ResponsePage<>(DiscountResponsePage);
     }
+
     @Override
     public DiscountResponse add(DiscountRequest request, String token) {
 

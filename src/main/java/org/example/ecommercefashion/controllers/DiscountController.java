@@ -36,15 +36,14 @@ import java.util.List;
 //@Slf4j
 public class DiscountController {
     private final DiscountService discountService;
-
     @GetMapping
-    public ResponsePage<Discount, DiscountResponse> FilerDiscount(@RequestParam(required = false) TypeDiscount type,
-                                                                  @RequestParam(required = false) StatusDiscount status,
-                                                                  @RequestParam(required = false, defaultValue = "") String name,
-                                                                  @RequestParam(required = false) List<Long> idProductDetails,
-                                                                  @RequestParam(required = false) Double prices,
-                                                                  @RequestParam(required = false) Pageable pageable){
-        return discountService.filterDiscount(type,status,name,idProductDetails,prices,pageable);
+    public ResponsePage<Discount, DiscountResponse> FilerDiscount(@RequestParam(name = "type", required = false) TypeDiscount type,
+                                                                  @RequestParam(name = "status", required = false) StatusDiscount status,
+                                                                  @RequestParam(name = "name", required = false) String name,
+                                                                  @RequestParam(name = "idProductDetail", required = false) List<Long> idProductDetail,
+                                                                  @RequestParam(name = "prices", required = false) Double prices,
+                                                                  Pageable pageable) {
+        return discountService.filterDiscount(type, status, name, idProductDetail, prices, pageable);
     }
     @GetMapping("/select")
     public ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable) {

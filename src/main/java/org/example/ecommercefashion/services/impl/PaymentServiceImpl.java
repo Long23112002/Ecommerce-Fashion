@@ -68,18 +68,7 @@ public class PaymentServiceImpl implements PaymentService {
                 boolean isDescriptionMatch = transaction.getCode() != null
                         && transaction.getCode().equals(description);
 
-                if (isAmountMatch && isDescriptionMatch) {
-                  transactionService.create(Transaction.builder()
-                                  .accountNumber(transaction.getAccountNumber())
-                                  .code(transaction.getCode())
-                                  .body(transaction.getTransactionContent())
-                                  .amountIn(BigDecimal.valueOf(transaction.getAmountIn()))
-                                  .referenceNumber(transaction.getReferenceNumber())
-                                  .transactionDate(ZonedDateTime.parse(transaction.getTransactionDate()))
-                          .build());
-                  return true;
-                }
-                return false;
+                  return isAmountMatch && isDescriptionMatch;
               });
     }
     return false;

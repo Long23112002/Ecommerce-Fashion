@@ -32,7 +32,7 @@ public class StatisticController {
     }
 
     @GetMapping("/month")
-    public RevenueReportResponse getYearRevenueData(@RequestParam(name = "year", required = false) Integer year,
+    public RevenueReportResponse getMonthRevenueData(@RequestParam(name = "year", required = false) Integer year,
                                                     @RequestParam(name = "month", required = false) Integer month) {
         return getYearlyRevenueData.getMonthRevenueData(year, month);
     }

@@ -104,6 +104,9 @@ public class StatisticServiceImpl implements StatisticService {
     }
 
     private Double getIncrease(Double revenueToday, Double revenueYesterday) {
+        if(revenueYesterday == 0) {
+            return 0.0;
+        }
         Double increase = ((revenueToday - revenueYesterday)/ revenueYesterday)*100;
         Long scaledIncrease = Math.round(increase*100);
         increase = scaledIncrease.doubleValue()/100;

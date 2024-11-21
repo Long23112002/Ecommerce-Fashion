@@ -79,9 +79,6 @@ public class  Order implements Serializable , Cloneable {
   @Column(name = "total_money")
   private Double totalMoney = 0.0;
 
-  @Column(name = "final_price")
-  private Double finalPrice = 0.0;
-
   @JoinColumn(name = "updated_by")
   @Fetch(FetchMode.JOIN)
   @ManyToOne(fetch = FetchType.LAZY)

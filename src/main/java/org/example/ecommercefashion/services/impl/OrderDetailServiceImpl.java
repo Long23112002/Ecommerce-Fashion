@@ -21,6 +21,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class OrderDetailServiceImpl implements OrderDetailService {
@@ -54,18 +56,36 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
         countQuantity(request.getQuantity(), productDetail.getQuantity());
 
-        OrderDetail detail = new OrderDetail();
-        detail.setCode("HDCT" + repository.getLastValue());
-        detail.setOrder(order);
-        detail.setProductDetail(productDetail);
-        detail.setQuantity(request.getQuantity());
-        detail.setPrice(productDetail.getPrice());
-        detail.setTotalMoney(request.getQuantity() * productDetail.getPrice());
-        detail.setCreatedBy(user.getId());
+        OrderDetail existedOrderDetail = repository
+                .findOrderDetailByOrderAndProductDetail(order, productDetail)
+                .orElse(null);
 
-        return repository.save(detail);
+        if (existedOrderDetail != null) {
+
+            // Cập nhật số lượng và tổng tiền nếu sản phẩm đã tồn tại
+            int newQuantity = existedOrderDetail.getQuantity() + request.getQuantity();
+            existedOrderDetail.setQuantity(newQuantity);
+            existedOrderDetail.setTotalMoney(newQuantity * productDetail.getPrice());
+            existedOrderDetail.setUpdatedBy(user.getId());
+            return repository.save(existedOrderDetail);
+        } else {
+
+            // Tạo mới hóa đơn chi tiết nếu sản phẩm chưa tồn tại
+            OrderDetail newDetail = new OrderDetail();
+            newDetail.setCode("HDCT" + repository.getLastValue());
+            newDetail.setOrder(order);
+            newDetail.setProductDetail(productDetail);
+            newDetail.setQuantity(request.getQuantity());
+            newDetail.setPrice(productDetail.getPrice());
+            newDetail.setTotalMoney(request.getQuantity() * productDetail.getPrice());
+            newDetail.setCreatedBy(user.getId());
+            return repository.save(newDetail);
+        }
     }
 
+    private List<OrderDetail> getListOrderDetail(Long id){
+        return repository.getAllByOrderId(id);
+    }
     @Override
     public MessageResponse deleteOrderDetail(Long id) {
         OrderDetail detail =

@@ -2,6 +2,8 @@ package org.example.ecommercefashion.repositories;
 
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.entities.Order;
+import org.example.ecommercefashion.entities.Origin;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,4 +33,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
   @Query(value = "select last_value + 1 from orders.order_id_seq", nativeQuery = true)
   Long getLastValue();
+
 }

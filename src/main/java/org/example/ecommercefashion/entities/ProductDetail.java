@@ -100,6 +100,7 @@ public class ProductDetail {
 
   @ManyToMany(mappedBy = "productDetailList", fetch = FetchType.LAZY)
   @BatchSize(size = 100)
+  @JsonBackReference
   private List<Promotion> promotionList;
 
 }

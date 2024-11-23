@@ -47,6 +47,7 @@ import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
+import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.CartService;
@@ -92,6 +93,7 @@ public class OrderServiceImpl implements OrderService {
     private final DiscountService discountService;
     private final EmailJob emailJob;
     private final CartService cartService;
+    private final ProductDetailRepository productDetailRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -386,9 +388,35 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getOrderPendingAtStore(String token) {
+    public List<Order> getOrderPendingAtStore(String token) {
         List<Order> responses = orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
-        return toDtos(responses);
+        return responses;
+    }
+
+    @Override
+    public void updateStateOrderAtStore(Long id) {
+        Order order = getById(id);
+        // Lấy danh sách chi tiết hóa đơn (OrderDetail) liên quan
+        List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder(order);
+
+        // Trừ số lượng sản phẩm
+        for (OrderDetail orderDetail : orderDetails) {
+            ProductDetail productDetail = orderDetail.getProductDetail();
+            int newQuantity = productDetail.getQuantity() - orderDetail.getQuantity();
+
+            if (newQuantity < 0) {
+                throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
+                        "Không đủ số lượng sản phẩm: " + productDetail.getProduct().getName());
+            }
+
+            // Cập nhật số lượng sản phẩm
+            productDetail.setQuantity(newQuantity);
+            productDetailRepository.save(productDetail);
+        }
+
+        // Cập nhật trạng thái đơn hàng thành SUCCESS
+        order.setStatus(OrderStatus.SUCCESS);
+        orderRepository.save(order);
     }
 
     @Override

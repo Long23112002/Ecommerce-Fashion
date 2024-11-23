@@ -37,7 +37,10 @@ public interface OrderService {
 
   Order createOrderAtStore(String token);
 
-  List<OrderResponse> getOrderPendingAtStore(String token);
+  List<Order> getOrderPendingAtStore(String token);
+
+  void updateStateOrderAtStore(Long id);
 
   byte[] generateOrderPdf(Long orderId);
+
 }

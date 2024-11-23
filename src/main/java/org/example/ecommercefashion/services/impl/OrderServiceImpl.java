@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
+import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.CartRequest;
@@ -13,6 +14,7 @@ import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.OrderResponse;
+import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Cart;
 import org.example.ecommercefashion.entities.EmailJob;
 import org.example.ecommercefashion.entities.Order;
@@ -134,7 +136,7 @@ public class OrderServiceImpl implements OrderService {
         if (!validateAddress(order)) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_ADDRESS);
         }
-        if(order.getTotalMoney()-order.getMoneyShip()<0) {
+        if(order.getTotalMoney()-order.getDiscountAmount()<0) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_PAY_AMOUNT);
         }
         String redirect = strategy.processPayment(toDto(order));
@@ -384,30 +386,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderResponse toDto(Order entity) {
-        return OrderResponse.builder()
-                .id(entity.getId())
-                .discountId(entity.getDiscountId())
-                .user(entity.getUser())
-                .status(entity.getStatus())
-                .paymentMethod(entity.getPaymentMethod())
-                .fullName(entity.getFullName())
-                .phoneNumber(entity.getPhoneNumber())
-                .address(entity.getAddress())
-                .shipdate(entity.getShipdate())
-                .note(entity.getNote())
-                .moneyShip(entity.getMoneyShip())
-                .discountAmount(entity.getDiscountAmount())
-                .totalMoney(entity.getTotalMoney())
-                .revenueAmount(entity.getTotalMoney() - entity.getDiscountAmount())
-                .payAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip())
-                .updatedBy(entity.getUpdatedBy())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
-                .deleted(entity.getDeleted())
-                .staffId(entity.getStaffId())
-                .orderDetails(entity.getOrderDetails())
-                .orderLogs(entity.getOrderLogs())
-                .code(entity.getCode())
-                .build();
+        UserResponse user = FnCommon.copyNonNullProperties(UserResponse.class, entity.getUser());
+        OrderResponse response = FnCommon.copyProperties(OrderResponse.class, entity);
+        response.setUser(user);
+        response.setPayAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip());
+        response.setRevenueAmount(entity.getTotalMoney() - entity.getDiscountAmount());
+        return response;
     }
 }

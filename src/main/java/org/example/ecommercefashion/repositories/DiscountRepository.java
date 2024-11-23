@@ -20,13 +20,13 @@ public interface DiscountRepository extends JpaRepository<Discount, Long> {
         SELECT *
         FROM discounts.discount d
         WHERE
-            (:#{#params.type} IS NULL OR CAST(d.type AS text) = CAST(:#{#params.type} AS text))
-            AND (:#{#params.status} IS NULL OR CAST(d.discount_status AS text) = CAST(:#{#params.status} AS text))
+            (:#{#params.type} IS NULL OR CAST(d.type AS text) = CAST(:#{#params.type == null ? '' : #params.type.name()} AS text))
+            AND (:#{#params.status} IS NULL OR CAST(d.discount_status AS text) = CAST(:#{#params.status == null ? '' : #params.status.name()} AS text))
             AND (:#{#params.name} IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :#{#params.name}, '%')))
             AND (
                 (:#{#params.idProductDetail}) IS NULL
                 OR jsonb_array_length(CAST(d.condition AS jsonb) -> 'idProductDetail') = 0
-                OR ((SELECT bool_and(CAST(elem AS BIGINT) IN (:#{#params.idProductDetail == null ? #params.defaultList : #params.idProductDetail}))
+                OR ((SELECT bool_and(CAST(elem AS BIGINT) IN (:#{#params.idProductDetail == null ? #params.defaultList() : #params.idProductDetail}))
                      FROM jsonb_array_elements(CAST(d.condition AS jsonb) -> 'idProductDetail') AS elem) = true)
             )
             AND (

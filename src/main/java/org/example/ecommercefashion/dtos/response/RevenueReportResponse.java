@@ -8,6 +8,6 @@ import java.util.List;
 @Data
 @Builder
 public class RevenueReportResponse {
-    private double total;
+    private long total;
     private List<RevenueDataResponse> data;
 }

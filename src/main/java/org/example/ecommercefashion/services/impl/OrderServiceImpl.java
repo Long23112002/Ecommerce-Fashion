@@ -1,5 +1,21 @@
 package org.example.ecommercefashion.services.impl;
 
+import com.itextpdf.io.font.PdfEncodings;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.HorizontalAlignment;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +66,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -370,6 +389,133 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponse> getOrderPendingAtStore(String token) {
         List<Order> responses = orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
         return toDtos(responses);
+    }
+
+    @Override
+    public byte[] generateOrderPdf(Long orderId) {
+        Order order = getById(orderId);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            String fontPath = "src/main/resources/msttcorefonts/Times_New_Roman.ttf";
+            PdfFont font = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H);
+
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdf = new PdfDocument(writer);
+            pdf.setDefaultPageSize(new PageSize(200, 600));
+            Document document = new Document(pdf);
+
+            document.setFont(font);
+            document.setFontSize(8);
+
+            String logoPath = "src/main/resources/msttcorefonts/logo.png";
+            ImageData imageData = ImageDataFactory.create(logoPath);
+            Image logo = new Image(imageData);
+            logo.setHorizontalAlignment(HorizontalAlignment.CENTER);
+            logo.setWidth(50);
+            logo.setHeight(50);
+            document.add(logo);
+
+            document.add(
+                    new Paragraph("HÓA ĐƠN BÁN HÀNG")
+                            .setTextAlignment(TextAlignment.CENTER)
+                            .setBold()
+                            .setMarginBottom(10));
+
+            document.add(new Paragraph("Mã đơn hàng: " + order.getCode()).setBold());
+            document.add(new Paragraph("Khách hàng: " + order.getFullName()).setBold());
+            document.add(new Paragraph("Số ĐT: " + order.getPhoneNumber()).setBold());
+            LocalDateTime createdAt = order.getCreatedAt().toLocalDateTime();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            String formattedDate = createdAt.format(formatter);
+            document.add(new Paragraph("Ngày mua: " + formattedDate).setBold());
+
+            Table table = new Table(new float[] {1, 7, 2, 3});
+            table.setWidth(UnitValue.createPercentValue(100));
+            table.addHeaderCell(
+                    new Cell().add(new Paragraph("STT").setBold()).setTextAlignment(TextAlignment.CENTER));
+            table.addHeaderCell(
+                    new Cell()
+                            .add(new Paragraph("Tên sản phẩm").setBold())
+                            .setTextAlignment(TextAlignment.LEFT));
+            table.addHeaderCell(
+                    new Cell().add(new Paragraph("SL").setBold()).setTextAlignment(TextAlignment.CENTER));
+            table.addHeaderCell(
+                    new Cell()
+                            .add(new Paragraph("Thành tiền").setBold())
+                            .setTextAlignment(TextAlignment.RIGHT));
+
+            int index = 1;
+            double totalWithoutDiscount = 0.0;
+            for (var detail : order.getOrderDetails()) {
+                double lineTotal = detail.getPrice() * detail.getQuantity();
+                totalWithoutDiscount += lineTotal;
+
+                table.addCell(
+                        new Cell()
+                                .add(new Paragraph(String.valueOf(index++)))
+                                .setTextAlignment(TextAlignment.CENTER));
+                table.addCell(
+                        new Cell()
+                                .add(new Paragraph(detail.getProductDetail().getProduct().getName()))
+                                .setTextAlignment(TextAlignment.LEFT));
+                table.addCell(
+                        new Cell()
+                                .add(new Paragraph(String.valueOf(detail.getQuantity())))
+                                .setTextAlignment(TextAlignment.CENTER));
+                table.addCell(
+                        new Cell()
+                                .add(new Paragraph(String.format("%,.0f", lineTotal)))
+                                .setTextAlignment(TextAlignment.RIGHT));
+            }
+            document.add(table);
+
+            double discount = order.getDiscountAmount() != null ? order.getDiscountAmount() : 0.0;
+            double totalWithDiscount = totalWithoutDiscount - discount;
+
+            document.add(
+                    new Paragraph("Tổng tiền hoá đơn: " + String.format("%,.0f VNĐ", totalWithoutDiscount))
+                            .setTextAlignment(TextAlignment.RIGHT)
+                            .setBold()
+                            .setMarginTop(10));
+            if (discount > 0) {
+                document.add(
+                        new Paragraph("Khuyến mãi: -" + String.format("%,.0f VNĐ", discount))
+                                .setTextAlignment(TextAlignment.RIGHT)
+                                .setBold());
+            }
+            document
+                    .add(
+                            new Paragraph("Số tiền thanh toán: " + String.format("%,.0f VNĐ", totalWithDiscount))
+                                    .setTextAlignment(TextAlignment.RIGHT)
+                                    .setBold())
+                    .setTopMargin(10);
+
+            String imageUrlBank = genImageBanking(order.getCode(), totalWithDiscount);
+            Image image = new Image(ImageDataFactory.create(imageUrlBank));
+
+            image.setWidth(100);
+            image.setHeight(100);
+            image.setHorizontalAlignment(HorizontalAlignment.CENTER);
+            document.add(image);
+
+            document.close();
+        } catch (Exception e) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Lỗi xuất hoá đơn");
+        }
+
+        return out.toByteArray();
+    }
+
+    private static String genImageBanking(String code, Double amount) {
+        return String.format(
+                "https://img.vietqr.io/image/%s-%s-compact2.jpg?amount=%.2f&addInfo=%s&accountName=%s",
+                "tpb",
+                "99992036666",
+                amount,
+                code,
+                "NGUYEN HAI LONG".replace(" ", "%20"),
+                "Ngân hàng TMCP Tiên Phong".replace(" ", "%20"));
     }
 
     private Order getById(Long id) {

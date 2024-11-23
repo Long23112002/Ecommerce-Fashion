@@ -65,14 +65,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
         if (existedOrderDetail != null) {
             updateOrderDetail(existedOrderDetail, request.getQuantity(), productDetail, user);
-            updateOrderTotalMoney(order);
-            return repository.save(existedOrderDetail);
+            repository.save(existedOrderDetail);
         } else {
             countQuantity(request.getQuantity(), productDetail.getQuantity());
             OrderDetail orderDetail = addNewOrderDetail(order, user, productDetail, request.getQuantity());
-            updateOrderTotalMoney(order);
-            return repository.save(orderDetail);
+            repository.save(orderDetail);
         }
+
+        updateOrderTotalMoney(order);
+        return existedOrderDetail != null ? existedOrderDetail :
+                repository.findOrderDetailByOrderAndProductDetail(order, productDetail).orElseThrow();
 
     }
     private void countQuantity(Integer requestQuantity, Integer productQuantity) {
@@ -104,12 +106,12 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
     private void updateOrderTotalMoney(Order order) {
-        List<OrderDetail> orderDetails = repository.findAllByOrder(order); // Lấy tất cả OrderDetail của Order
+        List<OrderDetail> orderDetails = repository.findAllByOrder(order);
         double totalMoney = orderDetails.stream()
                 .mapToDouble(OrderDetail::getTotalMoney) // Lấy tổng tiền từ mỗi OrderDetail
                 .sum();
         order.setTotalMoney(totalMoney); // Cập nhật lại tổng tiền
-        orderRepository.save(order); // Lưu thay đổi vào DB
+        orderRepository.save(order);
     }
 
     private List<OrderDetail> getListOrderDetail(Long id){

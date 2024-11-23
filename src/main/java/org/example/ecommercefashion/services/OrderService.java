@@ -41,4 +41,6 @@ public interface OrderService {
 
   List<OrderResponse> getOrderPendingAtStore(String token);
 
+  void updateStateOrderAtStore(Long id);
+
 }

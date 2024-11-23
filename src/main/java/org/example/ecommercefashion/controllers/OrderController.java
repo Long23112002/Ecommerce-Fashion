@@ -96,7 +96,10 @@ public class OrderController {
         return paymentService.handelPaymentApi(amount, description);
     }
 
-
+    @GetMapping("/store/{id}")
+    public void updateStatusAtStore(@PathVariable Long id) {
+        orderService.updateStateOrderAtStore(id);
+    }
 }
 
 

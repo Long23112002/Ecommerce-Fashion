@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RevenueDataResponse {
     private String name;
-    private Double revenue;
+    private long revenue;
 }

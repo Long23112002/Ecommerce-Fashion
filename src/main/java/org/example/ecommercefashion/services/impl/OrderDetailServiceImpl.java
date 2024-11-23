@@ -2,6 +2,7 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
@@ -54,33 +55,49 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .findById(request.getIdProductDetail())
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
 
-        countQuantity(request.getQuantity(), productDetail.getQuantity());
-
         OrderDetail existedOrderDetail = repository
                 .findOrderDetailByOrderAndProductDetail(order, productDetail)
                 .orElse(null);
 
-        if (existedOrderDetail != null) {
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng nhập vào không hợp lệ");
+        }
 
-            // Cập nhật số lượng và tổng tiền nếu sản phẩm đã tồn tại
-            int newQuantity = existedOrderDetail.getQuantity() + request.getQuantity();
-            existedOrderDetail.setQuantity(newQuantity);
-            existedOrderDetail.setTotalMoney(newQuantity * productDetail.getPrice());
-            existedOrderDetail.setUpdatedBy(user.getId());
+        if (existedOrderDetail != null) {
+            updateOrderDetail(existedOrderDetail, request.getQuantity(), productDetail, user);
             return repository.save(existedOrderDetail);
         } else {
-            System.out.println("ff");
-            // Tạo mới hóa đơn chi tiết nếu sản phẩm chưa tồn tại
-            OrderDetail newDetail = new OrderDetail();
-            newDetail.setCode("HDCT" + repository.getLastValue());
-            newDetail.setOrder(order);
-            newDetail.setProductDetail(productDetail);
-            newDetail.setQuantity(request.getQuantity());
-            newDetail.setPrice(productDetail.getPrice());
-            newDetail.setTotalMoney(request.getQuantity() * productDetail.getPrice());
-            newDetail.setCreatedBy(user.getId());
-            return repository.save(newDetail);
+            countQuantity(request.getQuantity(), productDetail.getQuantity());
+            OrderDetail orderDetail = addNewOrderDetail(order, user, productDetail, request.getQuantity());
+            return repository.save(orderDetail);
         }
+    }
+    private void countQuantity(Integer requestQuantity, Integer productQuantity) {
+        if (requestQuantity > productQuantity) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productQuantity);
+        }
+    }
+    private OrderDetail addNewOrderDetail(Order order, User user, ProductDetail productDetail, Integer quantity){
+        OrderDetail newDetail = new OrderDetail();
+        newDetail.setCode("HDCT" + repository.getLastValue());
+        newDetail.setOrder(order);
+        newDetail.setProductDetail(productDetail);
+        newDetail.setQuantity(quantity);
+        newDetail.setPrice(productDetail.getPrice());
+        newDetail.setTotalMoney(quantity * productDetail.getPrice());
+        newDetail.setCreatedBy(user.getId());
+        return newDetail;
+    }
+
+    private OrderDetail updateOrderDetail(OrderDetail orderDetail, Integer quantity, ProductDetail productDetail, User user){
+        int newTotalQuantity = orderDetail.getQuantity() + quantity;
+        if (newTotalQuantity > productDetail.getQuantity()) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng tổng vượt quá số lượng sản phẩm có sẵn");
+        }
+        orderDetail.setQuantity(newTotalQuantity);
+        orderDetail.setTotalMoney(newTotalQuantity * productDetail.getPrice());
+        orderDetail.setUpdatedBy(user.getId());
+        return orderDetail;
     }
 
     private List<OrderDetail> getListOrderDetail(Long id){
@@ -98,9 +115,4 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     }
 
-    private void countQuantity(Integer requestQuantity, Integer productQuantity) {
-        if (requestQuantity > productQuantity) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productQuantity);
-        }
-    }
 }

@@ -88,7 +88,7 @@ public class OrderController {
   }
 
   @GetMapping("/list-pending")
-  public List<OrderResponse> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
+  public List<Order> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
     return orderService.getOrderPendingAtStore(token);
   }
 
@@ -96,6 +96,11 @@ public class OrderController {
   public boolean checkTransaction(Double amount, String description) {
     return paymentService.handelPaymentApi(amount, description);
   }
+
+    @GetMapping("/store/{id}")
+    public void updateStatusAtStore(@PathVariable Long id) {
+        orderService.updateStateOrderAtStore(id);
+    }
 
   @GetMapping("/export-pdf/{orderId}")
   public ResponseEntity<byte[]> generateOrderPdf(@PathVariable Long orderId) {
@@ -106,4 +111,5 @@ public class OrderController {
         .contentType(MediaType.APPLICATION_PDF)
         .body(pdfBytes);
   }
+
 }

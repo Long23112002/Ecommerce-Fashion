@@ -55,6 +55,7 @@ import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
+import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.CartService;
@@ -89,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
   private final DiscountService discountService;
   private final EmailJob emailJob;
   private final CartService cartService;
-
+  private final ProductDetailRepository productDetailRepository;
   @Override
   @Transactional(rollbackFor = Exception.class)
   public OrderResponse createOrder(OrderCreateRequest dto, String token) {
@@ -116,26 +117,26 @@ public class OrderServiceImpl implements OrderService {
     int quantity = order.getOrderDetails().stream().mapToInt(OrderDetail::getQuantity).sum();
 
     GhtkOrderRequest ghtkReq =
-        GhtkOrderRequest.builder()
-            .totalMoney(order.getTotalMoney())
-            .quantity(quantity)
-            .toDistrictId(dto.getDistrictID())
-            .toWardCode(dto.getWardCode())
-            .build();
+            GhtkOrderRequest.builder()
+                    .totalMoney(order.getTotalMoney())
+                    .quantity(quantity)
+                    .toDistrictId(dto.getDistrictID())
+                    .toWardCode(dto.getWardCode())
+                    .build();
 
     GhtkFeeResponse ghtkRes = ghtkService.getShippingFee(ghtkReq);
     double moneyShip = ghtkRes.getData().getService_fee();
     order.setMoneyShip(moneyShip);
     order.setAddress(
-        Address.builder()
-            .districtID(dto.getDistrictID())
-            .districtName(dto.getDistrictName())
-            .provinceID(dto.getProvinceID())
-            .provinceName(dto.getProvinceName())
-            .wardCode(dto.getWardCode())
-            .wardName(dto.getWardName())
-            .specificAddress((order.getAddress().getSpecificAddress()))
-            .build());
+            Address.builder()
+                    .districtID(dto.getDistrictID())
+                    .districtName(dto.getDistrictName())
+                    .provinceID(dto.getProvinceID())
+                    .provinceName(dto.getProvinceName())
+                    .wardCode(dto.getWardCode())
+                    .wardName(dto.getWardName())
+                    .specificAddress((order.getAddress().getSpecificAddress()))
+                    .build());
 
     order = orderRepository.save(order);
     return toDto(order);
@@ -144,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
   @Override
   public String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws JobExecutionException {
     TransactionStrategy strategy =
-        (TransactionStrategy) applicationContext.getBean(dto.getPaymentMethod().getVal());
+            (TransactionStrategy) applicationContext.getBean(dto.getPaymentMethod().getVal());
     Order order = getById(id);
     order.setFullName(dto.getFullName());
     order.setPhoneNumber(dto.getPhoneNumber());
@@ -182,17 +183,17 @@ public class OrderServiceImpl implements OrderService {
   public OrderResponse confirmOrder(TransactionRequest request) throws JobExecutionException {
     Order order = getById(request.getOrderId());
     TransactionStrategy strategy =
-        (TransactionStrategy) applicationContext.getBean(request.getPaymentMethod().getVal());
+            (TransactionStrategy) applicationContext.getBean(request.getPaymentMethod().getVal());
     TransactionDTO dto =
-        TransactionDTO.builder()
-            .order(order)
-            .confirmationCode(request.getConfirmationCode())
-            .status(request.getStatus())
-            .build();
+            TransactionDTO.builder()
+                    .order(order)
+                    .confirmationCode(request.getConfirmationCode())
+                    .status(request.getStatus())
+                    .build();
     order = strategy.confirmPayment(dto);
     for (OrderDetail orderDetail : order.getOrderDetails()) {
       ProductDetail productDetail =
-          productDetailService.detail(orderDetail.getProductDetail().getId());
+              productDetailService.detail(orderDetail.getProductDetail().getId());
       productDetailService.handleMinusQuantity(orderDetail.getQuantity(), productDetail);
     }
     order.setStatus(OrderStatus.PENDING);
@@ -224,12 +225,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     orderLogService.create(
-        OrderLog.builder()
-            .newValue(order.getStatus())
-            .oldStatus(prev.getStatus())
-            .order(order)
-            .user(order.getUser())
-            .build());
+            OrderLog.builder()
+                    .newValue(order.getStatus())
+                    .oldStatus(prev.getStatus())
+                    .order(order)
+                    .user(order.getUser())
+                    .build());
 
     return toDto(orderRepository.save(order));
   }
@@ -237,9 +238,9 @@ public class OrderServiceImpl implements OrderService {
   @Override
   public void deleteOrder(Long id) {
     Order order =
-        orderRepository
-            .findById(id)
-            .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order"));
+            orderRepository
+                    .findById(id)
+                    .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order"));
     for (OrderDetail orderDetail : order.getOrderDetails()) {
       orderDetail.setDeleted(true);
       orderDetailRepository.save(orderDetail);
@@ -260,13 +261,13 @@ public class OrderServiceImpl implements OrderService {
 
   @Transactional(rollbackFor = Exception.class)
   public List<OrderDetail> createOrderDetailsWithStockDeduction(
-      List<OrderDetailValue> orderDetailValues, Order order) {
+          List<OrderDetailValue> orderDetailValues, Order order) {
     validateStockAvailability(orderDetailValues);
 
     List<OrderDetail> orderDetails = new ArrayList<>();
     for (OrderDetailValue orderDetailValue : orderDetailValues) {
       ProductDetail productDetail =
-          productDetailService.detail(orderDetailValue.getProductDetailId());
+              productDetailService.detail(orderDetailValue.getProductDetailId());
 
       OrderDetail orderDetail = new OrderDetail();
       orderDetail.setProductDetail(productDetail);
@@ -285,7 +286,7 @@ public class OrderServiceImpl implements OrderService {
     double totalMoney = 0;
     for (OrderDetailValue orderDetailValue : orderDetails) {
       ProductDetail productDetail =
-          productDetailService.detail(orderDetailValue.getProductDetailId());
+              productDetailService.detail(orderDetailValue.getProductDetailId());
       totalMoney += productDetail.getPrice() * orderDetailValue.getQuantity();
     }
 
@@ -295,7 +296,7 @@ public class OrderServiceImpl implements OrderService {
   private void validateStockAvailability(List<OrderDetailValue> orderDetailValues) {
     for (OrderDetailValue orderDetailValue : orderDetailValues) {
       ProductDetail productDetail =
-          productDetailService.detail(orderDetailValue.getProductDetailId());
+              productDetailService.detail(orderDetailValue.getProductDetailId());
 
       int availableQuantity = productDetail.getQuantity();
       int requestedQuantity = orderDetailValue.getQuantity();
@@ -308,8 +309,8 @@ public class OrderServiceImpl implements OrderService {
 
   private User getUserById(Long id) {
     return userRepository
-        .findById(id)
-        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
+            .findById(id)
+            .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
   }
 
   private Address updateAddress(OrderUpdateRequest dto, Order order) {
@@ -321,9 +322,9 @@ public class OrderServiceImpl implements OrderService {
   private boolean validateAddress(Order order) {
     Address address = order.getAddress();
     return address.getProvinceID() != null
-        && address.getDistrictID() != null
-        && address.getWardCode() != null
-        && address.getSpecificAddress() != null;
+            && address.getDistrictID() != null
+            && address.getWardCode() != null
+            && address.getSpecificAddress() != null;
   }
 
   private void updateCartAfterPayment(Order order) {
@@ -331,35 +332,35 @@ public class OrderServiceImpl implements OrderService {
     Cart cart = cartService.getCartByUserId(userId);
 
     Map<Long, CartValue> mapCartValue =
-        order.getOrderDetails().stream()
-            .collect(
-                Collectors.toMap(
-                    o -> o.getProductDetail().getId(),
-                    o ->
-                        CartValue.builder()
-                            .productDetailId(o.getProductDetail().getId())
-                            .quantity(o.getQuantity())
-                            .build()));
+            order.getOrderDetails().stream()
+                    .collect(
+                            Collectors.toMap(
+                                    o -> o.getProductDetail().getId(),
+                                    o ->
+                                            CartValue.builder()
+                                                    .productDetailId(o.getProductDetail().getId())
+                                                    .quantity(o.getQuantity())
+                                                    .build()));
 
     List<CartValue> cartValues = cart.getCartValues();
 
     Set<CartValue> newCartValues =
-        cartValues.stream()
-            .map(
-                c -> {
-                  CartValue cv = mapCartValue.get(c.getProductDetailId());
-                  if (cv == null) {
-                    return c;
-                  }
-                  Integer quantity = c.getQuantity() - cv.getQuantity();
-                  if (quantity <= 0) {
-                    return null;
-                  }
-                  c.setQuantity(quantity);
-                  return c;
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
+            cartValues.stream()
+                    .map(
+                            c -> {
+                              CartValue cv = mapCartValue.get(c.getProductDetailId());
+                              if (cv == null) {
+                                return c;
+                              }
+                              Integer quantity = c.getQuantity() - cv.getQuantity();
+                              if (quantity <= 0) {
+                                return null;
+                              }
+                              c.setQuantity(quantity);
+                              return c;
+                            })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
 
     CartRequest request = CartRequest.builder().userId(userId).cartValues(newCartValues).build();
     cartService.update(request, userId);
@@ -369,7 +370,7 @@ public class OrderServiceImpl implements OrderService {
   public Order createOrderAtStore(String token) {
     JwtResponse userJWT = jwtService.decodeToken(token);
     User user = getUserById(userJWT.getUserId());
-    if (orderRepository.countOrderPendingStore(user.getId()) >= 4) {
+    if (orderRepository.countOrderPendingStore(user.getId()) >= 3) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Đã đạt giới hạn lượng hóa đơn chờ");
     }
     Order order = new Order();
@@ -385,10 +386,35 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public List<OrderResponse> getOrderPendingAtStore(String token) {
-    List<Order> responses = orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
-    return toDtos(responses);
+  public List<Order> getOrderPendingAtStore(String token) {
+    return orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
   }
+
+  public void updateStateOrderAtStore(Long id) {
+    Order order = getById(id);
+    // Lấy danh sách chi tiết hóa đơn (OrderDetail) liên quan
+    List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder(order);
+
+    // Trừ số lượng sản phẩm
+    for (OrderDetail orderDetail : orderDetails) {
+      ProductDetail productDetail = orderDetail.getProductDetail();
+      int newQuantity = productDetail.getQuantity() - orderDetail.getQuantity();
+
+      if (newQuantity < 0) {
+        throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
+                "Không đủ số lượng sản phẩm: " + productDetail.getProduct().getName());
+      }
+
+      // Cập nhật số lượng sản phẩm
+      productDetail.setQuantity(newQuantity);
+      productDetailRepository.save(productDetail);
+    }
+
+    // Cập nhật trạng thái đơn hàng thành SUCCESS
+    order.setStatus(OrderStatus.SUCCESS);
+    orderRepository.save(order);
+  }
+
 
   @Override
   public byte[] generateOrderPdf(Long orderId) {
@@ -416,10 +442,10 @@ public class OrderServiceImpl implements OrderService {
       document.add(logo);
 
       document.add(
-          new Paragraph("HÓA ĐƠN BÁN HÀNG")
-              .setTextAlignment(TextAlignment.CENTER)
-              .setBold()
-              .setMarginBottom(10));
+              new Paragraph("HÓA ĐƠN BÁN HÀNG")
+                      .setTextAlignment(TextAlignment.CENTER)
+                      .setBold()
+                      .setMarginBottom(10));
 
       document.add(new Paragraph("Mã đơn hàng: " + order.getCode()).setBold());
       document.add(new Paragraph("Khách hàng: " + order.getFullName()).setBold());
@@ -432,17 +458,17 @@ public class OrderServiceImpl implements OrderService {
       Table table = new Table(new float[] {1, 7, 2, 3});
       table.setWidth(UnitValue.createPercentValue(100));
       table.addHeaderCell(
-          new Cell().add(new Paragraph("STT").setBold()).setTextAlignment(TextAlignment.CENTER));
+              new Cell().add(new Paragraph("STT").setBold()).setTextAlignment(TextAlignment.CENTER));
       table.addHeaderCell(
-          new Cell()
-              .add(new Paragraph("Tên sản phẩm").setBold())
-              .setTextAlignment(TextAlignment.LEFT));
+              new Cell()
+                      .add(new Paragraph("Tên sản phẩm").setBold())
+                      .setTextAlignment(TextAlignment.LEFT));
       table.addHeaderCell(
-          new Cell().add(new Paragraph("SL").setBold()).setTextAlignment(TextAlignment.CENTER));
+              new Cell().add(new Paragraph("SL").setBold()).setTextAlignment(TextAlignment.CENTER));
       table.addHeaderCell(
-          new Cell()
-              .add(new Paragraph("Thành tiền").setBold())
-              .setTextAlignment(TextAlignment.RIGHT));
+              new Cell()
+                      .add(new Paragraph("Thành tiền").setBold())
+                      .setTextAlignment(TextAlignment.RIGHT));
 
       int index = 1;
       double totalWithoutDiscount = 0.0;
@@ -451,21 +477,21 @@ public class OrderServiceImpl implements OrderService {
         totalWithoutDiscount += lineTotal;
 
         table.addCell(
-            new Cell()
-                .add(new Paragraph(String.valueOf(index++)))
-                .setTextAlignment(TextAlignment.CENTER));
+                new Cell()
+                        .add(new Paragraph(String.valueOf(index++)))
+                        .setTextAlignment(TextAlignment.CENTER));
         table.addCell(
-            new Cell()
-                .add(new Paragraph(detail.getProductDetail().getProduct().getName()))
-                .setTextAlignment(TextAlignment.LEFT));
+                new Cell()
+                        .add(new Paragraph(detail.getProductDetail().getProduct().getName()))
+                        .setTextAlignment(TextAlignment.LEFT));
         table.addCell(
-            new Cell()
-                .add(new Paragraph(String.valueOf(detail.getQuantity())))
-                .setTextAlignment(TextAlignment.CENTER));
+                new Cell()
+                        .add(new Paragraph(String.valueOf(detail.getQuantity())))
+                        .setTextAlignment(TextAlignment.CENTER));
         table.addCell(
-            new Cell()
-                .add(new Paragraph(String.format("%,.0f", lineTotal)))
-                .setTextAlignment(TextAlignment.RIGHT));
+                new Cell()
+                        .add(new Paragraph(String.format("%,.0f", lineTotal)))
+                        .setTextAlignment(TextAlignment.RIGHT));
       }
       document.add(table);
 
@@ -473,22 +499,22 @@ public class OrderServiceImpl implements OrderService {
       double totalWithDiscount = totalWithoutDiscount - discount;
 
       document.add(
-          new Paragraph("Tổng tiền hoá đơn: " + String.format("%,.0f VNĐ", totalWithoutDiscount))
-              .setTextAlignment(TextAlignment.RIGHT)
-              .setBold()
-              .setMarginTop(10));
+              new Paragraph("Tổng tiền hoá đơn: " + String.format("%,.0f VNĐ", totalWithoutDiscount))
+                      .setTextAlignment(TextAlignment.RIGHT)
+                      .setBold()
+                      .setMarginTop(10));
       if (discount > 0) {
         document.add(
-            new Paragraph("Khuyến mãi: -" + String.format("%,.0f VNĐ", discount))
-                .setTextAlignment(TextAlignment.RIGHT)
-                .setBold());
+                new Paragraph("Khuyến mãi: -" + String.format("%,.0f VNĐ", discount))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setBold());
       }
       document
-          .add(
-              new Paragraph("Số tiền thanh toán: " + String.format("%,.0f VNĐ", totalWithDiscount))
-                  .setTextAlignment(TextAlignment.RIGHT)
-                  .setBold())
-          .setTopMargin(10);
+              .add(
+                      new Paragraph("Số tiền thanh toán: " + String.format("%,.0f VNĐ", totalWithDiscount))
+                              .setTextAlignment(TextAlignment.RIGHT)
+                              .setBold())
+              .setTopMargin(10);
 
       String imageUrlBank = genImageBanking(order.getCode(), totalWithDiscount);
       Image image = new Image(ImageDataFactory.create(imageUrlBank));
@@ -508,8 +534,8 @@ public class OrderServiceImpl implements OrderService {
 
   private Order getById(Long id) {
     return orderRepository
-        .findById(id)
-        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order"));
+            .findById(id)
+            .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order"));
   }
 
   private List<OrderResponse> toDtos(Collection<Order> entities) {
@@ -518,40 +544,40 @@ public class OrderServiceImpl implements OrderService {
 
   private OrderResponse toDto(Order entity) {
     return OrderResponse.builder()
-        .id(entity.getId())
-        .discountId(entity.getDiscountId())
-        .user(entity.getUser())
-        .status(entity.getStatus())
-        .paymentMethod(entity.getPaymentMethod())
-        .fullName(entity.getFullName())
-        .phoneNumber(entity.getPhoneNumber())
-        .address(entity.getAddress())
-        .shipdate(entity.getShipdate())
-        .note(entity.getNote())
-        .moneyShip(entity.getMoneyShip())
-        .discountAmount(entity.getDiscountAmount())
-        .totalMoney(entity.getTotalMoney())
-        .revenueAmount(entity.getTotalMoney() - entity.getDiscountAmount())
-        .payAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip())
-        .updatedBy(entity.getUpdatedBy())
-        .createdAt(entity.getCreatedAt())
-        .updatedAt(entity.getUpdatedAt())
-        .deleted(entity.getDeleted())
-        .staffId(entity.getStaffId())
-        .orderDetails(entity.getOrderDetails())
-        .orderLogs(entity.getOrderLogs())
-        .code(entity.getCode())
-        .build();
+            .id(entity.getId())
+            .discountId(entity.getDiscountId())
+            .user(entity.getUser())
+            .status(entity.getStatus())
+            .paymentMethod(entity.getPaymentMethod())
+            .fullName(entity.getFullName())
+            .phoneNumber(entity.getPhoneNumber())
+            .address(entity.getAddress())
+            .shipdate(entity.getShipdate())
+            .note(entity.getNote())
+            .moneyShip(entity.getMoneyShip())
+            .discountAmount(entity.getDiscountAmount())
+            .totalMoney(entity.getTotalMoney())
+            .revenueAmount(entity.getTotalMoney() - entity.getDiscountAmount())
+            .payAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip())
+            .updatedBy(entity.getUpdatedBy())
+            .createdAt(entity.getCreatedAt())
+            .updatedAt(entity.getUpdatedAt())
+            .deleted(entity.getDeleted())
+            .staffId(entity.getStaffId())
+            .orderDetails(entity.getOrderDetails())
+            .orderLogs(entity.getOrderLogs())
+            .code(entity.getCode())
+            .build();
   }
 
   private static String genImageBanking(String code, Double amount) {
     return String.format(
-        "https://img.vietqr.io/image/%s-%s-compact2.jpg?amount=%.2f&addInfo=%s&accountName=%s",
-        "tpb",
-        "99992036666",
-        amount,
-        code,
-        "NGUYEN HAI LONG".replace(" ", "%20"),
-        "Ngân hàng TMCP Tiên Phong".replace(" ", "%20"));
+            "https://img.vietqr.io/image/%s-%s-compact2.jpg?amount=%.2f&addInfo=%s&accountName=%s",
+            "tpb",
+            "99992036666",
+            amount,
+            code,
+            "NGUYEN HAI LONG".replace(" ", "%20"),
+            "Ngân hàng TMCP Tiên Phong".replace(" ", "%20"));
   }
 }

@@ -99,8 +99,8 @@ public class ProductDetail {
   private Color color;
 
   @ManyToMany(mappedBy = "productDetailList", fetch = FetchType.LAZY)
-  @JsonIgnore
   @BatchSize(size = 100)
+  @JsonBackReference
   private List<Promotion> promotionList;
 
 }

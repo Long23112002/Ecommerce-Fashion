@@ -29,7 +29,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                         all_days
                     LEFT JOIN
                         orders.order o
-                        ON CAST(o.updated_at AS DATE) = all_days.day
+                        ON CAST(o.success_at AS DATE) = all_days.day
                         AND o.status = 'SUCCESS'
                         AND o.deleted = false
                     GROUP BY
@@ -58,8 +58,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                     FROM
                         all_months
                     LEFT JOIN
-                        orders.order o ON DATE_TRUNC('month', o.updated_at) = all_months.month
-                        AND DATE_PART('year', o.updated_at) = :year
+                        orders.order o ON DATE_TRUNC('month', o.success_at) = all_months.month
+                        AND DATE_PART('year', o.success_at) = :year
                         AND o.status = 'SUCCESS'
                         AND o.deleted = false
                     GROUP BY
@@ -95,9 +95,9 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                         all_days
                     LEFT JOIN
                         orders.order o
-                        ON DATE(o.updated_at) = all_days.day
-                        AND DATE_PART('year', o.updated_at) = :year
-                        AND DATE_PART('month', o.updated_at) = :month
+                        ON DATE(o.success_at) = all_days.day
+                        AND DATE_PART('year', o.success_at) = :year
+                        AND DATE_PART('month', o.success_at) = :month
                         AND o.status = 'SUCCESS'
                         AND o.deleted = false
                     GROUP BY
@@ -133,8 +133,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                         WHERE
                             o2.status = 'SUCCESS'
                             AND o2.deleted = false
-                            AND EXTRACT(MONTH FROM o2.updated_at) = :month
-                            AND EXTRACT(YEAR FROM o2.updated_at) = :year
+                            AND EXTRACT(MONTH FROM o2.success_at) = :month
+                            AND EXTRACT(YEAR FROM o2.success_at) = :year
                         GROUP BY
                             pd2.id, s.name, c.name
                     )
@@ -162,8 +162,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                     WHERE
                         o.status = 'SUCCESS'
                         AND o.deleted = false
-                        AND EXTRACT(MONTH FROM o.updated_at) = :month
-                        AND EXTRACT(YEAR FROM o.updated_at) = :year
+                        AND EXTRACT(MONTH FROM o.success_at) = :month
+                        AND EXTRACT(YEAR FROM o.success_at) = :year
                     GROUP BY
                         p.id
                     ORDER BY

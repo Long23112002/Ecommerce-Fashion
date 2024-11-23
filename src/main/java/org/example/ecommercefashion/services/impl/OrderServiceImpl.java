@@ -68,6 +68,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -101,6 +103,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         JwtResponse userJWT = jwtService.decodeToken(token);
         User user = getUserById(userJWT.getUserId());
+        order.setCode("HD" + orderRepository.getLastValue());
         order.setStatus(OrderStatus.DRAFT);
         order.setTotalMoney(calculateTotalOrderMoney(dto.getOrderDetails()));
         order.setUser(user);
@@ -224,6 +227,9 @@ public class OrderServiceImpl implements OrderService {
         }
         if (dto.getPaymentMethod() != null) {
             order.setPaymentMethod(dto.getPaymentMethod());
+        }
+        if(order.getStatus() == OrderStatus.SUCCESS){
+            order.setSuccessAt(Timestamp.from(Instant.now()));
         }
 
         orderLogService.create(OrderLog.builder()
@@ -416,6 +422,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Cập nhật trạng thái đơn hàng thành SUCCESS
         order.setStatus(OrderStatus.SUCCESS);
+        order.setSuccessAt(Timestamp.from(Instant.now()));
         orderRepository.save(order);
     }
 

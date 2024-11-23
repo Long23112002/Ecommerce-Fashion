@@ -34,9 +34,8 @@ public class  Order implements Serializable , Cloneable {
   @Column(name = "discount_id")
   private Long discountId;
 
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id")
   @ManyToOne(fetch = FetchType.LAZY)
-  @NotFound(action = NotFoundAction.IGNORE)
   @JsonIgnoreProperties({"password", "authorities"})
   private User user;
 
@@ -94,6 +93,10 @@ public class  Order implements Serializable , Cloneable {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   @UpdateTimestamp
   private Timestamp updatedAt;
+
+  @Column(name = "success_at")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+  private Timestamp successAt;
 
   @Column(name = "deleted", nullable = false)
   private Boolean deleted = false;

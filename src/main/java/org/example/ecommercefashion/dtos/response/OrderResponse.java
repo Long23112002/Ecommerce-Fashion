@@ -37,6 +37,7 @@ public class OrderResponse {
     private User updatedBy;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private Timestamp successAt;
     private Boolean deleted = false;
     private Long staffId;
     private List<OrderDetail> orderDetails;

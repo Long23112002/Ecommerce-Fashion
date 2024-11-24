@@ -104,7 +104,7 @@ public class QRCodeGeneratorServiceImpl implements QRCodeGeneratorService {
 
   private String generateProductInfo(ProductDetail productDetail) {
     return String.format(
-        "ID: %d\nName: %s\nPrice: %.2f\nProduct Code: %s\nColor: %s\nSize: %s",
+        "ID: %d|Name: %s|Price: %.2f|Product Code: %s|Color: %s|Size: %s",
         productDetail.getId(),
         productDetail.getProduct().getName(),
         productDetail.getPrice(),

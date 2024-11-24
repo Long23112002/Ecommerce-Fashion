@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.strategies;
 
+import org.example.ecommercefashion.dtos.response.OrderResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
 import org.example.ecommercefashion.services.OrderService;
@@ -14,7 +15,7 @@ public class CashOrderTransaction implements TransactionStrategy {
     private OrderService orderService;
 
     @Override
-    public String processPayment(Order order) throws JobExecutionException {
+    public String processPayment(OrderResponse order) throws JobExecutionException {
         TransactionRequest request = TransactionRequest.builder()
                 .orderId(order.getId())
                 .paymentMethod(PaymentMethodEnum.CASH)

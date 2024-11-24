@@ -22,6 +22,7 @@ import org.example.ecommercefashion.entities.*;
 import org.example.ecommercefashion.entities.value.Identifiable;
 import org.example.ecommercefashion.entities.value.UserInfo;
 import org.example.ecommercefashion.entities.value.UserValue;
+import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.*;
@@ -63,9 +64,7 @@ import javax.persistence.criteria.Subquery;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -120,8 +119,18 @@ public class ProductServiceImpl implements ProductService {
                             if (product.getUpdateBy() != null) {
                                 product.setUpdateByUser(getInfoUserValue(product.getUpdateBy()));
                             }
+
+                             List<Promotion> listPromotion = product.getProductDetails().stream()
+                                    .flatMap(productDetail -> productDetail.getPromotionList().stream())
+                                    .toList();
+
+                            Optional<Promotion> promotion = listPromotion.stream()
+                                    .filter(pro -> pro.getTypePromotionEnum().equals(TypePromotionEnum.PERCENTAGE_DISCOUNT))
+                                    .max(Comparator.comparing(Promotion::getValue));
+                            product.setPromotion(promotion.orElse(null));
                             return product;
                         });
+
         return new ResponsePage<>(responses);
     }
 
@@ -728,6 +737,8 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(product);
     }
 
+
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
     public void buildProductDetail(
             Double price,
@@ -744,7 +755,29 @@ public class ProductServiceImpl implements ProductService {
         productDetail.setSize(sizeRepository.getById(parseIdFromInfo(sizeName)));
         productDetail.setColor(colorRepository.getById(parseIdFromInfo(colorName)));
         productDetailRepository.save(productDetail);
+        updateProductPriceRange(currentProductId);
     }
+
+    private void updateProductPriceRange(Long productId) {
+        List<ProductDetail> productDetails = productDetailRepository.getDetailByIdProduct(productId);
+
+        Double minPrice = productDetails.stream()
+                .map(ProductDetail::getPrice)
+                .min(Double::compare)
+                .orElse(null);
+
+        Double maxPrice = productDetails.stream()
+                .map(ProductDetail::getPrice)
+                .max(Double::compare)
+                .orElse(null);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        product.setMinPrice(minPrice != null ? minPrice.longValue() : null);
+        product.setMaxPrice(maxPrice != null ? maxPrice.longValue() : null);
+        productRepository.save(product);
+    }
+
 
     public void sendExcelData(String apiUrl, ExcelDto excelDto) throws IOException {
         if (excelDto.getFile() == null || excelDto.getFileResult() == null) {
@@ -852,6 +885,8 @@ public class ProductServiceImpl implements ProductService {
             if (originName == null || originName.isEmpty()) {
                 resultMessage.append("Lỗi: Xuất xứ không được để trống.\n");
             }
+        }else if(productRepository.existsByName(productName)){
+            resultMessage.append("Lỗi: Tên sản phẩm đã tồn tại.\n");
         }
 
         if (price == null || price <= 0) {
@@ -871,7 +906,7 @@ public class ProductServiceImpl implements ProductService {
     private void validateTemplate(Sheet sheet) throws Exception {
         Row headerRow = sheet.getRow(0);
         if (headerRow == null) {
-            throw new Exception("Template does not contain any headers.");
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST,"Template does not contain any headers.");
         }
 
         List<String> expectedHeaders =
@@ -890,7 +925,7 @@ public class ProductServiceImpl implements ProductService {
         for (int i = 0; i < expectedHeaders.size(); i++) {
             Cell cell = headerRow.getCell(i);
             if (cell == null || !cell.getStringCellValue().equals(expectedHeaders.get(i))) {
-                throw new Exception("Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
+        throw new ExceptionHandle(HttpStatus.BAD_REQUEST,"Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
             }
         }
     }

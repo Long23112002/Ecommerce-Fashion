@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.strategies;
 
 import com.longnh.exceptions.ExceptionHandle;
+import org.example.ecommercefashion.dtos.response.OrderResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
@@ -19,10 +20,10 @@ public class VnPayOrderTransaction implements TransactionStrategy {
     private VNPayService vnPayService;
 
     @Override
-    public String processPayment(Order order) {
+    public String processPayment(OrderResponse order) {
         try {
             Long orderId = order.getId();
-            long amount = order.getFinalPrice().longValue();
+            long amount = order.getPayAmount().longValue();
             return vnPayService.createPayment(amount, orderId);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Encoding not supported", e);

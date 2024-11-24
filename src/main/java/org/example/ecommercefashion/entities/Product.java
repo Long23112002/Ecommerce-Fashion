@@ -90,6 +90,9 @@ public class Product {
     //    }
     //  }
 
+    @Transient
+    private Promotion promotion;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "product"})
     private List<ProductDetail> productDetails;

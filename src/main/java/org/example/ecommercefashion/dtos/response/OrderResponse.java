@@ -21,7 +21,7 @@ import java.util.List;
 public class OrderResponse {
     private Long id;
     private Long discountId;
-    private User user;
+    private UserResponse user;
     private OrderStatus status;
     private PaymentMethodEnum paymentMethod;
     private String fullName;

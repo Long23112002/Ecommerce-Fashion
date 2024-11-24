@@ -28,8 +28,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "WHERE o.status = 'PENDING_AT_STORE' and o.deleted = false and o.staffId = :staffId ")
     Long countOrderPendingStore(Long staffId);
 
-    @Query("SELECT o FROM Order o WHERE o.status = :status ORDER BY o.createdAt DESC")
-    List<Order> findPendingOrders(@Param("status") OrderStatus status);
+    @Query("SELECT o FROM Order o WHERE o.status = :status and o.staffId = :staffId ORDER BY o.createdAt DESC")
+    List<Order> findPendingOrders(@Param("status") OrderStatus status, @Param("staffId") Long staffId);
 
     @Query(value = "select last_value + 1 from orders.order_id_seq", nativeQuery = true)
     Long getLastValue();

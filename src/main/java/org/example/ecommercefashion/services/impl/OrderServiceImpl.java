@@ -370,7 +370,7 @@ public class OrderServiceImpl implements OrderService {
   public Order createOrderAtStore(String token) {
     JwtResponse userJWT = jwtService.decodeToken(token);
     User user = getUserById(userJWT.getUserId());
-    if (orderRepository.countOrderPendingStore(user.getId()) >= 3) {
+    if (orderRepository.countOrderPendingStore(user.getId()) >= 4) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Đã đạt giới hạn lượng hóa đơn chờ");
     }
     Order order = new Order();
@@ -387,7 +387,9 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   public List<Order> getOrderPendingAtStore(String token) {
-    return orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
+    JwtResponse userJWT = jwtService.decodeToken(token);
+    User user = getUserById(userJWT.getUserId());
+    return orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE, user.getId());
   }
 
   public void updateStateOrderAtStore(Long id) {

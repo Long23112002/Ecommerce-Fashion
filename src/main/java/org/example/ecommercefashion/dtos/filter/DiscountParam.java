@@ -16,7 +16,7 @@ public class DiscountParam {
     List<Long> idProductDetail;
     Double prices;
 
-    public List<Long> getDefaultList() {
+    public List<Long> defaultList() {
         return new ArrayList<>();
     }
 }

@@ -2,7 +2,10 @@ package org.example.ecommercefashion.controllers;
 
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.response.CurrentDayReportResponse;
+import org.example.ecommercefashion.dtos.response.InventoryProductResponse;
+import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.RevenueReportResponse;
 import org.example.ecommercefashion.dtos.response.SoldProductResponse;
 import org.example.ecommercefashion.services.StatisticService;
@@ -33,14 +36,19 @@ public class StatisticController {
 
     @GetMapping("/month")
     public RevenueReportResponse getMonthRevenueData(@RequestParam(name = "year", required = false) Integer year,
-                                                    @RequestParam(name = "month", required = false) Integer month) {
+                                                     @RequestParam(name = "month", required = false) Integer month) {
         return getYearlyRevenueData.getMonthRevenueData(year, month);
     }
 
     @GetMapping("/sold-product")
     public List<SoldProductResponse> getSoldProducts(@RequestParam(name = "year", required = false) Integer year,
                                                      @RequestParam(name = "month", required = false) Integer month) {
-        return getYearlyRevenueData.getSoldProducts(year,month);
+        return getYearlyRevenueData.getSoldProducts(year, month);
+    }
+
+    @GetMapping("/inventory-product")
+    public ResponsePage<Object[], InventoryProductResponse> getInventoryProduct(PageableRequest pageable) {
+        return getYearlyRevenueData.getInventoryProduct(pageable);
     }
 
 }

@@ -171,16 +171,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse updateDiscount(Long id, Long discountId) {
         Order order = getById(id);
-        DiscountResponse discount = discountService.getByDiscountId(discountId);
-        order.setDiscountId(discountId);
-        Double total = order.getTotalMoney();
-        if (discount.getType() == TypeDiscount.PERCENTAGE) {
-            Double value = discount.getValue();
-            Double discountAmount = Math.min(total * (value / 100), discount.getMaxValue());
-            order.setDiscountAmount(discountAmount);
-        } else {
-            Double discountAmount = discount.getValue();
-            order.setDiscountAmount(discountAmount);
+        if(discountId != null) {
+            handleUpdateDiscount(order, discountId);
+        }else{
+            handleRemoveDiscount(order);
         }
         return toDto(orderRepository.save(order));
     }
@@ -551,6 +545,27 @@ public class OrderServiceImpl implements OrderService {
                 code,
                 "NGUYEN HAI LONG".replace(" ", "%20"),
                 "Ngân hàng TMCP Tiên Phong".replace(" ", "%20"));
+    }
+
+    private Order handleUpdateDiscount(Order order, Long discountId) {
+        DiscountResponse discount = discountService.getByDiscountId(discountId);
+        order.setDiscountId(discountId);
+        Double total = order.getTotalMoney();
+        if (discount.getType() == TypeDiscount.PERCENTAGE) {
+            Double value = discount.getValue();
+            Double discountAmount = Math.min(total * (value / 100), discount.getMaxValue());
+            order.setDiscountAmount(discountAmount);
+        } else {
+            Double discountAmount = discount.getValue();
+            order.setDiscountAmount(discountAmount);
+        }
+        return order;
+    }
+
+    private Order handleRemoveDiscount(Order order) {
+        order.setDiscountId(null);
+        order.setDiscountAmount(0.0);
+        return order;
     }
 
     private Order getById(Long id) {

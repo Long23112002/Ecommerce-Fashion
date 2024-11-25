@@ -58,6 +58,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
   PRODUCT_WAS_DISABLE("Sản Phẩm bị ẩn "),
   SECURE_NOT_MATCH("VNPAY secure không hợp lệ "),
+  INVALID_PAY_AMOUNT("Số tiền thanh toán không hợp lệ "),
   PAYMENT_FAILED("Giao dịch thất bại"),
   INVALID_ADDRESS("Địa chỉ không được trống"),
   ORDER_NOT_IN_DRAFT("Đơn hàng không thể thay đổi khi không ở trạng thái nháp"),
@@ -76,6 +77,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
   EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
   PRODUCT_HAS_PRODUCT_DETAIL("Sản phẩm đang có từ một chi tiết sản phẩm"),
+  PROMOTION_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày hiện tại"),
 
   ;
 

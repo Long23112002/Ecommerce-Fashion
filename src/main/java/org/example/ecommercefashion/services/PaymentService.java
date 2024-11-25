@@ -10,4 +10,6 @@ public interface PaymentService {
   Payment getPaymentById(Long id);
 
   Payment updatePayment(Long id, PaymentRequest request);
+
+  boolean handelPaymentApi(Double amount , String description);
 }

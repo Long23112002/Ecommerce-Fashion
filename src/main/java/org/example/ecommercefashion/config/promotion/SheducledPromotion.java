@@ -68,6 +68,12 @@ public class SheducledPromotion {
                                 discountedPrice = productDetail.getOriginPrice();
                             }
 
+                            double minPrice = productDetail.getProduct().getMinPrice();
+                            double maxPrice = productDetail.getProduct().getMaxPrice();
+
+                            discountedPrice = Math.max(minPrice, Math.min(discountedPrice, maxPrice));
+
+
                             productDetail.setPrice(Math.max(discountedPrice, 0));
                         } else if (promotion.getStatusPromotionEnum() == StatusPromotionEnum.ENDED) {
                             if (productDetail.getOriginPrice() != null) {

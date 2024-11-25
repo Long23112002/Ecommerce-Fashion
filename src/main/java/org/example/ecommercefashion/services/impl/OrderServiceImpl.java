@@ -3,13 +3,17 @@ package org.example.ecommercefashion.services.impl;
 import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
 import org.example.ecommercefashion.dtos.filter.OrderParam;
+import org.example.ecommercefashion.dtos.request.CartRequest;
 import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
+import org.example.ecommercefashion.dtos.response.DiscountResponse;
 import org.example.ecommercefashion.dtos.response.GhtkFeeResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
+import org.example.ecommercefashion.dtos.response.OrderResponse;
+import org.example.ecommercefashion.entities.Cart;
 import org.example.ecommercefashion.entities.EmailJob;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
@@ -17,24 +21,26 @@ import org.example.ecommercefashion.entities.OrderLog;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.entities.value.Address;
+import org.example.ecommercefashion.entities.value.CartValue;
 import org.example.ecommercefashion.entities.value.OrderDetailValue;
 import org.example.ecommercefashion.enums.OrderStatus;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
+import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
+import org.example.ecommercefashion.services.CartService;
+import org.example.ecommercefashion.services.DiscountService;
 import org.example.ecommercefashion.services.GhtkService;
 import org.example.ecommercefashion.services.OrderLogService;
 import org.example.ecommercefashion.services.OrderService;
 import org.example.ecommercefashion.services.ProductDetailService;
-import org.example.ecommercefashion.services.VNPayService;
 import org.example.ecommercefashion.strategies.TransactionDTO;
 import org.example.ecommercefashion.strategies.TransactionRequest;
 import org.example.ecommercefashion.strategies.TransactionStrategy;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +49,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,20 +62,19 @@ public class OrderServiceImpl implements OrderService {
 
     private final ApplicationContext applicationContext;
     private final OrderRepository orderRepository;
-    private final VNPayService vnPayService;
     private final JwtService jwtService;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductDetailService productDetailService;
     private final UserRepository userRepository;
     private final GhtkService ghtkService;
     private final OrderLogService orderLogService;
-
-    @Autowired
-    private EmailJob emailJob;
+    private final DiscountService discountService;
+    private final EmailJob emailJob;
+    private final CartService cartService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Order createOrder(OrderCreateRequest dto, String token) {
+    public OrderResponse createOrder(OrderCreateRequest dto, String token) {
         Order order = new Order();
         JwtResponse userJWT = jwtService.decodeToken(token);
         User user = getUserById(userJWT.getUserId());
@@ -75,14 +85,13 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(PaymentMethodEnum.CASH);
         order = orderRepository.save(order);
         order.setOrderDetails(createOrderDetailsWithStockDeduction(dto.getOrderDetails(), order));
-        order.setFinalPrice(order.getTotalMoney());
-        orderRepository.save(order);
-        return order;
+        order = orderRepository.save(order);
+        return toDto(order);
     }
 
     @Override
-    public Order updateAddress(Long id, OrderAddressUpdate dto) {
-        Order order = getOrderById(id);
+    public OrderResponse updateAddress(Long id, OrderAddressUpdate dto) {
+        Order order = getById(id);
         if (order.getStatus() != OrderStatus.DRAFT) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORDER_NOT_IN_DRAFT);
         }
@@ -110,35 +119,49 @@ public class OrderServiceImpl implements OrderService {
                 .specificAddress((order.getAddress().getSpecificAddress()))
                 .build());
 
-        double finalPrice = order.getTotalMoney() + moneyShip;
-        if (finalPrice < 0) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.NON_NEGATIVE_AMOUNT);
-        }
-        order.setFinalPrice(finalPrice);
-
-        orderRepository.save(order);
-        return order;
+        order = orderRepository.save(order);
+        return toDto(order);
     }
 
     @Override
     public String orderUpdateAndPay(Long id, OrderUpdateRequest dto) throws JobExecutionException {
         TransactionStrategy strategy = (TransactionStrategy) applicationContext.getBean(dto.getPaymentMethod().getVal());
-        Order order = getOrderById(id);
+        Order order = getById(id);
         order.setFullName(dto.getFullName());
         order.setPhoneNumber(dto.getPhoneNumber());
         order.setAddress(updateAddress(dto, order));
+        order.setNote(dto.getNote());
         if (!validateAddress(order)) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_ADDRESS);
         }
-        order.setNote(dto.getNote());
-        String redirect = strategy.processPayment(order);
+        if(order.getTotalMoney()-order.getMoneyShip()<0) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_PAY_AMOUNT);
+        }
+        String redirect = strategy.processPayment(toDto(order));
         orderRepository.save(order);
         return redirect;
     }
 
     @Override
-    public Order confirmOrder(TransactionRequest request) throws JobExecutionException {
-        Order order = getOrderById(request.getOrderId());
+    public OrderResponse updateDiscount(Long id, Long discountId) {
+        Order order = getById(id);
+        DiscountResponse discount = discountService.getByDiscountId(discountId);
+        order.setDiscountId(discountId);
+        Double total = order.getTotalMoney();
+        if (discount.getType() == TypeDiscount.PERCENTAGE) {
+            Double value = discount.getValue();
+            Double discountAmount = Math.min(total * (value / 100), discount.getMaxValue());
+            order.setDiscountAmount(discountAmount);
+        } else {
+            Double discountAmount = discount.getValue();
+            order.setDiscountAmount(discountAmount);
+        }
+        return toDto(orderRepository.save(order));
+    }
+
+    @Override
+    public OrderResponse confirmOrder(TransactionRequest request) throws JobExecutionException {
+        Order order = getById(request.getOrderId());
         TransactionStrategy strategy = (TransactionStrategy) applicationContext.getBean(request.getPaymentMethod().getVal());
         TransactionDTO dto = TransactionDTO.builder()
                 .order(order)
@@ -153,13 +176,15 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
-        emailJob.orderSuccessfulEmail(order);
-        return orderRepository.save(order);
+        updateCartAfterPayment(order);
+        OrderResponse response = toDto(orderRepository.save(order));
+        emailJob.orderSuccessfulEmail(response);
+        return response;
     }
 
     @Override
-    public Order updateStateOrder(Long id, OrderChangeState dto) {
-        Order order = getOrderById(id);
+    public OrderResponse updateStateOrder(Long id, OrderChangeState dto) {
+        Order order = getById(id);
         Order prev = order.clone();
 
 
@@ -185,7 +210,7 @@ public class OrderServiceImpl implements OrderService {
                 .user(order.getUser())
                 .build());
 
-        return orderRepository.save(order);
+        return toDto(orderRepository.save(order));
     }
 
     @Override
@@ -203,15 +228,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order getOrderById(Long id) {
-        return orderRepository
-                .findById(id)
-                .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order"));
+    public OrderResponse getOrderById(Long id) {
+        return toDto(getById(id));
     }
 
     @Override
-    public Page<Order> filter(OrderParam param, Pageable pageable) {
-        return orderRepository.filter(param, pageable);
+    public Page<OrderResponse> filter(OrderParam param, Pageable pageable) {
+        return orderRepository.filter(param, pageable).map(this::toDto);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -282,16 +305,57 @@ public class OrderServiceImpl implements OrderService {
                 && address.getSpecificAddress() != null;
     }
 
+    private void updateCartAfterPayment(Order order) {
+        Long userId = order.getUser().getId();
+        Cart cart = cartService.getCartByUserId(userId);
+
+        Map<Long, CartValue> mapCartValue = order.getOrderDetails()
+                .stream()
+                .collect(Collectors.toMap(
+                        o -> o.getProductDetail().getId(),
+                        o -> CartValue.builder()
+                                .productDetailId(o.getProductDetail().getId())
+                                .quantity(o.getQuantity())
+                                .build()
+                ));
+
+        List<CartValue> cartValues = cart.getCartValues();
+
+        Set<CartValue> newCartValues =
+                cartValues.stream()
+                        .map(c -> {
+                            CartValue cv = mapCartValue.get(c.getProductDetailId());
+                            if (cv == null) {
+                                return c;
+                            }
+                            Integer quantity = c.getQuantity() - cv.getQuantity();
+                            if (quantity <= 0) {
+                                return null;
+                            }
+                            c.setQuantity(quantity);
+                            return c;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+
+        CartRequest request = CartRequest.builder()
+                .userId(userId)
+                .cartValues(newCartValues)
+                .build();
+        cartService.update(request, userId);
+    }
+
     @Override
     public Order createOrderAtStore(String token) {
         JwtResponse userJWT = jwtService.decodeToken(token);
-        if (orderRepository.countOrderPendingStore() >= 4) {
+        User user = getUserById(userJWT.getUserId());
+        if (orderRepository.countOrderPendingStore(user.getId()) >= 4) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Đã đạt giới hạn lượng hóa đơn chờ");
         }
         Order order = new Order();
         order.setCode("HD" + orderRepository.getLastValue());
         order.setStatus(OrderStatus.PENDING_AT_STORE);
-        order.setStaffId(userJWT.getUserId());
+        order.setStaffId(user.getId());
         order.setFullName("Khách lẻ");
 
         order.setPaymentMethod(PaymentMethodEnum.CASH);
@@ -301,7 +365,49 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> getOrderPendingAtStore(String token) {
-        return orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
+    public List<OrderResponse> getOrderPendingAtStore(String token) {
+        List<Order> responses = orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
+        return toDtos(responses);
+    }
+
+    private Order getById(Long id) {
+        return orderRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order"));
+    }
+
+    private List<OrderResponse> toDtos(Collection<Order> entities) {
+        return entities.stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    private OrderResponse toDto(Order entity) {
+        return OrderResponse.builder()
+                .id(entity.getId())
+                .discountId(entity.getDiscountId())
+                .user(entity.getUser())
+                .status(entity.getStatus())
+                .paymentMethod(entity.getPaymentMethod())
+                .fullName(entity.getFullName())
+                .phoneNumber(entity.getPhoneNumber())
+                .address(entity.getAddress())
+                .shipdate(entity.getShipdate())
+                .note(entity.getNote())
+                .moneyShip(entity.getMoneyShip())
+                .discountAmount(entity.getDiscountAmount())
+                .totalMoney(entity.getTotalMoney())
+                .revenueAmount(entity.getTotalMoney() - entity.getDiscountAmount())
+                .payAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip())
+                .updatedBy(entity.getUpdatedBy())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .deleted(entity.getDeleted())
+                .staffId(entity.getStaffId())
+                .orderDetails(entity.getOrderDetails())
+                .orderLogs(entity.getOrderLogs())
+                .code(entity.getCode())
+                .build();
     }
 }

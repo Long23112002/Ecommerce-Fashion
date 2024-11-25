@@ -15,35 +15,34 @@ import java.util.List;
 
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Long> {
+
     @Query(value = """
-            SELECT *
-            FROM discounts.discount d
-            WHERE
-                (:type IS NULL OR CAST(d.type AS text) = CAST(:type AS text))
-                AND (:status IS NULL OR CAST(d.discount_status AS text) = CAST(:status AS text))
-                AND (:name IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%')))\s
-                AND (
-                    (
-                        SELECT bool_and(CAST(elem AS BIGINT) IN (:idProductDetail))
-                        FROM jsonb_array_elements_text(CAST(d.condition AS jsonb) -> 'idProductDetail') AS elem
-                    ) = true
-                    OR jsonb_array_length(CAST(d.condition AS jsonb) -> 'idProductDetail') = 0
-                )
-                AND (
-                    CAST(d.condition ->> 'price' AS DOUBLE PRECISION) IS NULL
-                    OR CAST(d.condition ->> 'price' AS DOUBLE PRECISION) <= :prices
-                )
-            	AND d.deleted = false
-                        """, nativeQuery = true)
-    Page<Discount> getFilterDiscountPage(@Param("type") TypeDiscount type,
-                                         @Param("status") StatusDiscount status,
-                                         @Param("name") String name,
-                                         @Param("idProductDetail") List<Long> idProductDetail,
-                                         @Param("prices") Double prices,
+        SELECT *
+        FROM discounts.discount d
+        WHERE
+            (:#{#params.type} IS NULL OR CAST(d.type AS text) = CAST(:#{#params.type} AS text))
+            AND (:#{#params.status} IS NULL OR CAST(d.discount_status AS text) = CAST(:#{#params.status} AS text))
+            AND (:#{#params.name} IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :#{#params.name}, '%')))
+            AND (
+                (:#{#params.idProductDetail}) IS NULL
+                OR jsonb_array_length(CAST(d.condition AS jsonb) -> 'idProductDetail') = 0
+                OR ((SELECT bool_and(CAST(elem AS BIGINT) IN (:#{#params.idProductDetail == null ? #params.defaultList : #params.idProductDetail}))
+                     FROM jsonb_array_elements(CAST(d.condition AS jsonb) -> 'idProductDetail') AS elem) = true)
+            )
+            AND (
+                :#{#params.prices} IS NULL
+                OR CAST(d.condition ->> 'price' AS DOUBLE PRECISION) IS NULL
+                OR CAST(d.condition ->> 'price' AS DOUBLE PRECISION) <= CAST(CAST(:#{#params.prices} as varchar) as DOUBLE PRECISION)
+            )
+            AND d.deleted = false
+        """, nativeQuery = true)
+    Page<Discount> getFilterDiscountPage(@Param("params") DiscountParam params,
                                          Pageable pageable);
 
+
     boolean existsByName(String name);
-    boolean existsByNameAndIdNot(String name , long id);
+
+    boolean existsByNameAndIdNot(String name, long id);
 
     @Query(value = "select last_value + 1 from discounts.discount_id_seq", nativeQuery = true)
     Long getLastValue();

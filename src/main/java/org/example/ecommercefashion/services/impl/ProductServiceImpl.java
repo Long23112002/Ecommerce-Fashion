@@ -728,6 +728,8 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(product);
     }
 
+
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
     public void buildProductDetail(
             Double price,
@@ -744,7 +746,29 @@ public class ProductServiceImpl implements ProductService {
         productDetail.setSize(sizeRepository.getById(parseIdFromInfo(sizeName)));
         productDetail.setColor(colorRepository.getById(parseIdFromInfo(colorName)));
         productDetailRepository.save(productDetail);
+        updateProductPriceRange(currentProductId);
     }
+
+    private void updateProductPriceRange(Long productId) {
+        List<ProductDetail> productDetails = productDetailRepository.getDetailByIdProduct(productId);
+
+        Double minPrice = productDetails.stream()
+                .map(ProductDetail::getPrice)
+                .min(Double::compare)
+                .orElse(null);
+
+        Double maxPrice = productDetails.stream()
+                .map(ProductDetail::getPrice)
+                .max(Double::compare)
+                .orElse(null);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        product.setMinPrice(minPrice != null ? minPrice.longValue() : null);
+        product.setMaxPrice(maxPrice != null ? maxPrice.longValue() : null);
+        productRepository.save(product);
+    }
+
 
     public void sendExcelData(String apiUrl, ExcelDto excelDto) throws IOException {
         if (excelDto.getFile() == null || excelDto.getFileResult() == null) {
@@ -871,7 +895,7 @@ public class ProductServiceImpl implements ProductService {
     private void validateTemplate(Sheet sheet) throws Exception {
         Row headerRow = sheet.getRow(0);
         if (headerRow == null) {
-            throw new Exception("Template does not contain any headers.");
+      throw new ExceptionHandle(HttpStatus.BAD_REQUEST,"Template does not contain any headers.");
         }
 
         List<String> expectedHeaders =
@@ -890,7 +914,7 @@ public class ProductServiceImpl implements ProductService {
         for (int i = 0; i < expectedHeaders.size(); i++) {
             Cell cell = headerRow.getCell(i);
             if (cell == null || !cell.getStringCellValue().equals(expectedHeaders.get(i))) {
-                throw new Exception("Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
+        throw new ExceptionHandle(HttpStatus.BAD_REQUEST,"Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
             }
         }
     }

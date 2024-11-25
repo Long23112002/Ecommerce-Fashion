@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -36,57 +37,57 @@ import java.util.List;
 //@Slf4j
 public class DiscountController {
     private final DiscountService discountService;
+
     @GetMapping
-    public ResponsePage<Discount, DiscountResponse> FilerDiscount(@RequestParam(name = "type", required = false) TypeDiscount type,
-                                                                  @RequestParam(name = "status", required = false) StatusDiscount status,
-                                                                  @RequestParam(name = "name", required = false) String name,
-                                                                  @RequestParam(name = "idProductDetail", required = false) List<Long> idProductDetail,
-                                                                  @RequestParam(name = "prices", required = false) Double prices,
-                                                                  Pageable pageable) {
-        return discountService.filterDiscount(type, status, name, idProductDetail, prices, pageable);
+    public ResponsePage<Discount, DiscountResponse> FilerDiscount(DiscountParam params, Pageable pageable) {
+        return discountService.filterDiscount(params, pageable);
     }
+
     @GetMapping("/select")
     public ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable) {
         return discountService.getAll(pageable);
     }
+
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<DiscountResponse> add(@Valid @RequestBody DiscountRequest request,
-                                                @RequestHeader("Authorization") String token ){
+                                                @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
-        return ResponseEntity.ok(discountService.add(request,token));
+        return ResponseEntity.ok(discountService.add(request, token));
     }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<DiscountResponse> update( @PathVariable long id,@Valid @RequestBody DiscountRequest request,
-                                                   @RequestHeader("Authorization") String token ){
+    public ResponseEntity<DiscountResponse> update(@PathVariable long id, @Valid @RequestBody DiscountRequest request,
+                                                   @RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
-        return ResponseEntity.ok(discountService.update(request,id,token));
+        return ResponseEntity.ok(discountService.update(request, id, token));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DiscountResponse> getFindById(@PathVariable Long id){
+    public ResponseEntity<DiscountResponse> getFindById(@PathVariable Long id) {
         DiscountResponse response = discountService.getByDiscountId(id);
-        if(response != null){
+        if (response != null) {
             return ResponseEntity.ok(response);
-        }else {
+        } else {
             return null;
         }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize(("hasRole('ROLE_ADMIN')"))
-    public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id){
+    public ResponseEntity<MessageResponse> getDeleted(@PathVariable Long id) {
         MessageResponse messageResponse = discountService.deleted(id);
         return ResponseEntity.ok(messageResponse);
     }
+
     @PostMapping("/getvoucher")
-    public ResponseEntity<List<Discount>> getvoucher(@RequestBody List<ProductDetail> detailList,Order order){
-        List<Discount> validDiscounts = discountService.getVoucher(detailList,order);
+    public ResponseEntity<List<Discount>> getvoucher(@RequestBody List<ProductDetail> detailList, Order order) {
+        List<Discount> validDiscounts = discountService.getVoucher(detailList, order);
         return ResponseEntity.ok(validDiscounts);
     }
 

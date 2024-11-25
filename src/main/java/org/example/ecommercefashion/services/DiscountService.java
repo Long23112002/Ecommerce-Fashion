@@ -16,7 +16,7 @@ import java.util.List;
 
 public interface DiscountService {
 
-    ResponsePage<Discount, DiscountResponse> filterDiscount(TypeDiscount type, StatusDiscount status, String name, List<Long> idProductDetails, Double prices, Pageable pageable);
+    ResponsePage<Discount, DiscountResponse> filterDiscount(DiscountParam params, Pageable pageable);
 
     ResponsePage<Discount, DiscountResponse> getAll(Pageable pageable);
 

@@ -70,30 +70,30 @@ public class ProductDetail {
   private Boolean deleted = false;
 
   @ManyToOne(
-          cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
-          fetch = FetchType.LAZY)
+      cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
+      fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"productDetails"})
-//  @JsonBackReference
+  //  @JsonBackReference
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_product")
   private Product product;
 
   @ManyToOne(
-          cascade = {
-                  CascadeType.DETACH, CascadeType.MERGE,
-                  CascadeType.PERSIST, CascadeType.REFRESH
-          },
-          fetch = FetchType.LAZY)
+      cascade = {
+        CascadeType.DETACH, CascadeType.MERGE,
+        CascadeType.PERSIST, CascadeType.REFRESH
+      },
+      fetch = FetchType.LAZY)
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_size")
   private Size size;
 
   @ManyToOne(
-          cascade = {
-                  CascadeType.DETACH, CascadeType.MERGE,
-                  CascadeType.PERSIST, CascadeType.REFRESH
-          },
-          fetch = FetchType.LAZY)
+      cascade = {
+        CascadeType.DETACH, CascadeType.MERGE,
+        CascadeType.PERSIST, CascadeType.REFRESH
+      },
+      fetch = FetchType.LAZY)
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_color")
   private Color color;
@@ -102,5 +102,4 @@ public class ProductDetail {
   @BatchSize(size = 100)
   @JsonBackReference
   private List<Promotion> promotionList;
-
 }

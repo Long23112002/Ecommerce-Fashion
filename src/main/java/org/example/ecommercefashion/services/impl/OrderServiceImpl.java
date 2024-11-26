@@ -23,6 +23,7 @@ import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.CartRequest;
 import org.example.ecommercefashion.dtos.request.GhtkOrderRequest;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreUpdateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
@@ -45,6 +46,7 @@ import org.example.ecommercefashion.enums.OrderStatus;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
 import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.DiscountRepository;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
@@ -94,6 +96,8 @@ public class OrderServiceImpl implements OrderService {
     private final EmailJob emailJob;
     private final CartService cartService;
     private final ProductDetailRepository productDetailRepository;
+    private final DiscountRepository discountRepository;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -157,7 +161,7 @@ public class OrderServiceImpl implements OrderService {
         if (!validateAddress(order)) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_ADDRESS);
         }
-        if(order.getTotalMoney()-order.getDiscountAmount()<0) {
+        if (order.getTotalMoney() - order.getDiscountAmount() < 0) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_PAY_AMOUNT);
         }
         String redirect = strategy.processPayment(toDto(order));
@@ -458,7 +462,7 @@ public class OrderServiceImpl implements OrderService {
             String formattedDate = createdAt.format(formatter);
             document.add(new Paragraph("Ngày mua: " + formattedDate).setBold());
 
-            Table table = new Table(new float[] {1, 7, 2, 3});
+            Table table = new Table(new float[]{1, 7, 2, 3});
             table.setWidth(UnitValue.createPercentValue(100));
             table.addHeaderCell(
                     new Cell().add(new Paragraph("STT").setBold()).setTextAlignment(TextAlignment.CENTER));
@@ -533,6 +537,28 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return out.toByteArray();
+    }
+
+    @Override
+    public Order updateOrderAtStore(Long id, OrderAtStoreUpdateRequest request) {
+        Order order = getById(id);
+
+        User user = getUserById(request.getIdGuest());
+        DiscountResponse discount = discountService.getByDiscountId(request.getIdDiscount());
+
+        order.setUser(user);
+        order.setDiscountId(discount.getId());
+
+        if (discount.getType().equals(TypeDiscount.PERCENTAGE)) {
+            order.setDiscountAmount(order.getTotalMoney() * discount.getValue());
+            if (order.getDiscountAmount() >= discount.getMaxValue()) {
+                order.setDiscountAmount(discount.getMaxValue());
+            }
+        } else if (discount.getType().equals(TypeDiscount.FIXED_AMOUNT)) {
+            order.setDiscountAmount(discount.getValue());
+        }
+
+        return orderRepository.save(order);
     }
 
     private static String genImageBanking(String code, Double amount) {

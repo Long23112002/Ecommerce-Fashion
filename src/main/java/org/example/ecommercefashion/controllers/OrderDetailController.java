@@ -28,8 +28,6 @@ public class OrderDetailController {
     @Autowired
     private OrderDetailService service;
 
-
-
     @GetMapping("/{orderId}")
     public ResponsePageV2<OrderDetail> filter(PageableRequest pageableRequest, @PathVariable Long orderId) {
         return new ResponsePageV2<>(service.filter(orderId, pageableRequest.toPageable()));

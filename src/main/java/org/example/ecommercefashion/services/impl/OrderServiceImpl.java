@@ -389,11 +389,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> getOrderPendingAtStore(String token) {
-        List<Order> responses = orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE);
-        return responses;
+        JwtResponse userJWT = jwtService.decodeToken(token);
+        User user = getUserById(userJWT.getUserId());
+        return orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE, user.getId());
     }
 
-    @Override
     public void updateStateOrderAtStore(Long id) {
         Order order = getById(id);
         // Lấy danh sách chi tiết hóa đơn (OrderDetail) liên quan

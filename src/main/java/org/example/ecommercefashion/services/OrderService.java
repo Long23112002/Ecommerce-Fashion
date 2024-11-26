@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreUpdateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
@@ -43,4 +44,5 @@ public interface OrderService {
 
   byte[] generateOrderPdf(Long orderId);
 
+  Order updateOrderAtStore(Long id, OrderAtStoreUpdateRequest request);
 }

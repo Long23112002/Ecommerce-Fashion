@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import org.example.ecommercefashion.dtos.filter.OrderParam;
 import org.example.ecommercefashion.dtos.request.OrderAddressUpdate;
+import org.example.ecommercefashion.dtos.request.OrderAtStoreUpdateRequest;
 import org.example.ecommercefashion.dtos.request.OrderChangeState;
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderUpdateRequest;
@@ -115,4 +116,9 @@ public class OrderController {
                 .body(pdfBytes);
     }
 
+  @PutMapping("/store/{id}")
+  public Order addGuestDiscountOrder(
+          @PathVariable Long id, @Valid @RequestBody OrderAtStoreUpdateRequest request) {
+    return orderService.updateOrderAtStore(id, request);
+  }
 }

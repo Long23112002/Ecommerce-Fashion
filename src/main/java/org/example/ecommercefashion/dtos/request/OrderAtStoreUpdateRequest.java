@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderAtStoreCreateRequest {
+public class OrderAtStoreUpdateRequest {
     private Long idGuest;
-    private Long idVoucher;
+    private Long idDiscount;
 
 }

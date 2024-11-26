@@ -547,6 +547,8 @@ public class OrderServiceImpl implements OrderService {
         DiscountResponse discount = discountService.getByDiscountId(request.getIdDiscount());
 
         order.setUser(user);
+        order.setFullName(user.getFullName());
+
         order.setDiscountId(discount.getId());
 
         if (discount.getType().equals(TypeDiscount.PERCENTAGE)) {

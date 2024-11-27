@@ -201,6 +201,7 @@ public class UserServiceImpl implements UserService {
     return MessageResponse.builder().message("Role assigned successfully").build();
   }
 
+  @Transactional
   @Override
   public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest) {
     User user =

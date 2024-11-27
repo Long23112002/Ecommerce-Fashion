@@ -248,7 +248,6 @@ public class ProductDetailServiceImpl implements ProductDetailService {
                     List<Promotion> promotionList = promotionRepository.findAllByProductDetailId(detail.getId());
                     detail.setPromotion(promotionList.isEmpty() ? null : promotionList.get(0));
 //                    if (detail.getUpdateBy() != null) {
-//
 //                        detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
 //                    }
                     return detail;

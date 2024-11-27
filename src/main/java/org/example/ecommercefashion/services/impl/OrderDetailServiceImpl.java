@@ -123,8 +123,17 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 repository
                         .findById(id)
                         .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order detail"));
+        Order order = detail.getOrder();
+        if (order == null) {
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Không tìm thấy hóa đơn liên quan");
+        }
+
+        Double updatedTotalMoney = order.getTotalMoney() - detail.getTotalMoney();
+        order.setTotalMoney(Math.max(0, updatedTotalMoney));
+
         detail.setDeleted(true);
         repository.save(detail);
+        orderRepository.save(order);
         return MessageResponse.builder().message("Order detail deleted successfully").build();
 
     }

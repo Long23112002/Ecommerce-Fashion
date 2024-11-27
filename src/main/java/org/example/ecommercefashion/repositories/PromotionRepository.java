@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.repositories;
 
 import org.example.ecommercefashion.dtos.filter.PromotionParam;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Promotion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,4 +43,7 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             @Param("startDate") Timestamp startDate,
             @Param("endDate") Timestamp endDate,
             @Param("currentId") Long currentId);
+
+    @Query("SELECT p FROM Promotion p JOIN p.productDetailList pd WHERE pd.id = :productDetailId AND p.deleted = false")
+    List<Promotion> findAllByProductDetailId(Long productDetailId);
 }

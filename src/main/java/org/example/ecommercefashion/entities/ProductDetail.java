@@ -102,4 +102,8 @@ public class ProductDetail {
   @BatchSize(size = 100)
   @JsonBackReference
   private List<Promotion> promotionList;
+
+  @Transient
+  @JsonIgnoreProperties("productDetailList")
+  private Promotion promotion;
 }

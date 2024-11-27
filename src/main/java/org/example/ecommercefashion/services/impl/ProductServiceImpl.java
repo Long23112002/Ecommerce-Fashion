@@ -428,7 +428,7 @@ public class ProductServiceImpl implements ProductService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        if(!param.isSwallowEmpty()){
+        if(!param.isAllowEmpty()){
             predicates.add(cb.isNotEmpty(product.get("productDetails")));
         }
         if (param.getIdMaterial() != null) {

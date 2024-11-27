@@ -15,5 +15,5 @@ public class ProductParam {
   private Collection<Long> idSizes;
   private Long minPrice;
   private Long maxPrice;
-  private boolean swallowEmpty;
+  private boolean allowEmpty;
 }

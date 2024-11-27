@@ -15,19 +15,19 @@ import org.springframework.data.repository.query.Param;
 public interface ProductDetailRepository extends JpaRepository<ProductDetail, Long> {
   Boolean existsProductDetailByColorAndProductAndSize(Product product, Color color, Size size);
 
-  @Query(
-      "SELECT p FROM ProductDetail p "
-          + "WHERE "
-          + "(:#{#param.keyword} IS NULL OR LOWER(p.size.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
-          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.color.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
-          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.product.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
-          + "AND (:#{#param.idColor} IS NULL OR p.color.id = :#{#param.idColor}) "
-          + "AND (:#{#param.idProduct} IS NULL OR p.product.id = :#{#param.idProduct}) "
-          + "AND (:#{#param.minPrice} IS NULL OR (p.price IS NOT NULL AND p.price >= :#{#param.minPrice})) "
-          + "AND (:#{#param.maxPrice} IS NULL OR p.price <= :#{#param.maxPrice}) "
-          + "AND (:#{#param.idSize} IS NULL OR p.size.id = :#{#param.idSize}) "
-          + "ORDER BY p.id DESC")
-  Page<ProductDetail> filterProductDetail(ProductDetailParam param, Pageable pageable);
+//  @Query(
+//      "SELECT p FROM ProductDetail p "
+//          + "WHERE "
+//          + "(:#{#param.keyword} IS NULL OR LOWER(p.size.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
+//          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.color.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
+//          + "AND (:#{#param.keyword} IS NULL OR LOWER(p.product.name) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%')) "
+//          + "AND (:#{#param.idColor} IS NULL OR p.color.id = :#{#param.idColor}) "
+//          + "AND (:#{#param.idProduct} IS NULL OR p.product.id = :#{#param.idProduct}) "
+//          + "AND (:#{#param.minPrice} IS NULL OR (p.price IS NOT NULL AND p.price >= :#{#param.minPrice})) "
+//          + "AND (:#{#param.maxPrice} IS NULL OR p.price <= :#{#param.maxPrice}) "
+//          + "AND (:#{#param.idSize} IS NULL OR p.size.id = :#{#param.idSize}) "
+//          + "ORDER BY p.id DESC")
+//  Page<ProductDetail> filterProductDetail(ProductDetailParam param, Pageable pageable);
 
   Boolean existsByColor(Color color);
 

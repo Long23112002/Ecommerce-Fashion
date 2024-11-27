@@ -1,6 +1,9 @@
 package org.example.ecommercefashion.repositories.impl;
 
+import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.repositories.StatisticRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -29,7 +32,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                         all_days
                     LEFT JOIN
                         orders.order o
-                        ON CAST(o.updated_at AS DATE) = all_days.day
+                        ON CAST(o.success_at AS DATE) = all_days.day
                         AND o.status = 'SUCCESS'
                         AND o.deleted = false
                     GROUP BY
@@ -58,8 +61,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                     FROM
                         all_months
                     LEFT JOIN
-                        orders.order o ON DATE_TRUNC('month', o.updated_at) = all_months.month
-                        AND DATE_PART('year', o.updated_at) = :year
+                        orders.order o ON DATE_TRUNC('month', o.success_at) = all_months.month
+                        AND DATE_PART('year', o.success_at) = :year
                         AND o.status = 'SUCCESS'
                         AND o.deleted = false
                     GROUP BY
@@ -95,9 +98,9 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                         all_days
                     LEFT JOIN
                         orders.order o
-                        ON DATE(o.updated_at) = all_days.day
-                        AND DATE_PART('year', o.updated_at) = :year
-                        AND DATE_PART('month', o.updated_at) = :month
+                        ON DATE(o.success_at) = all_days.day
+                        AND DATE_PART('year', o.success_at) = :year
+                        AND DATE_PART('month', o.success_at) = :month
                         AND o.status = 'SUCCESS'
                         AND o.deleted = false
                     GROUP BY
@@ -133,8 +136,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                         WHERE
                             o2.status = 'SUCCESS'
                             AND o2.deleted = false
-                            AND EXTRACT(MONTH FROM o2.updated_at) = :month
-                            AND EXTRACT(YEAR FROM o2.updated_at) = :year
+                            AND EXTRACT(MONTH FROM o2.success_at) = :month
+                            AND EXTRACT(YEAR FROM o2.success_at) = :year
                         GROUP BY
                             pd2.id, s.name, c.name
                     )
@@ -162,8 +165,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                     WHERE
                         o.status = 'SUCCESS'
                         AND o.deleted = false
-                        AND EXTRACT(MONTH FROM o.updated_at) = :month
-                        AND EXTRACT(YEAR FROM o.updated_at) = :year
+                        AND EXTRACT(MONTH FROM o.success_at) = :month
+                        AND EXTRACT(YEAR FROM o.success_at) = :year
                     GROUP BY
                         p.id
                     ORDER BY
@@ -174,5 +177,45 @@ public class StatisticRepositoryImpl implements StatisticRepository {
         query.setParameter("year", year);
         List<Object[]> resultList = query.getResultList();
         return resultList;
+    }
+
+    @Override
+    public Page<Object[]> getInventoryProduct(PageableRequest pageable) {
+        String query_string = """
+                SELECT
+                	p.id,
+                	p.name,
+                	SUM(pd.quantity) AS quantity,
+                	CAST(
+                		jsonb_agg(
+                			jsonb_build_object(
+                				'id', pd.id,
+                				'color', c.name,
+                				'size', s.name,
+                				'quantity', pd.quantity
+                			)
+                		) AS TEXT
+                	) AS product_details
+                FROM products.product p
+                JOIN products.product_detail pd
+                	ON p.id = pd.id_product
+                    AND pd.deleted = false
+                JOIN products.color c
+                	ON c.id = pd.id_color
+                JOIN products.size s
+                	ON s.id = pd.id_size
+                WHERE p.deleted = false
+                GROUP BY p.id
+                ORDER BY quantity :direction 
+                """;
+        query_string = query_string.replace(":direction", pageable.getSort().name());
+        Query query = entityManager.createNativeQuery(query_string);
+        int total = query.getResultList().size();
+        int size = pageable.getSize();
+        int page = pageable.getPage();
+        query.setMaxResults(size);
+        query.setFirstResult(page * size);
+        List<Object[]> response = query.getResultList();
+        return new PageImpl<>(response, pageable.toPageable(), total);
     }
 }

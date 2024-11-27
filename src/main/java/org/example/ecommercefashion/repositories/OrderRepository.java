@@ -14,7 +14,8 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query(
-            "SELECT p FROM Order p WHERE p.status <> 'DRAFT'"
+            "SELECT p FROM Order p LEFT JOIN p.user u "
+                    + "WHERE p.status <> 'DRAFT' "
                     + "AND (:#{#param.userId} IS NULL OR p.user.id = :#{#param.userId}) "
                     + "AND (:#{#param.status} IS NULL OR p.status = :#{#param.status}) "
                     + "AND (:#{#param.keyword} IS NULL OR p.phoneNumber = cast( :#{#param.phoneNumber} as string ) ) "

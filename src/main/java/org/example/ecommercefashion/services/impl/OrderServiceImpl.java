@@ -70,6 +70,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -105,6 +107,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         JwtResponse userJWT = jwtService.decodeToken(token);
         User user = getUserById(userJWT.getUserId());
+        order.setCode("HD" + orderRepository.getLastValue());
         order.setStatus(OrderStatus.DRAFT);
         order.setTotalMoney(calculateTotalOrderMoney(dto.getOrderDetails()));
         order.setUser(user);
@@ -172,16 +175,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse updateDiscount(Long id, Long discountId) {
         Order order = getById(id);
-        DiscountResponse discount = discountService.getByDiscountId(discountId);
-        order.setDiscountId(discountId);
-        Double total = order.getTotalMoney();
-        if (discount.getType() == TypeDiscount.PERCENTAGE) {
-            Double value = discount.getValue();
-            Double discountAmount = Math.min(total * (value / 100), discount.getMaxValue());
-            order.setDiscountAmount(discountAmount);
-        } else {
-            Double discountAmount = discount.getValue();
-            order.setDiscountAmount(discountAmount);
+        if(discountId != null) {
+            handleUpdateDiscount(order, discountId);
+        }else{
+            handleRemoveDiscount(order);
         }
         return toDto(orderRepository.save(order));
     }
@@ -228,6 +225,9 @@ public class OrderServiceImpl implements OrderService {
         }
         if (dto.getPaymentMethod() != null) {
             order.setPaymentMethod(dto.getPaymentMethod());
+        }
+        if(order.getStatus() == OrderStatus.SUCCESS){
+            order.setSuccessAt(Timestamp.from(Instant.now()));
         }
 
         orderLogService.create(OrderLog.builder()
@@ -420,6 +420,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Cập nhật trạng thái đơn hàng thành SUCCESS
         order.setStatus(OrderStatus.SUCCESS);
+        order.setSuccessAt(Timestamp.from(Instant.now()));
         orderRepository.save(order);
     }
 
@@ -572,6 +573,27 @@ public class OrderServiceImpl implements OrderService {
                 code,
                 "NGUYEN HAI LONG".replace(" ", "%20"),
                 "Ngân hàng TMCP Tiên Phong".replace(" ", "%20"));
+    }
+
+    private Order handleUpdateDiscount(Order order, Long discountId) {
+        DiscountResponse discount = discountService.getByDiscountId(discountId);
+        order.setDiscountId(discountId);
+        Double total = order.getTotalMoney();
+        if (discount.getType() == TypeDiscount.PERCENTAGE) {
+            Double value = discount.getValue();
+            Double discountAmount = Math.min(total * (value / 100), discount.getMaxValue());
+            order.setDiscountAmount(discountAmount);
+        } else {
+            Double discountAmount = discount.getValue();
+            order.setDiscountAmount(discountAmount);
+        }
+        return order;
+    }
+
+    private Order handleRemoveDiscount(Order order) {
+        order.setDiscountId(null);
+        order.setDiscountAmount(0.0);
+        return order;
     }
 
     private Order getById(Long id) {

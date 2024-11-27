@@ -4,13 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.longnh.exceptions.ExceptionHandle;
 import lombok.RequiredArgsConstructor;
+import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.response.CurrentDayReportResponse;
+import org.example.ecommercefashion.dtos.response.InventoryProductResponse;
+import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.RevenueDataResponse;
 import org.example.ecommercefashion.dtos.response.RevenueReportResponse;
 import org.example.ecommercefashion.dtos.response.SoldProductResponse;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.StatisticRepository;
 import org.example.ecommercefashion.services.StatisticService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +73,19 @@ public class StatisticServiceImpl implements StatisticService {
     }
 
     @Override
+    public ResponsePage<Object[],InventoryProductResponse> getInventoryProduct(PageableRequest pageable) {
+        Page<InventoryProductResponse> responses =
+                statisticRepository.getInventoryProduct(pageable)
+                .map(data -> InventoryProductResponse.builder()
+                        .id(Long.valueOf(data[0].toString()))
+                        .name(data[1].toString())
+                        .quantity(Integer.valueOf(data[2].toString()))
+                        .productDetails(toInventoryProductDetails(data[3]))
+                        .build());
+        return new ResponsePage<>(responses);
+    }
+
+    @Override
     public CurrentDayReportResponse getCurrentDayRevenue() {
         List<Object[]> datas = statisticRepository.getCurrentDayRevenue();
 
@@ -122,8 +139,22 @@ public class StatisticServiceImpl implements StatisticService {
     private List<SoldProductResponse.SoldProductDetail> toSoldProductDetails(Object data)  {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            List<SoldProductResponse.SoldProductDetail> soldProductDetails = mapper.readValue(data.toString(), List.class);
+            List<SoldProductResponse.SoldProductDetail> soldProductDetails =
+                    mapper.readValue(data.toString(), List.class);
+
             return soldProductDetails;
+        }catch (JsonProcessingException e){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SOMETHING_WENT_WRONG);
+        }
+    }
+
+    private List<InventoryProductResponse.InventoryProductDetail> toInventoryProductDetails(Object data)  {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            List<InventoryProductResponse.InventoryProductDetail> inventoryProductDetails =
+                    mapper.readValue(data.toString(), List.class);
+
+            return inventoryProductDetails;
         }catch (JsonProcessingException e){
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.SOMETHING_WENT_WRONG);
         }

@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.dtos.request;
 
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,5 +16,5 @@ public class CartRequest {
 
   private Long userId;
 
-  private Set<CartValue> cartValues;
+  private List<CartValue> cartValues;
 }

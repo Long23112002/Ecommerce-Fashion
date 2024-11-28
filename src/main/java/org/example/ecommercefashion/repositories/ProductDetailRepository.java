@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.repositories;
 
+import java.util.Collection;
 import java.util.List;
 import org.example.ecommercefashion.dtos.filter.ProductDetailParam;
 import org.example.ecommercefashion.entities.Color;
@@ -45,4 +46,5 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
   Page<ProductDetail> findAllByProductId(Long idProduct, Pageable pageable);
 
   Boolean existsByProduct(Product product);
+
 }

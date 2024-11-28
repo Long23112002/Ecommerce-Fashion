@@ -36,7 +36,7 @@ public class OrderController {
 
     @PostMapping
     public OrderResponse create(@Valid @RequestBody OrderCreateRequest orderRequest,
-                                @RequestHeader("Authorization") String token) {
+                                @RequestHeader(value = "Authorization", required = false) String token) {
         return orderService.createOrder(orderRequest, token);
     }
 

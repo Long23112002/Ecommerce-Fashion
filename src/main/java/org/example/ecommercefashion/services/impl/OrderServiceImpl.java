@@ -105,12 +105,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse createOrder(OrderCreateRequest dto, String token) {
         Order order = new Order();
-        JwtResponse userJWT = jwtService.decodeToken(token);
-        User user = getUserById(userJWT.getUserId());
+        if(token!=null) {
+            JwtResponse userJWT = jwtService.decodeToken(token);
+            User user = getUserById(userJWT.getUserId());
+            order.setUser(user);
+        }
         order.setCode("HD" + orderRepository.getLastValue());
         order.setStatus(OrderStatus.DRAFT);
         order.setTotalMoney(calculateTotalOrderMoney(dto.getOrderDetails()));
-        order.setUser(user);
         order.setAddress(new Address());
         order.setPaymentMethod(PaymentMethodEnum.CASH);
         order = orderRepository.save(order);
@@ -200,9 +202,11 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
-        updateCartAfterPayment(order);
         OrderResponse response = toDto(orderRepository.save(order));
-        emailJob.orderSuccessfulEmail(response);
+        if(response.getUser()!=null) {
+            updateCartAfterPayment(order);
+            emailJob.orderSuccessfulEmail(response);
+        }
         return response;
     }
 
@@ -348,7 +352,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<CartValue> cartValues = cart.getCartValues();
 
-        Set<CartValue> newCartValues =
+        List<CartValue> newCartValues =
                 cartValues.stream()
                         .map(c -> {
                             CartValue cv = mapCartValue.get(c.getProductDetailId());
@@ -363,7 +367,7 @@ public class OrderServiceImpl implements OrderService {
                             return c;
                         })
                         .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
+                        .toList();
 
         CartRequest request = CartRequest.builder()
                 .userId(userId)

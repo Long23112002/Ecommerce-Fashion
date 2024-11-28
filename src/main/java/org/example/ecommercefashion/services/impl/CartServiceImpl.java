@@ -6,16 +6,20 @@ import com.longnh.utils.FnCommon;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.example.ecommercefashion.dtos.request.CartRequest;
+import org.example.ecommercefashion.dtos.response.CartValueResponse;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.ProductDetailCartResponse;
 import org.example.ecommercefashion.entities.Cart;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.value.CartValue;
 import org.example.ecommercefashion.entities.value.CartValueInfo;
+import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.CartRepository;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.security.JwtService;
@@ -41,10 +45,11 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public Cart create(CartRequest cartRequest) {
         if (cartRepository.existsByUserId(cartRequest.getUserId())) {
-            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Người dùng đã có giỏ hàng");
+            return getCartByUserId(cartRequest.getUserId());
         } else {
             Cart cart = new Cart();
             FnCommon.coppyNonNullProperties(cart, cartRequest);
+            cart.setCartValues(cartRequest.getCartValues());
             return cartRepository.save(cart);
         }
     }
@@ -89,45 +94,77 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public Cart getCartByUserId(Long userId) {
-        Cart cart = cartRepository
-                .getCartByUserId(userId)
-                .orElseGet(()->{
-                    Cart newCart = Cart.builder()
-                            .userId(userId)
-                            .cartValues(new ArrayList<>())
-                            .cartValueInfos(new ArrayList<>())
-                            .build();
-                    return cartRepository.save(newCart);
-                });
-        setCartValueInfos(cart);
-        return cart;
+        synchronized (this) {
+            return cartRepository
+                    .getFirstByUserId(userId)
+                    .orElseGet(() -> {
+                        CartRequest request = CartRequest.builder()
+                                .userId(userId)
+                                .cartValues(new ArrayList<>())
+                                .build();
+                        return create(request);
+                    });
+        }
+    }
+
+    @Override
+    public CartValueResponse validCart(List<CartValue> request) {
+        CartValueResponse response = new CartValueResponse();
+        response.setValid(true);
+        Map<Long, Integer> cartValueMap = request.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getProductDetailId(),
+                        r -> r.getQuantity()
+                ));
+        Set<Long> productDetailIds = request.stream()
+                .map(req -> req.getProductDetailId())
+                .collect(Collectors.toSet());
+        List<ProductDetail> productDetails = productDetailRepository.findAllById(productDetailIds);
+        List<CartValue> cartValues = productDetails.stream()
+                .map(pd -> {
+                    long id = pd.getId();
+                    int quantity = cartValueMap.get(id);
+                    if (pd.getQuantity() < quantity) {
+                        response.setValid(false);
+                        return new CartValue(id, pd.getQuantity());
+                    }
+                    return new CartValue(id, quantity);
+                })
+                .toList();
+        response.setCartValues(cartValues);
+        return response;
+    }
+
+    @Override
+    public List<CartValueInfo> getCartValueInfos(List<CartValue> values) {
+        return values.stream()
+                .map(
+                        value -> {
+                            ProductDetailCartResponse productDetail =
+                                    productDetailRepository
+                                            .findById(value.getProductDetailId())
+                                            .map(
+                                                    productDetailEntity ->
+                                                            new ProductDetailCartResponse(
+                                                                    productDetailEntity.getId(),
+                                                                    productDetailEntity.getPrice(),
+                                                                    productDetailEntity.getImages(),
+                                                                    productDetailEntity.getProduct(),
+                                                                    productDetailEntity.getSize(),
+                                                                    productDetailEntity.getColor(),
+                                                                    productDetailEntity.getOriginPrice(),
+                                                                    productDetailEntity.getQuantity()
+                                                            ))
+                                            .orElse(null);
+                            return new CartValueInfo(value.getQuantity(), productDetail);
+                        })
+                .toList();
     }
 
     private void setCartValueInfos(Cart cart) {
-        cart.setCartValueInfos(
-                cart.getCartValues().stream()
-                        .map(
-                                value -> {
-                                    ProductDetailCartResponse productDetail =
-                                            productDetailRepository
-                                                    .findById(value.getProductDetailId())
-                                                    .map(
-                                                            productDetailEntity ->
-                                                                    new ProductDetailCartResponse(
-                                                                            productDetailEntity.getId(),
-                                                                            productDetailEntity.getPrice(),
-                                                                            productDetailEntity.getImages(),
-                                                                            productDetailEntity.getProduct(),
-                                                                            productDetailEntity.getSize(),
-                                                                            productDetailEntity.getColor(),
-                                                                            productDetailEntity.getOriginPrice(),
-                                                                            productDetailEntity.getQuantity()
-                                                                    ))
-                                                    .orElse(null);
-                                    return new CartValueInfo(value.getQuantity(), productDetail);
-                                })
-                        .toList());
+        cart.setCartValueInfos(getCartValueInfos(cart.getCartValues()));
     }
 
     private Cart getCartById(Long id) {
@@ -156,6 +193,10 @@ public class CartServiceImpl implements CartService {
                                 .findFirst()
                                 .orElse(null);
                 if (requestedValue != null) {
+                    ProductDetail pd = productDetailRepository.getById(requestedValue.getProductDetailId());
+                    if (requestedValue.getQuantity() > pd.getQuantity()) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_ENOUGH);
+                    }
                     existingValue.setQuantity(requestedValue.getQuantity());
                 }
                 updatedCartValues.add(existingValue);
@@ -164,12 +205,12 @@ public class CartServiceImpl implements CartService {
         return updatedCartValues;
     }
 
-    private void addNewCartValues(
-            Cart existingCart, CartRequest cartRequest, List<CartValue> updatedCartValues) {
+    private void addNewCartValues(Cart existingCart,
+                                  CartRequest cartRequest,
+                                  List<CartValue> updatedCartValues) {
         for (CartValue newValue : cartRequest.getCartValues()) {
-            boolean exists =
-                    existingCart.getCartValues().stream()
-                            .anyMatch(val -> val.getProductDetailId().equals(newValue.getProductDetailId()));
+            boolean exists = existingCart.getCartValues().stream()
+                    .anyMatch(val -> val.getProductDetailId().equals(newValue.getProductDetailId()));
             if (!exists) {
                 updatedCartValues.add(newValue);
             }

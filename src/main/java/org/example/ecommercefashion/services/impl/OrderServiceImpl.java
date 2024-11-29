@@ -98,7 +98,6 @@ public class OrderServiceImpl implements OrderService {
     private final EmailJob emailJob;
     private final CartService cartService;
     private final ProductDetailRepository productDetailRepository;
-    private final DiscountRepository discountRepository;
 
 
     @Override

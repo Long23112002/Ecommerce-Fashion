@@ -61,7 +61,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   INVALID_PAY_AMOUNT("Số tiền thanh toán không hợp lệ "),
   PAYMENT_FAILED("Giao dịch thất bại"),
   INVALID_ADDRESS("Địa chỉ không được trống"),
-  ORDER_NOT_IN_DRAFT("Đơn hàng không thể thay đổi khi không ở trạng thái nháp"),
+  ORDER_NOT_IN_DRAFT("Đơn hàng không còn trạng thái nháp"),
   ERROR_WHEN_CREATE("Lỗi khi tạo"),
   COLOR_HAS_PRODUCT_DETAIL("Màu sắc đang thuộc về 1 chi tiết sản phẩm"),
   SIZE_HAS_PRODUCT_DETAIL("Size đang thuộc về 1 chi tiết sản phẩm"),

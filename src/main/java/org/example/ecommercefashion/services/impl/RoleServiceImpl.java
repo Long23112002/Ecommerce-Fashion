@@ -2,12 +2,11 @@ package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
-import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.example.ecommercefashion.dtos.request.RoleRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.PermissionResponse;
@@ -16,14 +15,11 @@ import org.example.ecommercefashion.dtos.response.RoleResponse;
 import org.example.ecommercefashion.entities.Permission;
 import org.example.ecommercefashion.entities.Role;
 import org.example.ecommercefashion.entities.User;
-import org.example.ecommercefashion.enums.notification.NotificationCode;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.RefreshTokenRepository;
 import org.example.ecommercefashion.repositories.RoleRepository;
 import org.example.ecommercefashion.services.NotificationService;
 import org.example.ecommercefashion.services.RoleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -88,9 +84,6 @@ public class RoleServiceImpl implements RoleService {
   @Override
   @Transactional
   public RoleResponse updateRole(Long id, RoleRequest roleRequest) {
-    if (roleRepository.existsByName(roleRequest.getName())) {
-      throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ROLE_EXISTED);
-    }
     Role role =
         roleRepository
             .findById(id)
@@ -120,7 +113,6 @@ public class RoleServiceImpl implements RoleService {
       throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.ROLE_NOT_FOUND);
     }
 
-
     for (User user : role.getUsers()) {
       user.getRoles().remove(role);
       refreshTokenRepository.deleteAllByUserId(user.getId());
@@ -128,7 +120,6 @@ public class RoleServiceImpl implements RoleService {
     entityManager.remove(role);
     return MessageResponse.builder().message("Role deleted successfully").build();
   }
-
 
   private RoleResponse mapRoleToRoleResponse(Role role) {
     RoleResponse roleResponse = new RoleResponse();

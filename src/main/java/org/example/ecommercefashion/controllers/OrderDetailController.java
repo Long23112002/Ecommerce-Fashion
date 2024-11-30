@@ -40,7 +40,7 @@ public class OrderDetailController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse> delete(@PathVariable Long id) {
+    public ResponseEntity<Order> delete(@PathVariable Long id) {
        return ResponseEntity.ok( service.deleteOrderDetail(id));
     }
 

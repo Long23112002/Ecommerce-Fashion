@@ -311,6 +311,10 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             predicates.add(cb.or(sizePredicate, colorPredicate, productPredicate));
         }
 
+        if (!param.isAllowZero()) {
+            predicates.add(cb.notEqual(root.get("quantity"), 0));
+        }
+
         // Lọc theo idColor
         if (param.getIdColor() != null) {
             predicates.add(cb.equal(root.get("color").get("id"), param.getIdColor()));

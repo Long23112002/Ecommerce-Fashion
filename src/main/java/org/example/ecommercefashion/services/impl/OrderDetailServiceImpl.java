@@ -118,7 +118,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return repository.getAllByOrderId(id);
     }
     @Override
-    public MessageResponse deleteOrderDetail(Long id) {
+    public Order deleteOrderDetail(Long id) {
         OrderDetail detail =
                 repository
                         .findById(id)
@@ -134,7 +134,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         detail.setDeleted(true);
         repository.save(detail);
         orderRepository.save(order);
-        return MessageResponse.builder().message("Order detail deleted successfully").build();
+        return order;
 
     }
 

@@ -46,7 +46,6 @@ import org.example.ecommercefashion.enums.OrderStatus;
 import org.example.ecommercefashion.enums.PaymentMethodEnum;
 import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
-import org.example.ecommercefashion.repositories.DiscountRepository;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
@@ -79,7 +78,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -104,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse createOrder(OrderCreateRequest dto, String token) {
         Order order = new Order();
-        if(token!=null) {
+        if (token != null) {
             JwtResponse userJWT = jwtService.decodeToken(token);
             User user = getUserById(userJWT.getUserId());
             order.setUser(user);
@@ -176,9 +174,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse updateDiscount(Long id, Long discountId) {
         Order order = getById(id);
-        if(discountId != null) {
+        if (discountId != null) {
             handleUpdateDiscount(order, discountId);
-        }else{
+        } else {
             handleRemoveDiscount(order);
         }
         return toDto(orderRepository.save(order));
@@ -202,7 +200,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
         OrderResponse response = toDto(orderRepository.save(order));
-        if(response.getUser()!=null) {
+        if (response.getUser() != null) {
             updateCartAfterPayment(order);
             emailJob.orderSuccessfulEmail(response);
         }
@@ -228,7 +226,7 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getPaymentMethod() != null) {
             order.setPaymentMethod(dto.getPaymentMethod());
         }
-        if(order.getStatus() == OrderStatus.SUCCESS){
+        if (order.getStatus() == OrderStatus.SUCCESS) {
             order.setSuccessAt(Timestamp.from(Instant.now()));
         }
 
@@ -546,23 +544,24 @@ public class OrderServiceImpl implements OrderService {
     public Order updateOrderAtStore(Long id, OrderAtStoreUpdateRequest request) {
         Order order = getById(id);
 
-        User user = getUserById(request.getIdGuest());
-        DiscountResponse discount = discountService.getByDiscountId(request.getIdDiscount());
-
-        order.setUser(user);
-        order.setFullName(user.getFullName());
-
-        order.setDiscountId(discount.getId());
-
-        if (discount.getType().equals(TypeDiscount.PERCENTAGE)) {
-            order.setDiscountAmount(order.getTotalMoney() * discount.getValue());
-            if (order.getDiscountAmount() >= discount.getMaxValue()) {
-                order.setDiscountAmount(discount.getMaxValue());
-            }
-        } else if (discount.getType().equals(TypeDiscount.FIXED_AMOUNT)) {
-            order.setDiscountAmount(discount.getValue());
+        if (request.getIdGuest() != null) {
+            User user = getUserById(request.getIdGuest());
+            order.setUser(user);
+            order.setFullName(user.getFullName());
         }
 
+        if (request.getIdDiscount() != null) {
+            DiscountResponse discount = discountService.getByDiscountId(request.getIdDiscount());
+            order.setDiscountId(discount.getId());
+            if (discount.getType().equals(TypeDiscount.PERCENTAGE)) {
+                order.setDiscountAmount(order.getTotalMoney() * discount.getValue());
+                if (order.getDiscountAmount() >= discount.getMaxValue()) {
+                    order.setDiscountAmount(discount.getMaxValue());
+                }
+            } else if (discount.getType().equals(TypeDiscount.FIXED_AMOUNT)) {
+                order.setDiscountAmount(discount.getValue());
+            }
+        }
         return orderRepository.save(order);
     }
 

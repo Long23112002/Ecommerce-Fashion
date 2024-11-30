@@ -37,7 +37,7 @@ public class OrderLog {
     @JsonIgnoreProperties("orderLogs")
     private Order order;
 
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 

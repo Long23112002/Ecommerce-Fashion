@@ -214,7 +214,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = getById(id);
         Order prev = order.clone();
 
-
         order.setStatus(dto.getStatus());
         if (dto.getAddress() != null) {
             order.setAddress(dto.getAddress());

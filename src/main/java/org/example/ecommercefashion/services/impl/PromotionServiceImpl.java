@@ -104,12 +104,12 @@ public class PromotionServiceImpl implements PromotionService {
                 }
             }
 
-            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotions(
-                    promotionRequest.getStartDate(), promotionRequest.getEndDate());
-
-            if (!overlappingPromotions.isEmpty()) {
-                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_DATE_OVERLAP);
-            }
+//            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotions(
+//                    promotionRequest.getStartDate(), promotionRequest.getEndDate());
+//
+//            if (!overlappingPromotions.isEmpty()) {
+//                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_DATE_OVERLAP);
+//            }
 
             Promotion promotion = new Promotion();
             Promotion promotionCreate = mapPromotionRequestToPromotion(promotionRequest, promotion);
@@ -148,12 +148,12 @@ public class PromotionServiceImpl implements PromotionService {
                 }
             }
 
-            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotionsExceptCurrent(
-                    promotionRequest.getStartDate(), promotionRequest.getEndDate(), id);
-
-            if (!overlappingPromotions.isEmpty()) {
-                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_DATE_OVERLAP);
-            }
+//            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotionsExceptCurrent(
+//                    promotionRequest.getStartDate(), promotionRequest.getEndDate(), id);
+//
+//            if (!overlappingPromotions.isEmpty()) {
+//                throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_DATE_OVERLAP);
+//            }
 
             Promotion promotion = promotionRepository.findById(id).orElseThrow(() ->
                     new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PROMOTION_NOT_FOUND)
@@ -261,6 +261,24 @@ public class PromotionServiceImpl implements PromotionService {
                     .toList();
             if (!notFoundIds.isEmpty()) {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PRODUCT_DETAIL_NOT_FOUND);
+            }
+
+            List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotions(
+                    promotion.getStartDate(), promotion.getEndDate());
+
+            for (Promotion overlappingPromotion : overlappingPromotions) {
+                if (!overlappingPromotion.getId().equals(promotionId)) {
+                    for (ProductDetail productDetail : productDetails) {
+                        if (overlappingPromotion.getProductDetailList().contains(productDetail)) {
+                            // So sánh thời gian cập nhật
+                            if (overlappingPromotion.getUpdatedAt().before(promotion.getUpdatedAt())) {
+                                // Xóa sản phẩm khỏi đợt giảm giá cũ
+                                overlappingPromotion.getProductDetailList().remove(productDetail);
+                                promotionRepository.save(overlappingPromotion);
+                            }
+                        }
+                    }
+                }
             }
 
             productDetailList.forEach(productDetail -> {

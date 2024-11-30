@@ -10,12 +10,6 @@ public class TimeUtils {
     private final static TimeZone VN_ZONE = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
     private final static TimeZone GLOBAL_ZONE = TimeZone.getTimeZone("UTC");
 
-    public static SimpleDateFormat getSdf(TimeZone timeZone) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        sdf.setTimeZone(timeZone);
-        return sdf;
-    }
-
     private static Timestamp dateToTimeStamp(Date date) {
         if (date == null) {
             return null;
@@ -23,31 +17,41 @@ public class TimeUtils {
         return new Timestamp(date.getTime());
     }
 
-    private static Date timeStampToDate(Timestamp timestamp) {
-        if (timestamp == null) {
+    public static SimpleDateFormat getSdf(TimeZone timeZone) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        sdf.setTimeZone(timeZone);
+        return sdf;
+    }
+
+    private static Timestamp toZoneTime(Date date, TimeZone zone) {
+        if(date == null) {
             return null;
         }
-        return new Date(timestamp.getTime());
+        SimpleDateFormat sdf = getSdf(zone);
+        Date time = new Date(sdf.format(date));
+        return Timestamp.from(time.toInstant());
     }
 
-    public static Date toVnDate(Date date) {
-        SimpleDateFormat sdf = getSdf(VN_ZONE);
-        return new Date(sdf.format(date));
+    public static Timestamp toVnTime(Date date) {
+        return toZoneTime(date, VN_ZONE);
     }
 
-    public static Timestamp toVnTimestamp(Timestamp timestamp) {
-        Date date = toVnDate(timestamp);
-        return Timestamp.from(date.toInstant());
+    public static Timestamp toGlobalTime(Date date) {
+        return toZoneTime(date, GLOBAL_ZONE);
     }
 
-    public static Date toGlobalDate(Date date) {
-        SimpleDateFormat sdf = getSdf(GLOBAL_ZONE);
-        return new Date(sdf.format(date));
+    public static Timestamp getCurrent() {
+        return new Timestamp(System.currentTimeMillis());
     }
 
-    public static Timestamp toGlobalTimestamp(Timestamp timestamp) {
-        Date date = toGlobalDate(timestamp);
-        return Timestamp.from(date.toInstant());
+    public static Timestamp getCurrentVnTime() {
+        return toZoneTime(getCurrent(), VN_ZONE);
+    }
+
+    public static Timestamp getCurrentGlobalTime() {
+        return toZoneTime(getCurrent(), GLOBAL_ZONE);
     }
 
 }
+
+

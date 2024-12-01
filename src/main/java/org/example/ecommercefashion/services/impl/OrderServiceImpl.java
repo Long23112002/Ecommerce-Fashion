@@ -72,6 +72,8 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -384,7 +386,8 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING_AT_STORE);
         order.setStaffId(user.getId());
         order.setFullName("Khách lẻ");
-
+//        ZonedDateTime gmtPlus7Time = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+//        order.setCreatedAt(Timestamp.valueOf(gmtPlus7Time.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         order.setPaymentMethod(PaymentMethodEnum.CASH);
         order = orderRepository.save(order);
 
@@ -457,7 +460,9 @@ public class OrderServiceImpl implements OrderService {
 
             document.add(new Paragraph("Mã đơn hàng: " + order.getCode()).setBold());
             document.add(new Paragraph("Khách hàng: " + order.getFullName()).setBold());
-            document.add(new Paragraph("Số ĐT: " + order.getPhoneNumber()).setBold());
+            if(order.getPhoneNumber() != null){
+                document.add(new Paragraph("Số ĐT: " + order.getPhoneNumber()).setBold());
+            }
             LocalDateTime createdAt = order.getCreatedAt().toLocalDateTime();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String formattedDate = createdAt.format(formatter);

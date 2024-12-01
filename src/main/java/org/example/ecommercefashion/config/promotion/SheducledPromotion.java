@@ -68,8 +68,15 @@ public class SheducledPromotion {
                                 discountedPrice = productDetail.getOriginPrice();
                             }
 
-                            double minPrice = productDetail.getProduct().getMinPrice();
-                            double maxPrice = productDetail.getProduct().getMaxPrice();
+                            Long minPrice = productDetail.getProduct().getMinPrice();
+                            Long maxPrice = productDetail.getProduct().getMaxPrice();
+
+                            if (minPrice == null) {
+                                minPrice = 0L;
+                            }
+                            if (maxPrice == null) {
+                                maxPrice = Math.round(productDetail.getPrice());// Nếu maxPrice null, gán bằng giá hiện tại
+                            }
 
                             discountedPrice = Math.max(minPrice, Math.min(discountedPrice, maxPrice));
 

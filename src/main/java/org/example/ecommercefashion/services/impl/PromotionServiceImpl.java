@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -313,9 +314,18 @@ public class PromotionServiceImpl implements PromotionService {
                 currentPromotion.getStartDate(), currentPromotion.getEndDate()
         );
         Set<ProductDetail> overlappingProductDetails = new HashSet<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+                .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
         for (Promotion overlappingPromotion : overlappingPromotions) {
             if (!overlappingPromotion.getId().equals(currentPromotion.getId())) {
-                overlappingProductDetails.addAll(overlappingPromotion.getProductDetailList());
+                String formattedStartDate = formatter.format(overlappingPromotion.getStartDate().toInstant());
+                String formattedEndDate = formatter.format(overlappingPromotion.getEndDate().toInstant());
+                overlappingPromotion.setFormattedStartDate(formattedStartDate);
+                overlappingPromotion.setFormattedEndDate(formattedEndDate);
+                for (ProductDetail productDetail : overlappingPromotion.getProductDetailList()) {
+                    productDetail.setPromotion(overlappingPromotion);
+                    overlappingProductDetails.add(productDetail);
+                }
             }
         }
         return new ArrayList<>(overlappingProductDetails);

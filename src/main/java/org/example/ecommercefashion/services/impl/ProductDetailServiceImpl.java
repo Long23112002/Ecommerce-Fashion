@@ -121,8 +121,10 @@ public class ProductDetailServiceImpl implements ProductDetailService {
                     product.setMaxPrice(request.getPrice().longValue());
                 }
             } else {
-                // nếu chưa có detail nào trong product thì set maxPrice là price trong request
+                // nếu chưa có detail nào trong product thì set maxPrice, minPrice là price trong request
                 product.setMaxPrice(request.getPrice().longValue());
+                product.setMinPrice(request.getPrice().longValue());
+
             }
             productRepository.save(product);
 

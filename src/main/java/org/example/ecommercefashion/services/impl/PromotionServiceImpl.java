@@ -31,7 +31,10 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -119,7 +122,7 @@ public class PromotionServiceImpl implements PromotionService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
             String startDateFormatted = promotionCreate.getStartDate().toLocalDateTime().format(formatter);
             String endDateFormatted = promotionCreate.getEndDate().toLocalDateTime().format(formatter);
-            notificationService.sendNotificationToUsersWithPermission(promotionCreate.getCreatedBy(), NotificationCode.CREATE_PROMOTION, startDateFormatted,endDateFormatted);
+            notificationService.sendNotificationToUsersWithPermission(promotionCreate.getCreatedBy(), NotificationCode.CREATE_PROMOTION, startDateFormatted, endDateFormatted);
             PromotionResponse promotionResponse = mapPromotionToPromotionResponse(promotionCreate);
             promotionResponse.setCreatedBy(getInforUser(jwtResponse.getUserId()));
             return promotionResponse;
@@ -163,7 +166,7 @@ public class PromotionServiceImpl implements PromotionService {
             promotionUpdate.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             setPromotionStatus(promotionUpdate);
             promotionRepository.save(promotionUpdate);
-            notificationService.sendNotificationToUsersWithPermission(promotionUpdate.getUpdatedBy(), NotificationCode.UPDATE_PROMOTION,promotionUpdate.getId());
+            notificationService.sendNotificationToUsersWithPermission(promotionUpdate.getUpdatedBy(), NotificationCode.UPDATE_PROMOTION, promotionUpdate.getId());
             PromotionResponse promotionResponse = mapPromotionToPromotionResponse(promotionUpdate);
             promotionResponse.setCreatedBy(getInforUser(promotion.getCreatedBy()));
             promotionResponse.setUpdatedBy(getInforUser(jwtResponse.getUserId()));
@@ -244,7 +247,7 @@ public class PromotionServiceImpl implements PromotionService {
                 promotion.setUpdatedBy(jwtResponse.getUserId());
                 promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
                 promotionRepository.save(promotion);
-                notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(),NotificationCode.DELETE_PRODUCT_DETAIL_FROM_PROMOTION,promotionId);
+                notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(), NotificationCode.DELETE_PRODUCT_DETAIL_FROM_PROMOTION, promotionId);
                 return mapPromotionToPromotionResponse(promotion);
             }
 
@@ -270,9 +273,7 @@ public class PromotionServiceImpl implements PromotionService {
                 if (!overlappingPromotion.getId().equals(promotionId)) {
                     for (ProductDetail productDetail : productDetails) {
                         if (overlappingPromotion.getProductDetailList().contains(productDetail)) {
-                            // So sánh thời gian cập nhật
                             if (overlappingPromotion.getUpdatedAt().before(promotion.getUpdatedAt())) {
-                                // Xóa sản phẩm khỏi đợt giảm giá cũ
                                 overlappingPromotion.getProductDetailList().remove(productDetail);
                                 promotionRepository.save(overlappingPromotion);
                             }
@@ -296,11 +297,29 @@ public class PromotionServiceImpl implements PromotionService {
             promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
             promotionRepository.save(promotion);
-            notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(),NotificationCode.ADD_PRODUCT_DETAIL_TO_PROMOTION,promotionId);
+            notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(), NotificationCode.ADD_PRODUCT_DETAIL_TO_PROMOTION, promotionId);
             return mapPromotionToPromotionResponse(promotion);
         } else {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
         }
     }
+
+    @Override
+    public List<ProductDetail> getOverlappingProductDetails(Long promotionId) {
+        Promotion currentPromotion = promotionRepository.findById(promotionId).orElseThrow(() ->
+                new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PROMOTION_NOT_FOUND)
+        );
+        List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotions(
+                currentPromotion.getStartDate(), currentPromotion.getEndDate()
+        );
+        Set<ProductDetail> overlappingProductDetails = new HashSet<>();
+        for (Promotion overlappingPromotion : overlappingPromotions) {
+            if (!overlappingPromotion.getId().equals(currentPromotion.getId())) {
+                overlappingProductDetails.addAll(overlappingPromotion.getProductDetailList());
+            }
+        }
+        return new ArrayList<>(overlappingProductDetails);
+    }
+
 
 }

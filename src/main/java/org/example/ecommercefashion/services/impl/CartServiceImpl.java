@@ -140,26 +140,27 @@ public class CartServiceImpl implements CartService {
     @Override
     public List<CartValueInfo> getCartValueInfos(List<CartValue> values) {
         return values.stream()
-                .map(
-                        value -> {
-                            ProductDetailCartResponse productDetail =
-                                    productDetailRepository
-                                            .findById(value.getProductDetailId())
-                                            .map(
-                                                    productDetailEntity ->
-                                                            new ProductDetailCartResponse(
-                                                                    productDetailEntity.getId(),
-                                                                    productDetailEntity.getPrice(),
-                                                                    productDetailEntity.getImages(),
-                                                                    productDetailEntity.getProduct(),
-                                                                    productDetailEntity.getSize(),
-                                                                    productDetailEntity.getColor(),
-                                                                    productDetailEntity.getOriginPrice(),
-                                                                    productDetailEntity.getQuantity()
-                                                            ))
-                                            .orElse(null);
-                            return new CartValueInfo(value.getQuantity(), productDetail);
-                        })
+                .map(value -> {
+                    int valueQuantity = value.getQuantity();
+                    ProductDetailCartResponse productDetail =
+                            productDetailRepository
+                                    .findById(value.getProductDetailId())
+                                    .map(entity ->{
+                                        return ProductDetailCartResponse.builder()
+                                                .id(entity.getId())
+                                                .price(entity.getPrice())
+                                                .images(entity.getImages())
+                                                .product(entity.getProduct())
+                                                .size(entity.getSize())
+                                                .color(entity.getColor())
+                                                .quantity(entity.getQuantity())
+                                                .build();
+                                    })
+                                    .orElse(null);
+                    int productQuantity = productDetail.getQuantity();
+                    int quantity = Math.min(productQuantity,valueQuantity);
+                    return new CartValueInfo(quantity, productDetail);
+                })
                 .toList();
     }
 

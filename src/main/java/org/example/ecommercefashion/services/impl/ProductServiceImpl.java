@@ -124,9 +124,7 @@ public class ProductServiceImpl implements ProductService {
                                     .flatMap(productDetail -> productDetail.getPromotionList().stream())
                                     .toList();
 
-                            Optional<Promotion> promotion = listPromotion.stream()
-                                    .filter(pro -> pro.getTypePromotionEnum().equals(TypePromotionEnum.PERCENTAGE_DISCOUNT))
-                                    .max(Comparator.comparing(Promotion::getValue));
+                            Optional<Promotion> promotion = listPromotion.stream().findFirst();
                             product.setPromotion(promotion.orElse(null));
                             return product;
                         });

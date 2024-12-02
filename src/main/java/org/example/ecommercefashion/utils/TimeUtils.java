@@ -7,10 +7,10 @@ import java.util.TimeZone;
 
 public class TimeUtils {
 
-    private final static TimeZone VN_ZONE = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
-    private final static TimeZone GLOBAL_ZONE = TimeZone.getTimeZone("UTC");
+    public final static TimeZone VN_ZONE = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
+    public final static TimeZone GLOBAL_ZONE = TimeZone.getTimeZone("UTC");
 
-    private static Timestamp dateToTimeStamp(Date date) {
+    public static Timestamp dateToTimeStamp(Date date) {
         if (date == null) {
             return null;
         }
@@ -23,7 +23,7 @@ public class TimeUtils {
         return sdf;
     }
 
-    private static Timestamp toZoneTime(Date date, TimeZone zone) {
+    public static Timestamp toZoneTime(Date date, TimeZone zone) {
         if(date == null) {
             return null;
         }
@@ -44,12 +44,16 @@ public class TimeUtils {
         return new Timestamp(System.currentTimeMillis());
     }
 
+    public static Timestamp getCurrent(TimeZone zone) {
+        return toZoneTime(getCurrent(), zone);
+    }
+
     public static Timestamp getCurrentVnTime() {
-        return toZoneTime(getCurrent(), VN_ZONE);
+        return getCurrent(VN_ZONE);
     }
 
     public static Timestamp getCurrentGlobalTime() {
-        return toZoneTime(getCurrent(), GLOBAL_ZONE);
+        return getCurrent(GLOBAL_ZONE);
     }
 
 }

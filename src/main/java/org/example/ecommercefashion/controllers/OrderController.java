@@ -87,12 +87,12 @@ public class OrderController {
     }
 
     @GetMapping("/store")
-    public Order createOrderAtStore(@RequestHeader("Authorization") String token) {
+    public OrderResponse createOrderAtStore(@RequestHeader("Authorization") String token) {
         return orderService.createOrderAtStore(token);
     }
 
     @GetMapping("/list-pending")
-    public List<Order> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
+    public List<OrderResponse> getOrderPendingAtStore(@RequestHeader("Authorization") String token) {
         return orderService.getOrderPendingAtStore(token);
     }
 
@@ -117,7 +117,7 @@ public class OrderController {
     }
 
   @PutMapping("/store/{id}")
-  public Order addGuestDiscountOrder(
+  public OrderResponse addGuestDiscountOrder(
           @PathVariable Long id, @Valid @RequestBody OrderAtStoreUpdateRequest request) {
     return orderService.updateOrderAtStore(id, request);
   }

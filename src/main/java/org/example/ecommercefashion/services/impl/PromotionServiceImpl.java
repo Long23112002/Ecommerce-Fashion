@@ -283,12 +283,14 @@ public class PromotionServiceImpl implements PromotionService {
                 }
             }
 
-            productDetailList.forEach(productDetail -> {
-                if (productDetail.getOriginPrice() != null) {
-                    productDetail.setPrice(productDetail.getOriginPrice());
-                    productDetail.setOriginPrice(null);
-                }
-            });
+            if (promotion.getStatusPromotionEnum().equals(StatusPromotionEnum.ACTIVE)) {
+                productDetails.forEach(productDetail -> {
+                    if (productDetail.getOriginPrice() != null) {
+                        productDetail.setPrice(productDetail.getOriginPrice());
+                        productDetail.setOriginPrice(null);
+                    }
+                });
+            }
 
             promotion.getProductDetailList().clear();
 

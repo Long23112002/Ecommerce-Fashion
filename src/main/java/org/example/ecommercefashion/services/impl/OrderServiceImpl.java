@@ -375,7 +375,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order createOrderAtStore(String token) {
+    public OrderResponse createOrderAtStore(String token) {
         JwtResponse userJWT = jwtService.decodeToken(token);
         User user = getUserById(userJWT.getUserId());
         if (orderRepository.countOrderPendingStore(user.getId()) >= 4) {
@@ -391,14 +391,14 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(PaymentMethodEnum.CASH);
         order = orderRepository.save(order);
 
-        return order;
+        return toDto(order);
     }
 
     @Override
-    public List<Order> getOrderPendingAtStore(String token) {
+    public List<OrderResponse> getOrderPendingAtStore(String token) {
         JwtResponse userJWT = jwtService.decodeToken(token);
         User user = getUserById(userJWT.getUserId());
-        return orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE, user.getId());
+        return toDtos(orderRepository.findPendingOrders(OrderStatus.PENDING_AT_STORE, user.getId()));
     }
 
     public void updateStateOrderAtStore(Long id) {
@@ -546,7 +546,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order updateOrderAtStore(Long id, OrderAtStoreUpdateRequest request) {
+    public OrderResponse updateOrderAtStore(Long id, OrderAtStoreUpdateRequest request) {
         Order order = getById(id);
 
         if (request.getIdGuest() != null) {
@@ -567,7 +567,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setDiscountAmount(discount.getValue());
             }
         }
-        return orderRepository.save(order);
+        return toDto(orderRepository.save(order));
     }
 
     private static String genImageBanking(String code, Double amount) {

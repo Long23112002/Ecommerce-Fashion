@@ -284,7 +284,7 @@ public class PromotionServiceImpl implements PromotionService {
             }
 
             if (promotion.getStatusPromotionEnum().equals(StatusPromotionEnum.ACTIVE)) {
-                productDetails.forEach(productDetail -> {
+                productDetailList.forEach(productDetail -> {
                     if (productDetail.getOriginPrice() != null) {
                         productDetail.setPrice(productDetail.getOriginPrice());
                         productDetail.setOriginPrice(null);

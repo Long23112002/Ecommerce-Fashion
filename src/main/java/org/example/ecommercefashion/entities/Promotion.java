@@ -28,6 +28,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -94,4 +95,10 @@ public class Promotion {
     @BatchSize(size = 100)
     @JsonManagedReference
     private List<ProductDetail> productDetailList;
+
+    @Transient
+    private String formattedStartDate;
+
+    @Transient
+    private String formattedEndDate;
 }

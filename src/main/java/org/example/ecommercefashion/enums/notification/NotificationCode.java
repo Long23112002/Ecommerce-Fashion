@@ -65,7 +65,7 @@ public enum NotificationCode {
 
     CREATE_COLOR(
             "Thêm màu sắc thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính màu sắc",
+            "Thêm thành công <b>%s</b> vào thuộc tính màu sắc",
             PermissionEnum.ADD_COLOR.val
     ),
 
@@ -101,7 +101,7 @@ public enum NotificationCode {
 
     CREATE_SIZE(
             "Thêm kích thước thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính kích thước",
+            "Thêm thành công <b>%s</b> vào thuộc tính kích thước",
             PermissionEnum.ADD_SIZE.val
     ),
 
@@ -113,7 +113,7 @@ public enum NotificationCode {
 
     CREATE_MATERIAL(
             "Thêm chất liệu thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính chất liệu",
+            "Thêm thành công <b>%s</b> vào thuộc tính chất liệu",
             PermissionEnum.ADD_MATERIAL.val
     ),
 
@@ -125,7 +125,7 @@ public enum NotificationCode {
 
     CREATE_BRAND(
             "Thêm thương hiệu thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính thương hiệu",
+            "Thêm thành công <b>%s</b> vào thuộc tính thương hiệu",
             PermissionEnum.ADD_BRAND.val
     ),
 
@@ -137,7 +137,7 @@ public enum NotificationCode {
 
     CREATE_CATEGORY(
             "Thêm danh mục thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính danh mục",
+            "Thêm thành công <b>%s</b> vào thuộc tính danh mục",
             PermissionEnum.ADD_CATEGORY.val
     ),
 
@@ -149,7 +149,7 @@ public enum NotificationCode {
 
     CREATE_ROLE(
             "Thêm vai trò thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính vai trò",
+            "Thêm thành công <b>%s</b> vào vai trò",
             PermissionEnum.ADD_ROLE.val
     ),
 
@@ -161,7 +161,7 @@ public enum NotificationCode {
 
     CREATE_ORIGIN(
             "Thêm nguồn gốc thành công",
-            "<b>%s</b> vừa được thêm thành công vào thuộc tính nguồn gốc",
+            "Thêm thành công <b>%s</b> vào thuộc tính nguồn gốc",
             PermissionEnum.ADD_ORIGIN.val
     ),
 

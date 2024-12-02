@@ -70,11 +70,4 @@ public class Voucher {
     @NotFound(action = NotFoundAction.IGNORE)
     @JsonBackReference
     private Discount discount;
-
-    @PrePersist
-    public void generateCode() {
-        if (this.code == null || this.code.isEmpty()) {
-            this.code = UUID.randomUUID().toString();
-        }
-    }
 }

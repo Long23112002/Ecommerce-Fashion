@@ -185,6 +185,7 @@ public class ChatServiceImpl implements ChatService {
                     ReplyResponse.builder()
                             .id(reply.getId())
                             .content(reply.getContent())
+                            .image(reply.getImage())
                             .createAt(reply.getCreateAt())
                             .createBy(reply.getCreateBy())
                             .nameCreateBy(nameCreateBy)

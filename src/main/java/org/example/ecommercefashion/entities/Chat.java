@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.Id;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -20,6 +21,9 @@ public class Chat {
 
     @Field("content")
     private String content;
+
+    @Field("image")
+    private String image;
 
     @Field("seen")
     @Indexed

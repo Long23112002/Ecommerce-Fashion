@@ -68,6 +68,19 @@ public class SheducledPromotion {
                                 discountedPrice = productDetail.getOriginPrice();
                             }
 
+                            Long minPrice = productDetail.getProduct().getMinPrice();
+                            Long maxPrice = productDetail.getProduct().getMaxPrice();
+
+                            if (minPrice == null) {
+                                minPrice = 0L;
+                            }
+                            if (maxPrice == null) {
+                                maxPrice = Math.round(productDetail.getPrice());// Nếu maxPrice null, gán bằng giá hiện tại
+                            }
+
+                            discountedPrice = Math.max(minPrice, Math.min(discountedPrice, maxPrice));
+
+
                             productDetail.setPrice(Math.max(discountedPrice, 0));
                         } else if (promotion.getStatusPromotionEnum() == StatusPromotionEnum.ENDED) {
                             if (productDetail.getOriginPrice() != null) {

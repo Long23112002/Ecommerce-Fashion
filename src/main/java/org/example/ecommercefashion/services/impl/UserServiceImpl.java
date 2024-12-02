@@ -26,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,16 +57,19 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public UserResponse createUser(UserRequest userRequest) throws JobExecutionException {
     // Lấy email từ request
-    String email = userRequest.getEmail();
 
-    String emailStatus = redisTemplate.opsForValue().get(email);
+    if (!userRequest.getIsCheck()) {
+      String email = userRequest.getEmail();
 
-        if (!"done".equals(emailStatus)) {
-          throw new ExceptionHandle(HttpStatus.BAD_REQUEST,
-     ErrorMessage.EMAIL_NOT_VERIFIED.val());
-        }
+      String emailStatus = redisTemplate.opsForValue().get(email);
 
-    validateEmail(userRequest.getEmail());
+      if (!"done".equals(emailStatus)) {
+        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_NOT_VERIFIED.val());
+      }
+
+      validateEmail(userRequest.getEmail());
+    }
+
     validatePhone(userRequest.getPhoneNumber());
 
     // Tạo đối tượng User
@@ -83,7 +87,7 @@ public class UserServiceImpl implements UserService {
 
     entityManager.persist(user);
 
-    cartService.create(new CartRequest(user.getId(), new HashSet<>()));
+    cartService.create(new CartRequest(user.getId(), new ArrayList<>()));
 
     return mapEntityToResponse(user);
   }
@@ -135,7 +139,7 @@ public class UserServiceImpl implements UserService {
     if (user == null) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NOT_FOUND);
     }
-    if(!user.getId().equals(jwtService.getIdUserByToken(token))){
+    if (!user.getId().equals(jwtService.getIdUserByToken(token))) {
       throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.USER_PERMISSION_DENIED);
     }
     if (userUpdateRequest.getAvatar() == null) {
@@ -201,6 +205,7 @@ public class UserServiceImpl implements UserService {
     return MessageResponse.builder().message("Role assigned successfully").build();
   }
 
+  @Transactional
   @Override
   public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest) {
     User user =
@@ -296,5 +301,11 @@ public class UserServiceImpl implements UserService {
 
   private void sendEmailOtp(String email) throws JobExecutionException {
     emailJob.sendOtpEmail(email);
+  }
+
+  public static void main(String[] args) {
+    String a = "12345678a";
+    PasswordEncoder passwordEncoder1 = new BCryptPasswordEncoder();
+    System.out.println(passwordEncoder1.encode(a));
   }
 }

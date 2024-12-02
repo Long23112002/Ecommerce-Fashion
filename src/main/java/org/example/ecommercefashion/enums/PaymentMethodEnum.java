@@ -4,7 +4,14 @@ import lombok.Getter;
 
 @Getter
 public enum PaymentMethodEnum {
-    VNPAY,
-    BANK_TRANSFER,
-    CASH
+    VNPAY("vnpay"),
+    VIET_QR("vietqr"),
+    CASH("cash");
+
+    PaymentMethodEnum(String val) {
+        this.val = val;
+    }
+
+    private String val;
+
 }

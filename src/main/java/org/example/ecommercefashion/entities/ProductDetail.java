@@ -36,8 +36,7 @@ public class ProductDetail {
   @Column(name = "price")
   private Double price;
 
-  @Column(name = "origin_price")
-  private Double originPrice;
+  @Transient private Double originPrice;
 
   @Column(name = "quantity")
   private Integer quantity;
@@ -70,37 +69,40 @@ public class ProductDetail {
   private Boolean deleted = false;
 
   @ManyToOne(
-          cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
-          fetch = FetchType.LAZY)
+      cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
+      fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"productDetails"})
-//  @JsonBackReference
+  //  @JsonBackReference
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_product")
   private Product product;
 
   @ManyToOne(
-          cascade = {
-                  CascadeType.DETACH, CascadeType.MERGE,
-                  CascadeType.PERSIST, CascadeType.REFRESH
-          },
-          fetch = FetchType.LAZY)
+      cascade = {
+        CascadeType.DETACH, CascadeType.MERGE,
+        CascadeType.PERSIST, CascadeType.REFRESH
+      },
+      fetch = FetchType.LAZY)
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_size")
   private Size size;
 
   @ManyToOne(
-          cascade = {
-                  CascadeType.DETACH, CascadeType.MERGE,
-                  CascadeType.PERSIST, CascadeType.REFRESH
-          },
-          fetch = FetchType.LAZY)
+      cascade = {
+        CascadeType.DETACH, CascadeType.MERGE,
+        CascadeType.PERSIST, CascadeType.REFRESH
+      },
+      fetch = FetchType.LAZY)
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_color")
   private Color color;
 
   @ManyToMany(mappedBy = "productDetailList", fetch = FetchType.LAZY)
-  @JsonIgnore
   @BatchSize(size = 100)
+  @JsonBackReference
   private List<Promotion> promotionList;
 
+  @Transient
+  @JsonIgnoreProperties("productDetailList")
+  private Promotion promotion;
 }

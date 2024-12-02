@@ -17,6 +17,8 @@ public class ReplyResponse {
 
     private String content;
 
+    private String image;
+
     private Long createBy;
 
     private String nameCreateBy;

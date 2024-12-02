@@ -2,6 +2,7 @@ package org.example.ecommercefashion.entities;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.ecommercefashion.dtos.response.OrderResponse;
 import org.example.ecommercefashion.enums.email.EmailTypeEnum;
 import org.example.ecommercefashion.enums.email.LogStatusEnum;
 import org.example.ecommercefashion.repositories.EmailRepository;
@@ -149,7 +150,7 @@ public class EmailJob implements Job {
   }
 
 //  @Async
-  public void orderSuccessfulEmail(Order order) throws JobExecutionException { //
+  public void orderSuccessfulEmail(OrderResponse order) throws JobExecutionException { //
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -160,7 +161,7 @@ public class EmailJob implements Job {
       String email = order.getUser().getEmail();
       String fullName = order.getUser().getFullName();
       String orderDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(order.getCreatedAt());
-      String finalPrice = String.valueOf(order.getFinalPrice());
+      String finalPrice = String.valueOf(order.getPayAmount());
       String shipping = String.valueOf(order.getMoneyShip());
 
       StringBuilder productDetailsHtml = new StringBuilder();

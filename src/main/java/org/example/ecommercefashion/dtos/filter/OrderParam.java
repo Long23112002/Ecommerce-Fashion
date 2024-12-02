@@ -9,4 +9,7 @@ public class OrderParam {
   private Long userId;
   private OrderStatus status;
   private String phoneNumber;
+  private Integer day;
+  private Integer month;
+  private Integer year;
 }

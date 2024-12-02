@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OrderCreateRequest {
-    @NotEmpty
     @Size(min = 1, message = "Đơn hàng của bạn ít nhất phải có 1 sản phẩm")
     List<OrderDetailValue> orderDetails;
 }

@@ -19,4 +19,9 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
     Page<Voucher> getFilterVoucherPage(@Param("param")VoucherParam param,
                                        Pageable pageable);
     Optional<Voucher> findByCode(String Code);
+
+    boolean existsByDiscountId(Long id);
+
+    @Query(value = "select last_value + 1 from discounts.voucher_id_seq", nativeQuery = true)
+    Long getLastValue();
 }

@@ -2,6 +2,7 @@ package org.example.ecommercefashion.entities;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,14 +35,14 @@ public class Cart {
 
   @Type(type = "jsonb")
   @Column(name = "product_detail_carts", columnDefinition = "jsonb")
-  private Set<CartValue> cartValues;
+  private List<CartValue> cartValues;
 
-  @Transient private Set<CartValueInfo> cartValueInfos;
+  @Transient private List<CartValueInfo> cartValueInfos;
 
   @CreationTimestamp
   @Column(name = "create_at", updatable = false)
   private Timestamp createAt;
 
   @Column(name = "is_deleted")
-  private Boolean isDeleted = false;
+  private boolean isDeleted = false;
 }

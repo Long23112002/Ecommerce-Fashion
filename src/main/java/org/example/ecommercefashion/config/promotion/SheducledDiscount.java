@@ -20,7 +20,7 @@ public class SheducledDiscount {
 
     private final DiscountRepository discountRepository;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void updateDiscountStatus(){
         int page = 0;

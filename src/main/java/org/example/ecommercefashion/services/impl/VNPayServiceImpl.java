@@ -20,6 +20,9 @@ public class VNPayServiceImpl implements VNPayService {
     @Autowired
     private VNPayConfig vnPayConfig;
 
+    @Autowired
+    private HttpServletRequest request;
+
     @Value("${vnpay.url}")
     private String vnPayUrl;
 
@@ -43,7 +46,7 @@ public class VNPayServiceImpl implements VNPayService {
 
 
     @Override
-    public String createPayment(HttpServletRequest request, long amountRequest, long orderId) {
+    public String createPayment(long amountRequest, long orderId) {
         Map<String, String> vnpParams = mappingParams(request, amountRequest, orderId);
         String secureHash = encode(request, amountRequest, orderId);
 

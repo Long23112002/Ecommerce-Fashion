@@ -3,6 +3,7 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+  DISCOUNT_ALREADY_USED("Giảm Giá đã được sử dụng"),
   DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 100"),
   DISCOUNT_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
   DISCOUNT_NAME_EXISTED("Tên Phiếu Giảm Giá Đã Tồn Tại"),
@@ -57,9 +58,10 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
   PRODUCT_WAS_DISABLE("Sản Phẩm bị ẩn "),
   SECURE_NOT_MATCH("VNPAY secure không hợp lệ "),
+  INVALID_PAY_AMOUNT("Số tiền thanh toán không hợp lệ "),
   PAYMENT_FAILED("Giao dịch thất bại"),
   INVALID_ADDRESS("Địa chỉ không được trống"),
-  ORDER_NOT_IN_DRAFT("Đơn hàng không thể thay đổi khi không ở trạng thái nháp"),
+  ORDER_NOT_IN_DRAFT("Đơn hàng không còn trạng thái nháp"),
   ERROR_WHEN_CREATE("Lỗi khi tạo"),
   COLOR_HAS_PRODUCT_DETAIL("Màu sắc đang thuộc về 1 chi tiết sản phẩm"),
   SIZE_HAS_PRODUCT_DETAIL("Size đang thuộc về 1 chi tiết sản phẩm"),
@@ -75,6 +77,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
   EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
   PRODUCT_HAS_PRODUCT_DETAIL("Sản phẩm đang có từ một chi tiết sản phẩm"),
+  PROMOTION_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày hiện tại"),
 
   ;
 

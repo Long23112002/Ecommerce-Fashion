@@ -1,7 +1,7 @@
 package org.example.ecommercefashion.dtos.request;
 
-import javax.validation.constraints.*;
 import java.util.Date;
+import javax.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,4 +37,6 @@ public class UserRequest {
   private GenderEnum gender;
 
   private String avatar;
+
+  private Boolean isCheck;
 }

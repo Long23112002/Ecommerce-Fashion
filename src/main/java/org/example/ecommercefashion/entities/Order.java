@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
@@ -25,7 +26,7 @@ import org.hibernate.annotations.*;
 @Builder
 @Where(clause = "deleted = false")
 @TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
-public class  Order implements Serializable {
+public class  Order implements Serializable , Cloneable {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -33,9 +34,8 @@ public class  Order implements Serializable {
   @Column(name = "discount_id")
   private Long discountId;
 
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id")
   @ManyToOne(fetch = FetchType.LAZY)
-  @NotFound(action = NotFoundAction.IGNORE)
   @JsonIgnoreProperties({"password", "authorities"})
   private User user;
 
@@ -78,9 +78,6 @@ public class  Order implements Serializable {
   @Column(name = "total_money")
   private Double totalMoney = 0.0;
 
-  @Column(name = "final_price")
-  private Double finalPrice = 0.0;
-
   @JoinColumn(name = "updated_by")
   @Fetch(FetchMode.JOIN)
   @ManyToOne(fetch = FetchType.LAZY)
@@ -88,17 +85,44 @@ public class  Order implements Serializable {
   private User updatedBy;
 
   @Column(name = "created_at", updatable = false)
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   @CreationTimestamp
   private Timestamp createdAt;
 
   @Column(name = "updated_at")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   @UpdateTimestamp
   private Timestamp updatedAt;
+
+  @Column(name = "success_at")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+  private Timestamp successAt;
 
   @Column(name = "deleted", nullable = false)
   private Boolean deleted = false;
 
+  @Column(name = "staff_id")
+  private Long staffId;
+
   @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
   @JsonManagedReference
   private List<OrderDetail> orderDetails;
+
+  @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+  @JsonManagedReference
+  @JsonIgnoreProperties({"order" , "user"})
+  private List<OrderLog> orderLogs;
+
+    @Override
+    public Order clone() {
+        try {
+            Order clone = (Order) super.clone();
+            return clone;
+        } catch (Exception e) {
+      throw new RuntimeException(e);
+        }
+    }
+
+  @Column(name = "code")
+  private String code;
 }

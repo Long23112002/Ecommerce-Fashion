@@ -25,4 +25,8 @@ public interface ProductDetailService {
       Long idProduct, Pageable pageable);
 
   void handleMinusQuantity(Integer quantityBuy, ProductDetail productDetail);
+
+  ProductDetail toDto(ProductDetail productDetail);
+
+  Double getPricePromotion(ProductDetail productDetail);
 }

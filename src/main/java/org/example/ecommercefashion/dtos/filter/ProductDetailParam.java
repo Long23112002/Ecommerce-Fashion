@@ -11,4 +11,6 @@ public class ProductDetailParam {
     private Long idColor;
     private Long idSize;
     private String keyword = "";
+    private boolean allowZero;
+
 }

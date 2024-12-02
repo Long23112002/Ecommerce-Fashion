@@ -18,6 +18,8 @@ import org.example.ecommercefashion.entities.Promotion;
 import org.example.ecommercefashion.entities.Size;
 import org.example.ecommercefashion.entities.User;
 import org.example.ecommercefashion.entities.value.UserValue;
+import org.example.ecommercefashion.enums.promotion.StatusPromotionEnum;
+import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
 import org.example.ecommercefashion.exceptions.AttributeErrorMessage;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.ColorRepository;
@@ -146,15 +148,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     @Override
     public ProductDetail detail(Long id) {
         ProductDetail productDetail = findById(id);
-        List<Promotion> promotionList = promotionRepository.findAllByProductDetailId(productDetail.getId());
-        productDetail.setPromotion(promotionList.isEmpty() ? null : promotionList.get(0));
-        if (productDetail.getCreateBy() != null) {
-            productDetail.setCreateByUser(getInfoUserValue(productDetail.getCreateBy()));
-        }
-        if (productDetail.getUpdateBy() != null) {
-            productDetail.setUpdateByUser(getInfoUserValue(productDetail.getUpdateBy()));
-        }
-        return productDetail;
+        return toDto(productDetail);
     }
 
     @Override
@@ -163,18 +157,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         Page<ProductDetail> productDetailPage =
                 productDetailRepository
                         .findAllByProductId(idProduct, pageable)
-                        .map(
-                                detail -> {
-                                    List<Promotion> promotionList = promotionRepository.findAllByProductDetailId(detail.getId());
-                                    detail.setPromotion(promotionList.isEmpty() ? null : promotionList.get(0));
-                                    if (detail.getCreateBy() != null) {
-                                        detail.setCreateByUser(getInfoUserValue(detail.getCreateBy()));
-                                    }
-                                    if (detail.getUpdateBy() != null) {
-                                        detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
-                                    }
-                                    return detail;
-                                });
+                        .map(this::toDto);
         return new ResponsePage<>(productDetailPage);
 
         //        return productDetailRepository.getDetailByIdProduct(idProduct, pageable);
@@ -246,14 +229,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
     public ResponsePage<ProductDetail, ProductDetail> getAllPage(
             Pageable pageable, ProductDetailParam productDetailParam) {
         Page<ProductDetail> productDetailPage = filterProductDetail(productDetailParam, pageable)
-                .map(detail -> {
-                    List<Promotion> promotionList = promotionRepository.findAllByProductDetailId(detail.getId());
-                    detail.setPromotion(promotionList.isEmpty() ? null : promotionList.get(0));
-//                    if (detail.getUpdateBy() != null) {
-//                        detail.setUpdateByUser(getInfoUserValue(detail.getUpdateBy()));
-//                    }
-                    return detail;
-                });
+                .map(this::toDto);
         return new ResponsePage<>(productDetailPage);
     }
 
@@ -360,6 +336,38 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         long total = entityManager.createQuery(countQuery).getSingleResult();
 
         return new PageImpl<>(query.getResultList(), pageable, total);
+    }
+
+    @Override
+    public ProductDetail toDto(ProductDetail productDetail) {
+        if (productDetail.getCreateBy() != null) {
+            productDetail.setCreateByUser(getInfoUserValue(productDetail.getCreateBy()));
+        }
+        if (productDetail.getUpdateBy() != null) {
+            productDetail.setUpdateByUser(getInfoUserValue(productDetail.getUpdateBy()));
+        }
+        List<Promotion> promotions = productDetail.getPromotionList();
+        Optional<Promotion> optionalPromotion = promotions.stream()
+                .filter(p -> p.getStatusPromotionEnum() == StatusPromotionEnum.ACTIVE)
+                .findFirst();
+        if (optionalPromotion.isPresent()) {
+            Promotion promotion = optionalPromotion.get();
+            productDetail.setPromotion(promotion);
+        }
+        return productDetail;
+    }
+
+    @Override
+    public Double getPricePromotion(ProductDetail productDetail) {
+        Double price = productDetail.getPrice();
+        Promotion promotion = productDetail.getPromotion();
+        if (promotion == null) {
+            return price;
+        }
+        if (promotion.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
+            return price - ((price / 100) * promotion.getValue());
+        }
+        return price - promotion.getValue();
     }
 
 }

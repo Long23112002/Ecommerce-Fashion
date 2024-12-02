@@ -36,13 +36,13 @@ public interface OrderService {
 
   Page<OrderResponse> filter(OrderParam param, Pageable pageable);
 
-  Order createOrderAtStore(String token);
+  OrderResponse createOrderAtStore(String token);
 
-  List<Order> getOrderPendingAtStore(String token);
+  List<OrderResponse> getOrderPendingAtStore(String token);
 
   void updateStateOrderAtStore(Long id);
 
   byte[] generateOrderPdf(Long orderId);
 
-  Order updateOrderAtStore(Long id, OrderAtStoreUpdateRequest request);
+  OrderResponse updateOrderAtStore(Long id, OrderAtStoreUpdateRequest request);
 }

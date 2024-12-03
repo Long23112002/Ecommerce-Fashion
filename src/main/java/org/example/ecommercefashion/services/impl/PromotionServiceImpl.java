@@ -187,6 +187,13 @@ public class PromotionServiceImpl implements PromotionService {
             });
             promotion.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            promotion.getProductDetailList().clear();
+                productDetailRepository.findAll().forEach(productDetail -> {
+                    if (productDetail.getOriginPrice() != null) {
+                        productDetail.setPrice(productDetail.getOriginPrice());
+                        productDetail.setOriginPrice(null);
+                    }
+                });
             promotion.setDeleted(true);
             promotionRepository.save(promotion);
             return "Promotion deleted successfully";

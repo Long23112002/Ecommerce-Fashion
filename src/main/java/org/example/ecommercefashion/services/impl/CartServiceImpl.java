@@ -17,13 +17,16 @@ import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.ProductDetailCartResponse;
 import org.example.ecommercefashion.entities.Cart;
 import org.example.ecommercefashion.entities.ProductDetail;
+import org.example.ecommercefashion.entities.Promotion;
 import org.example.ecommercefashion.entities.value.CartValue;
 import org.example.ecommercefashion.entities.value.CartValueInfo;
+import org.example.ecommercefashion.enums.promotion.TypePromotionEnum;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.CartRepository;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.CartService;
+import org.example.ecommercefashion.services.ProductDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,9 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private ProductDetailRepository productDetailRepository;
+
+    @Autowired
+    private ProductDetailService productDetailService;
 
     @Override
     @Transactional
@@ -143,22 +149,9 @@ public class CartServiceImpl implements CartService {
                 .map(value -> {
                     int valueQuantity = value.getQuantity();
                     ProductDetailCartResponse productDetail =
-                            productDetailRepository
-                                    .findById(value.getProductDetailId())
-                                    .map(entity ->{
-                                        return ProductDetailCartResponse.builder()
-                                                .id(entity.getId())
-                                                .price(entity.getPrice())
-                                                .images(entity.getImages())
-                                                .product(entity.getProduct())
-                                                .size(entity.getSize())
-                                                .color(entity.getColor())
-                                                .quantity(entity.getQuantity())
-                                                .build();
-                                    })
-                                    .orElse(null);
+                            toCartValueInfo(productDetailService.detail(value.getProductDetailId()));
                     int productQuantity = productDetail.getQuantity();
-                    int quantity = Math.min(productQuantity,valueQuantity);
+                    int quantity = Math.min(productQuantity, valueQuantity);
                     return new CartValueInfo(quantity, productDetail);
                 })
                 .toList();
@@ -217,4 +210,17 @@ public class CartServiceImpl implements CartService {
             }
         }
     }
+
+    private ProductDetailCartResponse toCartValueInfo(ProductDetail entity) {
+       return ProductDetailCartResponse.builder()
+                .id(entity.getId())
+                .price(productDetailService.getPricePromotion(entity))
+                .images(entity.getImages())
+                .product(entity.getProduct())
+                .size(entity.getSize())
+                .color(entity.getColor())
+                .quantity(entity.getQuantity())
+                .build();
+    }
+
 }

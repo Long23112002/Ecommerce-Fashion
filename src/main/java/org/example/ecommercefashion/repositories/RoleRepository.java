@@ -13,8 +13,9 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
 
   @Query(
       "SELECT r FROM Role r "
-          + "WHERE (:keyword IS NULL OR r.name LIKE %:keyword%)"
-          + "order by r.id desc")
+          + "WHERE (:keyword IS NULL OR r.name LIKE %:keyword%) "
+          + "GROUP BY r.name, r.id "
+          + "ORDER BY r.id DESC")
   Page<Role> filterRoles(@Param("keyword") String keyword, Pageable pageable);
 
   boolean existsByName(String name);

@@ -17,6 +17,7 @@ import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.repositories.UserRepository;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.OrderDetailService;
+import org.example.ecommercefashion.services.ProductDetailService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailRepository repository;
     private final OrderRepository orderRepository;
     private final ProductDetailRepository productDetailRepository;
+    private final ProductDetailService productDetailService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
@@ -51,9 +53,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         Order order = orderRepository
                 .findById(request.getIdOrder())
                 .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, "Không tìm thấy order"));
-        ProductDetail productDetail = productDetailRepository
-                .findById(request.getIdProductDetail())
-                .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
+        ProductDetail productDetail = productDetailService.detail(request.getIdProductDetail());
 
         OrderDetail existedOrderDetail = repository
                 .findOrderDetailByOrderAndProductDetail(order, productDetail)
@@ -83,13 +83,14 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         }
     }
     private OrderDetail addNewOrderDetail(Order order, User user, ProductDetail productDetail, Integer quantity){
+        double price = productDetailService.getPricePromotion(productDetail);
         OrderDetail newDetail = new OrderDetail();
         newDetail.setCode("HDCT" + repository.getLastValue());
         newDetail.setOrder(order);
         newDetail.setProductDetail(productDetail);
         newDetail.setQuantity(quantity);
-        newDetail.setPrice(productDetail.getPrice());
-        newDetail.setTotalMoney(quantity * productDetail.getPrice());
+        newDetail.setPrice(price);
+        newDetail.setTotalMoney(quantity * price);
         newDetail.setCreatedBy(user.getId());
         return newDetail;
     }
@@ -100,7 +101,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng tổng vượt quá số lượng sản phẩm có sẵn");
         }
         orderDetail.setQuantity(newTotalQuantity);
-        orderDetail.setTotalMoney(newTotalQuantity * productDetail.getPrice());
+        orderDetail.setTotalMoney(newTotalQuantity * productDetailService.getPricePromotion(productDetail));
         orderDetail.setUpdatedBy(user.getId());
         return orderDetail;
     }

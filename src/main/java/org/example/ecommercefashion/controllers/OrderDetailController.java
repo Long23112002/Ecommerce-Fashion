@@ -4,6 +4,7 @@ import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
+import org.example.ecommercefashion.dtos.response.OrderResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.services.OrderDetailService;
@@ -40,8 +41,8 @@ public class OrderDetailController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Order> delete(@PathVariable Long id) {
-       return ResponseEntity.ok( service.deleteOrderDetail(id));
+    public ResponseEntity<OrderResponse> delete(@PathVariable Long id) {
+       return ResponseEntity.ok(service.deleteOrderDetail(id));
     }
 
 

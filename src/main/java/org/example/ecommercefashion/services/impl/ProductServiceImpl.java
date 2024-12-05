@@ -923,11 +923,11 @@ public class ProductServiceImpl implements ProductService {
                     .toList();
             product.setProductDetails(productDetails);
             ProductDetail firstProudctDetail = productDetails.get(0);
-            Double min = getPricePromotion(firstProudctDetail);
+            Double min = firstProudctDetail.getPrice();
             product.setPromotion(firstProudctDetail.getPromotion());
             for (ProductDetail pd : productDetails) {
-                Double price = getPricePromotion(pd);
-                if(min>getPricePromotion(pd)){
+                Double price = pd.getPrice();
+                if (min > price) {
                     min = price;
                     product.setPromotion(pd.getPromotion());
                 }
@@ -971,17 +971,5 @@ public class ProductServiceImpl implements ProductService {
             productDetail.setPromotion(promotion);
         }
         return productDetail;
-    }
-
-    private Double getPricePromotion(ProductDetail productDetail) {
-        Double price = productDetail.getPrice();
-        Promotion promotion = productDetail.getPromotion();
-        if (promotion == null) {
-            return price;
-        }
-        if (promotion.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
-            return price - ((price / 100) * promotion.getValue());
-        }
-        return price - promotion.getValue();
     }
 }

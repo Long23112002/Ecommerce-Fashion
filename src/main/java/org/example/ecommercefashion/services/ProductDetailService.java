@@ -28,5 +28,4 @@ public interface ProductDetailService {
 
   ProductDetail toDto(ProductDetail productDetail);
 
-  Double getPricePromotion(ProductDetail productDetail);
 }

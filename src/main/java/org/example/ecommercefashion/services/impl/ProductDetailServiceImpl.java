@@ -357,17 +357,4 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         return productDetail;
     }
 
-    @Override
-    public Double getPricePromotion(ProductDetail productDetail) {
-        Double price = productDetail.getPrice();
-        Promotion promotion = productDetail.getPromotion();
-        if (promotion == null) {
-            return price;
-        }
-        if (promotion.getTypePromotionEnum() == TypePromotionEnum.PERCENTAGE_DISCOUNT) {
-            return price - ((price / 100) * promotion.getValue());
-        }
-        return price - promotion.getValue();
-    }
-
 }

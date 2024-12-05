@@ -214,7 +214,7 @@ public class CartServiceImpl implements CartService {
     private ProductDetailCartResponse toCartValueInfo(ProductDetail entity) {
        return ProductDetailCartResponse.builder()
                 .id(entity.getId())
-                .price(productDetailService.getPricePromotion(entity))
+                .price(entity.getPrice())
                 .images(entity.getImages())
                 .product(entity.getProduct())
                 .size(entity.getSize())

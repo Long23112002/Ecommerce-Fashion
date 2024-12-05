@@ -47,4 +47,6 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
 
   Boolean existsByProduct(Product product);
 
+  @Query("SELECT SUM(p.price) FROM ProductDetail p WHERE p.id IN :productDetailIds")
+  Double calculateTotalPriceByIds(@Param("productDetailIds") List<Long> productDetailIds);
 }

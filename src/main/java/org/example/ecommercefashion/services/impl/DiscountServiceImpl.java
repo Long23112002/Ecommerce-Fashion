@@ -74,15 +74,33 @@ public class DiscountServiceImpl implements DiscountService {
 
         if (token != null) {
             JwtResponse jwt = jwtService.decodeToken(token);
-            if (request.getType() == TypeDiscount.PERCENTAGE) {
-                if (request.getValue() < 0 || request.getValue() > 100) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
+
+            if (request.getCondition() != null && request.getCondition().getIdProductDetail() != null) {
+                List<Long> productDetailIds = request.getCondition().getIdProductDetail();
+                Double totalValue = productDetailRepository.calculateTotalPriceByIds(productDetailIds);
+
+                if (totalValue == null || totalValue == 0) {
+                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_DETAILS_NOT_FOUND);
                 }
-            } else if (request.getType() == TypeDiscount.FIXED_AMOUNT) {
-                if (request.getValue() < 1000) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
+
+                if (request.getType() == TypeDiscount.PERCENTAGE) {
+                    if (request.getValue() > 50 || request.getMaxValue() > totalValue * 0.5) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_VALUE_EXCEEDS_LIMIT);
+                    }
+                    if (request.getValue() < 0 ) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
+                    }
+                } else if (request.getType() == TypeDiscount.FIXED_AMOUNT) {
+                    if (request.getValue() > totalValue * 0.5) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_VALUE_EXCEEDS_LIMIT);
+                    }
+                    if (request.getValue() < 1000) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
+                    }
                 }
             }
+
+
             String normalizedCategoryName;
             try {
                 normalizedCategoryName = normalizeString(request.getName());

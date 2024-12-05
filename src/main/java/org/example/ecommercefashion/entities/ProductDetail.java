@@ -36,7 +36,8 @@ public class ProductDetail {
   @Column(name = "price")
   private Double price;
 
-  @Transient private Double originPrice;
+  @Column(name = "origin_price")
+  private Double originPrice;
 
   @Column(name = "quantity")
   private Integer quantity;

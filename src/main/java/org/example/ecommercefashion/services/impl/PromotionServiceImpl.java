@@ -187,6 +187,13 @@ public class PromotionServiceImpl implements PromotionService {
             });
             promotion.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            promotion.getProductDetailList().clear();
+                productDetailRepository.findAll().forEach(productDetail -> {
+                    if (productDetail.getOriginPrice() != null) {
+                        productDetail.setPrice(productDetail.getOriginPrice());
+                        productDetail.setOriginPrice(null);
+                    }
+                });
             promotion.setDeleted(true);
             promotionRepository.save(promotion);
             return "Promotion deleted successfully";
@@ -242,16 +249,6 @@ public class PromotionServiceImpl implements PromotionService {
             promotion.setUpdatedBy(jwtResponse.getUserId());
             promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
-            if (productDetailIds == null || productDetailIds.isEmpty()) {
-                promotion.getProductDetailList().clear();
-
-                promotion.setUpdatedBy(jwtResponse.getUserId());
-                promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-                promotionRepository.save(promotion);
-                notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(), NotificationCode.DELETE_PRODUCT_DETAIL_FROM_PROMOTION, promotionId);
-                return mapPromotionToPromotionResponse(promotion);
-            }
-
             List<ProductDetail> productDetails = productDetailRepository.findAllById(productDetailIds);
 
             List<ProductDetail> productDetailList = productDetailRepository.findAll();
@@ -265,6 +262,25 @@ public class PromotionServiceImpl implements PromotionService {
                     .toList();
             if (!notFoundIds.isEmpty()) {
                 throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.PRODUCT_DETAIL_NOT_FOUND);
+            }
+
+            if (promotion.getStatusPromotionEnum().equals(StatusPromotionEnum.ACTIVE)) {
+                productDetailList.forEach(productDetail -> {
+                    if (productDetail.getOriginPrice() != null) {
+                        productDetail.setPrice(productDetail.getOriginPrice());
+                        productDetail.setOriginPrice(null);
+                    }
+                });
+            }
+
+            if (productDetailIds == null || productDetailIds.isEmpty()) {
+                promotion.getProductDetailList().clear();
+
+                promotion.setUpdatedBy(jwtResponse.getUserId());
+                promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                promotionRepository.save(promotion);
+                notificationService.sendNotificationToUsersWithPermission(promotion.getUpdatedBy(), NotificationCode.DELETE_PRODUCT_DETAIL_FROM_PROMOTION, promotionId);
+                return mapPromotionToPromotionResponse(promotion);
             }
 
             List<Promotion> overlappingPromotions = promotionRepository.findOverlappingPromotions(
@@ -281,15 +297,6 @@ public class PromotionServiceImpl implements PromotionService {
                         }
                     }
                 }
-            }
-
-            if (promotion.getStatusPromotionEnum().equals(StatusPromotionEnum.ACTIVE)) {
-                productDetailList.forEach(productDetail -> {
-                    if (productDetail.getOriginPrice() != null) {
-                        productDetail.setPrice(productDetail.getOriginPrice());
-                        productDetail.setOriginPrice(null);
-                    }
-                });
             }
 
             promotion.getProductDetailList().clear();

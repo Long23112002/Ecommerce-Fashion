@@ -28,7 +28,7 @@ public class SheducledPromotion {
 
     private final ProductDetailRepository productDetailRepository;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "*/10 * * * * *")
     @Transactional
     public synchronized void updatePromotionStatuses() {
         int promotionPageNumber = 0;
@@ -68,20 +68,7 @@ public class SheducledPromotion {
                                 discountedPrice = productDetail.getOriginPrice();
                             }
 
-                            Long minPrice = productDetail.getProduct().getMinPrice();
-                            Long maxPrice = productDetail.getProduct().getMaxPrice();
-
-                            if (minPrice == null) {
-                                minPrice = 0L;
-                            }
-                            if (maxPrice == null) {
-                                maxPrice = Math.round(productDetail.getPrice());// Nếu maxPrice null, gán bằng giá hiện tại
-                            }
-
-                            discountedPrice = Math.max(minPrice, Math.min(discountedPrice, maxPrice));
-
-
-                            productDetail.setPrice(Math.max(discountedPrice, 0));
+                            productDetail.setPrice(Math.max(discountedPrice, productDetail.getOriginPrice()*0.5));
                         } else if (promotion.getStatusPromotionEnum() == StatusPromotionEnum.ENDED) {
                             if (productDetail.getOriginPrice() != null) {
                                 productDetail.setPrice(productDetail.getOriginPrice());

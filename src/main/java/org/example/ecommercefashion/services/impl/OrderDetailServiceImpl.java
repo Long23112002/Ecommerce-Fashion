@@ -83,14 +83,13 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         }
     }
     private OrderDetail addNewOrderDetail(Order order, User user, ProductDetail productDetail, Integer quantity){
-        double price = productDetailService.getPricePromotion(productDetail);
         OrderDetail newDetail = new OrderDetail();
         newDetail.setCode("HDCT" + repository.getLastValue());
         newDetail.setOrder(order);
         newDetail.setProductDetail(productDetail);
         newDetail.setQuantity(quantity);
-        newDetail.setPrice(price);
-        newDetail.setTotalMoney(quantity * price);
+        newDetail.setPrice(productDetail.getPrice());
+        newDetail.setTotalMoney(quantity * productDetail.getPrice());
         newDetail.setCreatedBy(user.getId());
         return newDetail;
     }
@@ -101,7 +100,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng tổng vượt quá số lượng sản phẩm có sẵn");
         }
         orderDetail.setQuantity(newTotalQuantity);
-        orderDetail.setTotalMoney(newTotalQuantity * productDetailService.getPricePromotion(productDetail));
+        orderDetail.setTotalMoney(newTotalQuantity * productDetail.getPrice());
         orderDetail.setUpdatedBy(user.getId());
         return orderDetail;
     }

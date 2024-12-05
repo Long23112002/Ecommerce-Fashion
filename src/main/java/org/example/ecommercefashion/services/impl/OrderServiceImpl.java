@@ -279,7 +279,7 @@ public class OrderServiceImpl implements OrderService {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setProductDetail(productDetail);
             orderDetail.setQuantity(orderDetailValue.getQuantity());
-            orderDetail.setPrice(productDetailService.getPricePromotion(productDetail));
+            orderDetail.setPrice(productDetail.getPrice());
             orderDetail.setTotalMoney(productDetail.getPrice() * orderDetailValue.getQuantity());
             orderDetail.setOrder(order);
 
@@ -294,8 +294,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderDetailValue orderDetailValue : orderDetails) {
             ProductDetail productDetail =
                     productDetailService.detail(orderDetailValue.getProductDetailId());
-            double price = productDetailService.getPricePromotion(productDetail);
-            totalMoney += price * orderDetailValue.getQuantity();
+            totalMoney += productDetail.getPrice() * orderDetailValue.getQuantity();
         }
 
         return totalMoney;

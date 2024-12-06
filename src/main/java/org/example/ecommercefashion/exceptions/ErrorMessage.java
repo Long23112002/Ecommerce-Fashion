@@ -3,8 +3,10 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+  DISCOUNT_VALUE_EXCEEDS_LIMIT("Giá Trị Giảm Giá không được vượt quá 50% giá trị đơn hàng"),
+  PRODUCT_DETAILS_NOT_FOUND("Sản Phẩm Chi Tiết không Tìm Thấy"),
   DISCOUNT_ALREADY_USED("Giảm Giá đã được sử dụng"),
-  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 50"),
   DISCOUNT_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
   DISCOUNT_NAME_EXISTED("Tên Phiếu Giảm Giá Đã Tồn Tại"),
   DISCOUNT_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),

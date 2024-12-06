@@ -326,7 +326,7 @@ public class PromotionServiceImpl implements PromotionService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
                 .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
         for (Promotion overlappingPromotion : overlappingPromotions) {
-            if (!overlappingPromotion.getId().equals(currentPromotion.getId())) {
+            if (!overlappingPromotion.getId().equals(currentPromotion.getId())&& !overlappingPromotion.getStatusPromotionEnum().equals(StatusPromotionEnum.ENDED)) {
                 String formattedStartDate = formatter.format(overlappingPromotion.getStartDate().toInstant());
                 String formattedEndDate = formatter.format(overlappingPromotion.getEndDate().toInstant());
                 overlappingPromotion.setFormattedStartDate(formattedStartDate);

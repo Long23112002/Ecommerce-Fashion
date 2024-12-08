@@ -215,6 +215,15 @@ public class OrderServiceImpl implements OrderService {
         Order prev = order.clone();
 
         order.setStatus(dto.getStatus());
+
+        if(dto.getStatus()==OrderStatus.CANCEL){
+            List<OrderDetail> orderDetails = orderDetailRepository.getAllByOrderId(order.getId());
+            for (OrderDetail detail : orderDetails) {
+                ProductDetail product = detail.getProductDetail();
+                product.setQuantity(product.getQuantity() + detail.getQuantity());
+                productDetailRepository.save(product);
+            }
+        }
         if (dto.getAddress() != null) {
             order.setAddress(dto.getAddress());
             order.setTotalMoney(dto.getTotalMoney());

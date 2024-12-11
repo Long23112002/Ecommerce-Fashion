@@ -5,6 +5,7 @@ import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
+import org.example.ecommercefashion.dtos.request.OrderDetailUpdateRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.OrderResponse;
@@ -80,6 +81,28 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 repository.findOrderDetailByOrderAndProductDetail(order, productDetail).orElseThrow();
 
     }
+
+    @Override
+    public OrderDetail updateProductDetailToOrderDetail(OrderDetailUpdateRequest request, String token) {
+        JwtResponse userJWT = jwtService.decodeToken(token);
+        User user = getUserById(userJWT.getUserId());
+        OrderDetail orderDetail =
+                repository.findById(request.getOrderDetailId())
+                .orElseThrow(()-> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORDER_DETAIL_NOT_FOUND));
+        int quantity = request.getQuantity();
+        ProductDetail productDetail = productDetailService.detail(orderDetail.getProductDetail().getId());
+        if(quantity>productDetail.getQuantity()){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productDetail.getQuantity());
+        }
+        orderDetail.setQuantity(quantity);
+        orderDetail.setTotalMoney(quantity * productDetail.getPrice());
+        orderDetail.setUpdatedBy(user.getId());
+        orderDetail = repository.save(orderDetail);
+        Order order = orderDetail.getOrder();
+        updateOrderTotalMoney(order);
+        return orderDetail;
+    }
+
     private void countQuantity(Integer requestQuantity, Integer productQuantity) {
         if (requestQuantity > productQuantity) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productQuantity);

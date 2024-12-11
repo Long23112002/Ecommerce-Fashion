@@ -2,6 +2,7 @@ package org.example.ecommercefashion.controllers;
 
 import org.example.ecommercefashion.dtos.request.OrderCreateRequest;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
+import org.example.ecommercefashion.dtos.request.OrderDetailUpdateRequest;
 import org.example.ecommercefashion.dtos.request.PageableRequest;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.OrderResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +40,12 @@ public class OrderDetailController {
     public OrderDetail create(
             @Valid @RequestBody OrderDetailCreateRequest request, @RequestHeader("Authorization") String token) {
         return service.addProductDetailToOrderDetail(request, token);
+    }
+
+    @PutMapping
+    public OrderDetail update(
+            @Valid @RequestBody OrderDetailUpdateRequest request, @RequestHeader("Authorization") String token) {
+        return service.updateProductDetailToOrderDetail(request, token);
     }
 
     @DeleteMapping("/{id}")

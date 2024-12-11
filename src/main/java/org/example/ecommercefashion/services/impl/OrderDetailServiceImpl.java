@@ -1,11 +1,15 @@
 package org.example.ecommercefashion.services.impl;
 
 import com.longnh.exceptions.ExceptionHandle;
+import com.longnh.utils.FnCommon;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
 import org.example.ecommercefashion.dtos.request.OrderDetailCreateRequest;
+import org.example.ecommercefashion.dtos.request.OrderDetailUpdateRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
+import org.example.ecommercefashion.dtos.response.OrderResponse;
+import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.entities.ProductDetail;
@@ -77,6 +81,28 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 repository.findOrderDetailByOrderAndProductDetail(order, productDetail).orElseThrow();
 
     }
+
+    @Override
+    public OrderDetail updateProductDetailToOrderDetail(OrderDetailUpdateRequest request, String token) {
+        JwtResponse userJWT = jwtService.decodeToken(token);
+        User user = getUserById(userJWT.getUserId());
+        OrderDetail orderDetail =
+                repository.findById(request.getOrderDetailId())
+                .orElseThrow(()-> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORDER_DETAIL_NOT_FOUND));
+        int quantity = request.getQuantity();
+        ProductDetail productDetail = productDetailService.detail(orderDetail.getProductDetail().getId());
+        if(quantity>productDetail.getQuantity()){
+            throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productDetail.getQuantity());
+        }
+        orderDetail.setQuantity(quantity);
+        orderDetail.setTotalMoney(quantity * productDetail.getPrice());
+        orderDetail.setUpdatedBy(user.getId());
+        orderDetail = repository.save(orderDetail);
+        Order order = orderDetail.getOrder();
+        updateOrderTotalMoney(order);
+        return orderDetail;
+    }
+
     private void countQuantity(Integer requestQuantity, Integer productQuantity) {
         if (requestQuantity > productQuantity) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productQuantity);
@@ -118,7 +144,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return repository.getAllByOrderId(id);
     }
     @Override
-    public Order deleteOrderDetail(Long id) {
+    public OrderResponse deleteOrderDetail(Long id) {
         OrderDetail detail =
                 repository
                         .findById(id)
@@ -134,8 +160,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         detail.setDeleted(true);
         repository.save(detail);
         orderRepository.save(order);
-        return order;
+        return toDto(order);
+    }
 
+    private OrderResponse toDto(Order entity) {
+        UserResponse user = FnCommon.copyNonNullProperties(UserResponse.class, entity.getUser());
+        OrderResponse response = FnCommon.copyProperties(OrderResponse.class, entity);
+        response.setUser(user);
+        response.setPayAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip());
+        response.setRevenueAmount(entity.getTotalMoney() - entity.getDiscountAmount());
+        return response;
     }
 
 }

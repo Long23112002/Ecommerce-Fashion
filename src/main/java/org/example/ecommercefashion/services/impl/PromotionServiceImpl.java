@@ -103,7 +103,7 @@ public class PromotionServiceImpl implements PromotionService {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_PERCENTAGE_WRONG_FORMAT);
                 }
             } else if (promotionRequest.getTypePromotionEnum() == TypePromotionEnum.AMOUNT_DISCOUNT) {
-                if (promotionRequest.getValue() < 1000) {
+                if (promotionRequest.getValue() < 1000 || promotionRequest.getValue() > 10000000000.0) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_AMOUNT_WRONG_FORMAT);
                 }
             }
@@ -147,7 +147,7 @@ public class PromotionServiceImpl implements PromotionService {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_PERCENTAGE_WRONG_FORMAT);
                 }
             } else if (promotionRequest.getTypePromotionEnum() == TypePromotionEnum.AMOUNT_DISCOUNT) {
-                if (promotionRequest.getValue() < 1000) {
+                if (promotionRequest.getValue() < 1000 || promotionRequest.getValue() > 10000000000.0) {
                     throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PROMOTION_AMOUNT_WRONG_FORMAT);
                 }
             }
@@ -188,12 +188,12 @@ public class PromotionServiceImpl implements PromotionService {
             promotion.setUpdatedBy(getInforUser(jwtResponse.getUserId()).getId());
             promotion.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             promotion.getProductDetailList().clear();
-                productDetailRepository.findAll().forEach(productDetail -> {
-                    if (productDetail.getOriginPrice() != null) {
-                        productDetail.setPrice(productDetail.getOriginPrice());
-                        productDetail.setOriginPrice(null);
-                    }
-                });
+            productDetailRepository.findAll().forEach(productDetail -> {
+                if (productDetail.getOriginPrice() != null) {
+                    productDetail.setPrice(productDetail.getOriginPrice());
+                    productDetail.setOriginPrice(null);
+                }
+            });
             promotion.setDeleted(true);
             promotionRepository.save(promotion);
             return "Promotion deleted successfully";
@@ -326,7 +326,7 @@ public class PromotionServiceImpl implements PromotionService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
                 .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
         for (Promotion overlappingPromotion : overlappingPromotions) {
-            if (!overlappingPromotion.getId().equals(currentPromotion.getId())&& !overlappingPromotion.getStatusPromotionEnum().equals(StatusPromotionEnum.ENDED)) {
+            if (!overlappingPromotion.getId().equals(currentPromotion.getId()) && !overlappingPromotion.getStatusPromotionEnum().equals(StatusPromotionEnum.ENDED)) {
                 String formattedStartDate = formatter.format(overlappingPromotion.getStartDate().toInstant());
                 String formattedEndDate = formatter.format(overlappingPromotion.getEndDate().toInstant());
                 overlappingPromotion.setFormattedStartDate(formattedStartDate);

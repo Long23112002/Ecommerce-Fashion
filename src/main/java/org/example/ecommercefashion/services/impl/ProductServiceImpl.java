@@ -923,12 +923,14 @@ public class ProductServiceImpl implements ProductService {
                     .toList();
             product.setProductDetails(productDetails);
             ProductDetail firstProudctDetail = productDetails.get(0);
-            Double min = firstProudctDetail.getPrice();
+            Double min = firstProudctDetail.getOriginPrice() == null ? firstProudctDetail.getPrice() : firstProudctDetail.getOriginPrice();
             product.setPromotion(firstProudctDetail.getPromotion());
+            product.setMinPrice(min.longValue());
             for (ProductDetail pd : productDetails) {
-                Double price = pd.getPrice();
+                Double price = pd.getOriginPrice() == null ? pd.getPrice() : pd.getOriginPrice();
                 if (min > price) {
                     min = price;
+                    product.setMinPrice(min.longValue());
                     product.setPromotion(pd.getPromotion());
                 }
             }
@@ -937,25 +939,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductDetail toProductDetailDto(ProductDetail productDetail) {
-        if (productDetail.getCreateBy() != null) {
-            productDetail.setCreateByUser(getInfoUserValue(productDetail.getCreateBy()));
-        }
-        productDetail.setOriginPrice(productDetail.getPrice());
-        if (productDetail.getUpdateBy() != null) {
-            productDetail.setUpdateByUser(getInfoUserValue(productDetail.getUpdateBy()));
-        }
-        List<Promotion> promotions = productDetail.getPromotionList();
-        Optional<Promotion> optionalPromotion = promotions.stream()
-                .filter(p -> p.getStatusPromotionEnum() == StatusPromotionEnum.ACTIVE)
-                .findFirst();
-        if (optionalPromotion.isPresent()) {
-            Promotion promotion = optionalPromotion.get();
-            productDetail.setPromotion(promotion);
-        }
-        return productDetail;
-    }
-
-    public ProductDetail toDto(ProductDetail productDetail) {
         if (productDetail.getCreateBy() != null) {
             productDetail.setCreateByUser(getInfoUserValue(productDetail.getCreateBy()));
         }

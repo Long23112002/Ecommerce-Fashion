@@ -117,6 +117,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ResponsePage<Product, Product> similarProduct(Long id, Pageable pageable) {
+        Product product = getProductById(id);
+        Page<Product> similarProducts = productRepository.findSimilarProducts(product,pageable);
+        Page<Product> responses = similarProducts.map(this::toDto);
+
+        return new ResponsePage<>(responses);
+    }
+
+    @Override
     public Product createProduct(ProductRequest request, String token) {
         if (token != null) {
             JwtResponse jwtResponse = jwtService.decodeToken(token);

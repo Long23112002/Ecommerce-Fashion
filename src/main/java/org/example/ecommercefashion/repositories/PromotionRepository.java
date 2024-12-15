@@ -46,4 +46,11 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
     @Query("SELECT p FROM Promotion p JOIN p.productDetailList pd WHERE pd.id = :productDetailId AND p.deleted = false")
     List<Promotion> findAllByProductDetailId(Long productDetailId);
+
+    @Query("""
+            SELECT COUNT(p.id) > 0
+            FROM Promotion p
+            WHERE statusPromotionEnum = 'ACTIVE'
+            """)
+    boolean isAnyActive();
 }

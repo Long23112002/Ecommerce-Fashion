@@ -340,5 +340,10 @@ public class PromotionServiceImpl implements PromotionService {
         return new ArrayList<>(overlappingProductDetails);
     }
 
+    @Override
+    public boolean isAnyActive() {
+        return promotionRepository.isAnyActive();
+    }
+
 
 }

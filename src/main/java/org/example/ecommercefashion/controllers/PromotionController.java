@@ -44,6 +44,11 @@ public class PromotionController {
         return promotionService.getPromotionPage(param, pageable);
     }
 
+    @GetMapping("/any_active")
+    public boolean isAnyActive() {
+        return promotionService.isAnyActive();
+    }
+
     @GetMapping("{id}")
     public PromotionResponse getPromotionById(@PathVariable Long id) {
         return promotionService.getPromotionById(id);

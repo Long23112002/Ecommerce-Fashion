@@ -59,4 +59,65 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findSimilarProducts(Product product,
                                       Pageable pageable);
 
+    @Query(value = """
+            WITH ranked_products AS (
+                SELECT
+                    p.*,
+                    COALESCE(COUNT(od.id), 0) AS total_order,
+                    COALESCE(SUM(od.quantity), 0) AS total_quantity,
+                    FLOOR(EXTRACT(EPOCH FROM (CURRENT_DATE - o.success_at)) / (7 * 86400)) AS week_group,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY p.id
+                        ORDER BY
+                            FLOOR(EXTRACT(EPOCH FROM (CURRENT_DATE - o.success_at)) / (7 * 86400)) ASC,
+                            COALESCE(SUM(od.quantity), 0) DESC
+                    ) AS row_num
+                FROM
+                    products.product p
+                INNER JOIN
+                    products.product_detail pd
+                    	ON pd.id_product = p.id
+                    	and pd.deleted = false
+                LEFT JOIN
+                    orders.order_detail od
+                        ON od.product_detail_id = pd.id
+                        AND od.deleted = false
+                LEFT JOIN
+                    orders.order o
+                        ON o.id = od.order_id
+                       AND o.status = 'SUCCESS'
+                       AND o.deleted = false
+                WHERE
+                    o.id IS NULL
+                    OR o.success_at IS NOT NULL
+                    AND p.deleted = false
+                GROUP BY
+                    p.id,
+                    week_group
+                HAVING
+                	COUNT(pd.id) > 0
+            )
+            SELECT *
+            FROM
+                ranked_products rp
+            WHERE
+                rp.row_num = 1
+            ORDER BY
+                week_group ASC,
+                rp.total_order DESC,
+                rp.total_quantity DESC
+            LIMIT :#{#pageable.pageSize}
+            OFFSET :#{#pageable.offset}
+            """, nativeQuery = true)
+    List<Product> findHotProducts(Pageable pageable);
+
+    @Query(value = """
+            SELECT DISTINCT p
+            FROM Product p
+            JOIN p.productDetails pd
+            JOIN pd.promotionList pl
+            WHERE pl.statusPromotionEnum = 'ACTIVE'
+            """)
+    Page<Product> findProductInPromotion(Pageable pageable);
+
 }

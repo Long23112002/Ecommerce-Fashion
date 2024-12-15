@@ -24,4 +24,6 @@ public interface PromotionService {
     PromotionResponse addProductDetailsToPromotion(Long promotionId, List<Long> productDetailIds, String token);
 
     List<ProductDetail> getOverlappingProductDetails(Long promotionId);
+
+    boolean isAnyActive();
 }

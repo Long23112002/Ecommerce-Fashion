@@ -156,6 +156,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                     FROM orders.order o
                     JOIN orders.order_detail od
                         ON o.id = od.order_id
+                        AND od.deleted = false
                     JOIN products.product_detail pd
                         ON od.product_detail_id = pd.id
                     JOIN products.product p

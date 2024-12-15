@@ -17,6 +17,7 @@ import org.example.ecommercefashion.dtos.request.ProductRequest;
 import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
+import org.example.ecommercefashion.dtos.response.SoldProductResponse;
 import org.example.ecommercefashion.entities.Color;
 import org.example.ecommercefashion.entities.*;
 import org.example.ecommercefashion.entities.value.Identifiable;
@@ -29,8 +30,10 @@ import org.example.ecommercefashion.exceptions.ErrorMessage;
 import org.example.ecommercefashion.repositories.*;
 import org.example.ecommercefashion.security.JwtService;
 import org.example.ecommercefashion.services.ProductService;
+import org.example.ecommercefashion.services.StatisticService;
 import org.example.ecommercefashion.utils.ExcelCommon;
 import org.example.ecommercefashion.utils.InMemoryMultipartFile;
+import org.example.ecommercefashion.utils.TimeUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -65,6 +68,7 @@ import javax.persistence.criteria.Subquery;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -119,8 +123,26 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ResponsePage<Product, Product> similarProduct(Long id, Pageable pageable) {
         Product product = getProductById(id);
-        Page<Product> similarProducts = productRepository.findSimilarProducts(product,pageable);
+        Page<Product> similarProducts = productRepository.findSimilarProducts(product, pageable);
         Page<Product> responses = similarProducts.map(this::toDto);
+
+        return new ResponsePage<>(responses);
+    }
+
+    @Override
+    public ResponsePage<Product, Product> hotProducts(Pageable pageable) {
+        List<Product> hotProducts = productRepository.findHotProducts(pageable).stream()
+                .map(this::toDto)
+                .toList();
+        Page<Product> responses = new PageImpl<>(hotProducts);
+
+        return new ResponsePage<>(responses);
+    }
+
+    @Override
+    public ResponsePage<Product, Product> productInPromotion(Pageable pageable) {
+        Page<Product> pip = productRepository.findProductInPromotion(pageable);
+        Page<Product> responses = pip.map(this::toDto);
 
         return new ResponsePage<>(responses);
     }

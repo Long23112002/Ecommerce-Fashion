@@ -40,6 +40,16 @@ public class ProductController {
         return productService.similarProduct(id, pageable.toPageable());
     }
 
+    @GetMapping("/hot")
+    public ResponsePage<Product, Product> hot(PageableRequest pageable) {
+        return productService.hotProducts(pageable.toPageable());
+    }
+
+    @GetMapping("/in_promotion")
+    public ResponsePage<Product, Product> productInPromotion(PageableRequest pageable) {
+        return productService.productInPromotion(pageable.toPageable());
+    }
+
     @PostMapping
     @CheckPermission({"add_product"})
     public ResponseEntity<Product> createProduct(

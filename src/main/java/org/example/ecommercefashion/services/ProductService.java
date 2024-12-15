@@ -14,6 +14,10 @@ public interface ProductService {
 
   ResponsePage<Product, Product> similarProduct(Long id, Pageable pageable);
 
+  ResponsePage<Product, Product> hotProducts(Pageable pageable);
+
+  ResponsePage<Product, Product> productInPromotion(Pageable pageable);
+
   Product createProduct(ProductRequest request, String token);
 
   Product updateProduct(Long id, ProductRequest request, String token);

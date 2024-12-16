@@ -3,6 +3,7 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
+  DISCOUNT_HAS_BEEN_USED("Mã giảm giá này đã được người dùng sử dụng"),
   DISCOUNT_VALUE_EXCEEDS_LIMIT("Giá Trị Giảm Giá không được vượt quá 50% giá trị đơn hàng"),
   PRODUCT_DETAILS_NOT_FOUND("Sản Phẩm Chi Tiết không Tìm Thấy"),
   DISCOUNT_ALREADY_USED("Giảm Giá đã được sử dụng"),

@@ -75,19 +75,26 @@ public class DiscountServiceImpl implements DiscountService {
         if (token != null) {
             JwtResponse jwt = jwtService.decodeToken(token);
 
+            Double totalValue = null;
+
             if (request.getCondition() != null && request.getCondition().getIdProductDetail() != null) {
                 List<Long> productDetailIds = request.getCondition().getIdProductDetail();
-                Double totalValue = productDetailRepository.calculateTotalPriceByIds(productDetailIds);
-
-                if (totalValue == null || totalValue == 0) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_DETAILS_NOT_FOUND);
+                if (!productDetailIds.isEmpty()) {
+                    totalValue = productDetailRepository.calculateTotalPriceByIds(productDetailIds);
                 }
+            }
 
+//            // Nếu không có ProductDetail, sử dụng price từ Condition
+//            if (totalValue == null && request.getCondition() != null) {
+//                totalValue = request.getCondition().getPrice();
+//            }
+
+            if (totalValue != null) {
                 if (request.getType() == TypeDiscount.PERCENTAGE) {
                     if (request.getValue() > 50 || request.getMaxValue() > totalValue * 0.5) {
                         throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_VALUE_EXCEEDS_LIMIT);
                     }
-                    if (request.getValue() < 0 ) {
+                    if (request.getValue() < 0) {
                         throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
                     }
                 } else if (request.getType() == TypeDiscount.FIXED_AMOUNT) {
@@ -160,17 +167,36 @@ public class DiscountServiceImpl implements DiscountService {
         if (token != null) {
             JwtResponse jwt = jwtService.decodeToken(token);
 
-            if (request.getType() == TypeDiscount.PERCENTAGE) {
-                if (request.getValue() < 0 || request.getValue() > 100) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
-                }
-            } else if (request.getType() == TypeDiscount.PERCENTAGE) {
-                if (request.getValue() < 1000) {
-                    throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
+            Double totalValue = null;
+
+            if (request.getCondition() != null && request.getCondition().getIdProductDetail() != null) {
+                List<Long> productDetailIds = request.getCondition().getIdProductDetail();
+                if (!productDetailIds.isEmpty()) {
+                    totalValue = productDetailRepository.calculateTotalPriceByIds(productDetailIds);
                 }
             }
-            if (request.getCondition() != null && request.getCondition().getPrice() == 0.0) {
-                request.getCondition().setPrice(null);
+
+//            // Nếu không có ProductDetail, sử dụng price từ Condition
+//            if (totalValue == null && request.getCondition() != null) {
+//                totalValue = request.getCondition().getPrice();
+//            }
+
+            if (totalValue != null) {
+                if (request.getType() == TypeDiscount.PERCENTAGE) {
+                    if (request.getValue() > 50 || request.getMaxValue() > totalValue * 0.5) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_VALUE_EXCEEDS_LIMIT);
+                    }
+                    if (request.getValue() < 0) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_PERCENTAGE_WRONG_FORMAT);
+                    }
+                } else if (request.getType() == TypeDiscount.FIXED_AMOUNT) {
+                    if (request.getValue() > totalValue * 0.5) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_VALUE_EXCEEDS_LIMIT);
+                    }
+                    if (request.getValue() < 1000) {
+                        throw new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.DISCOUNT_AMOUNT_WRONG_FORMAT);
+                    }
+                }
             }
 
             String normalizedCategoryName;

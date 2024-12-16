@@ -10,11 +10,14 @@ import org.example.ecommercefashion.dtos.response.JwtResponse;
 import org.example.ecommercefashion.dtos.response.MessageResponse;
 import org.example.ecommercefashion.dtos.response.OrderResponse;
 import org.example.ecommercefashion.dtos.response.UserResponse;
+import org.example.ecommercefashion.entities.Discount;
 import org.example.ecommercefashion.entities.Order;
 import org.example.ecommercefashion.entities.OrderDetail;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.User;
+import org.example.ecommercefashion.enums.TypeDiscount;
 import org.example.ecommercefashion.exceptions.ErrorMessage;
+import org.example.ecommercefashion.repositories.DiscountRepository;
 import org.example.ecommercefashion.repositories.OrderDetailRepository;
 import org.example.ecommercefashion.repositories.OrderRepository;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
@@ -34,8 +37,8 @@ import java.util.List;
 public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailRepository repository;
     private final OrderRepository orderRepository;
-    private final ProductDetailRepository productDetailRepository;
     private final ProductDetailService productDetailService;
+    private final DiscountRepository discountRepository;
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
@@ -88,10 +91,10 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         User user = getUserById(userJWT.getUserId());
         OrderDetail orderDetail =
                 repository.findById(request.getOrderDetailId())
-                .orElseThrow(()-> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORDER_DETAIL_NOT_FOUND));
+                        .orElseThrow(() -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORDER_DETAIL_NOT_FOUND));
         int quantity = request.getQuantity();
         ProductDetail productDetail = productDetailService.detail(orderDetail.getProductDetail().getId());
-        if(quantity>productDetail.getQuantity()){
+        if (quantity > productDetail.getQuantity()) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productDetail.getQuantity());
         }
         orderDetail.setQuantity(quantity);
@@ -108,7 +111,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm chỉ còn " + productQuantity);
         }
     }
-    private OrderDetail addNewOrderDetail(Order order, User user, ProductDetail productDetail, Integer quantity){
+
+    private OrderDetail addNewOrderDetail(Order order, User user, ProductDetail productDetail, Integer quantity) {
         OrderDetail newDetail = new OrderDetail();
         newDetail.setCode("HDCT" + repository.getLastValue());
         newDetail.setOrder(order);
@@ -120,7 +124,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return newDetail;
     }
 
-    private OrderDetail updateOrderDetail(OrderDetail orderDetail, Integer quantity, ProductDetail productDetail, User user){
+    private OrderDetail updateOrderDetail(OrderDetail orderDetail, Integer quantity, ProductDetail productDetail, User user) {
         int newTotalQuantity = orderDetail.getQuantity() + quantity;
         if (newTotalQuantity > productDetail.getQuantity()) {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Số lượng tổng vượt quá số lượng sản phẩm có sẵn");
@@ -140,9 +144,10 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         orderRepository.save(order);
     }
 
-    private List<OrderDetail> getListOrderDetail(Long id){
+    private List<OrderDetail> getListOrderDetail(Long id) {
         return repository.getAllByOrderId(id);
     }
+
     @Override
     public OrderResponse deleteOrderDetail(Long id) {
         OrderDetail detail =
@@ -154,8 +159,19 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new ExceptionHandle(HttpStatus.BAD_REQUEST, "Không tìm thấy hóa đơn liên quan");
         }
 
-        Double updatedTotalMoney = order.getTotalMoney() - detail.getTotalMoney();
-        order.setTotalMoney(Math.max(0, updatedTotalMoney));
+        Double updatedTotalMoney = Math.max(0, (order.getTotalMoney() - detail.getTotalMoney()));
+        order.setTotalMoney(updatedTotalMoney);
+
+        if (order.getDiscountId() != null) {
+            Discount discount = discountRepository.findById(order.getDiscountId()).orElse(null);
+            if (discount != null) {
+                if (updatedTotalMoney <= 0 || (discount.getType() == TypeDiscount.FIXED_AMOUNT && updatedTotalMoney<discount.getValue())) {
+                    removeDiscount(order);
+                }
+            } else {
+                removeDiscount(order);
+            }
+        }
 
         detail.setDeleted(true);
         repository.save(detail);
@@ -170,6 +186,11 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         response.setPayAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip());
         response.setRevenueAmount(entity.getTotalMoney() - entity.getDiscountAmount());
         return response;
+    }
+
+    private void removeDiscount(Order order) {
+        order.setDiscountId(null);
+        order.setDiscountAmount(0.0);
     }
 
 }

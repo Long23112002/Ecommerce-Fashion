@@ -85,9 +85,9 @@ public class DiscountServiceImpl implements DiscountService {
             }
 
 //            // Nếu không có ProductDetail, sử dụng price từ Condition
-//            if (totalValue == null && request.getCondition() != null) {
-//                totalValue = request.getCondition().getPrice();
-//            }
+            if (totalValue == null && request.getCondition() != null) {
+                totalValue = request.getCondition().getPrice();
+            }
 
             if (totalValue != null) {
                 if (request.getType() == TypeDiscount.PERCENTAGE) {
@@ -176,10 +176,9 @@ public class DiscountServiceImpl implements DiscountService {
                 }
             }
 
-//            // Nếu không có ProductDetail, sử dụng price từ Condition
-//            if (totalValue == null && request.getCondition() != null) {
-//                totalValue = request.getCondition().getPrice();
-//            }
+            if (totalValue == null && request.getCondition() != null) {
+                totalValue = request.getCondition().getPrice();
+            }
 
             if (totalValue != null) {
                 if (request.getType() == TypeDiscount.PERCENTAGE) {

@@ -216,7 +216,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(dto.getStatus());
 
-        if(dto.getStatus()==OrderStatus.CANCEL){
+        if (dto.getStatus() == OrderStatus.CANCEL) {
             List<OrderDetail> orderDetails = orderDetailRepository.getAllByOrderId(order.getId());
             for (OrderDetail detail : orderDetails) {
                 ProductDetail product = detail.getProductDetail();
@@ -469,7 +469,7 @@ public class OrderServiceImpl implements OrderService {
 
             document.add(new Paragraph("Mã đơn hàng: " + order.getCode()).setBold());
             document.add(new Paragraph("Khách hàng: " + order.getFullName()).setBold());
-            if(order.getPhoneNumber() != null){
+            if (order.getPhoneNumber() != null) {
                 document.add(new Paragraph("Số ĐT: " + order.getPhoneNumber()).setBold());
             }
             LocalDateTime createdAt = order.getCreatedAt().toLocalDateTime();
@@ -627,8 +627,12 @@ public class OrderServiceImpl implements OrderService {
     private OrderResponse toDto(Order entity) {
         UserResponse user = FnCommon.copyNonNullProperties(UserResponse.class, entity.getUser());
         OrderResponse response = FnCommon.copyProperties(OrderResponse.class, entity);
+        double payAmount = (entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip();
+        if(entity.getOrderDetails().size() == 0 || payAmount<0) {
+            payAmount = 0;
+        }
         response.setUser(user);
-        response.setPayAmount((entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip());
+        response.setPayAmount(payAmount);
         response.setRevenueAmount(entity.getTotalMoney() - entity.getDiscountAmount());
         return response;
     }

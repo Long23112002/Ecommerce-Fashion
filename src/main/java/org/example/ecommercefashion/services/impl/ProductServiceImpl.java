@@ -250,7 +250,11 @@ public class ProductServiceImpl implements ProductService {
             product.setCategory(category);
             product.setMaterial(material);
             product.setOrigin(origin);
-            product.setImage(request.getImage());
+            if (request.getImage().isEmpty()) {
+                product.setImage(product.getImage());
+            } else {
+                product.setImage(request.getImage());
+            }
 
             product.setCreateByUser(getInfoUserValue(product.getCreateBy()));
             product.setUpdateByUser(getInfoUserValue(jwtResponse.getUserId()));

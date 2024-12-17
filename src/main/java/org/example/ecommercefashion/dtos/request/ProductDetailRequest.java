@@ -18,7 +18,7 @@ public class ProductDetailRequest {
     @Min(value = 1)
     private Integer quantity;
     private List<File> images;
-    @NotNull
+//    @NotNull
     private Long idProduct;
     @NotNull(message = "Size không được trống")
     private Long idSize;

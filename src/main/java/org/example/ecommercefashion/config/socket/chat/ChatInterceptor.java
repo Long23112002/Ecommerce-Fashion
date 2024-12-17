@@ -40,7 +40,7 @@ public class ChatInterceptor implements ChannelInterceptor {
             handleSubcribe(accessor);
         }
         if (StompCommand.DISCONNECT.equals(command)) {
-            handleDisConnect(accessor);
+//            handleDisConnect(accessor);
         }
 //        if (StompCommand.SEND.equals(accessor.getCommand())) {
 //            isUserInRoom(accessor);
@@ -58,6 +58,7 @@ public class ChatInterceptor implements ChannelInterceptor {
         accessor.getSessionAttributes().put("idUser", id);
     }
 
+
     private void handleSubcribe(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
         if (destination.startsWith(WebSocketDestination.CHAT_ADMIN.getDestination())) {
@@ -70,18 +71,18 @@ public class ChatInterceptor implements ChannelInterceptor {
 //        }
     }
 
-    private void handleDisConnect(StompHeaderAccessor accessor) {
-        try {
-            Optional.ofNullable(accessor.getSessionAttributes().get("idUser"))
-                    .ifPresent(object -> {
-                        System.out.println(object.toString() + "_DISCONNECT_FROM_CHAT_ROOM");
-                        Long idUser = Long.valueOf(object.toString());
-                        subscriptionService.removeUserFromAnyRooms(idUser);
-                    });
-        } catch (NumberFormatException e) {
-            throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND);
-        }
-    }
+//    private void handleDisConnect(StompHeaderAccessor accessor) {
+//        try {
+//            Optional.ofNullable(accessor.getSessionAttributes().get("idUser"))
+//                    .ifPresent(object -> {
+//                        System.out.println(object.toString() + "_DISCONNECT_FROM_CHAT_ROOM");
+//                        Long idUser = Long.valueOf(object.toString());
+//                        subscriptionService.removeUserFromAnyRooms(idUser);
+//                    });
+//        } catch (NumberFormatException e) {
+//            throw new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND);
+//        }
+//    }
 
     private void isUserHasPermission(StompHeaderAccessor accessor) {
         User user = decodeToUser(accessor);

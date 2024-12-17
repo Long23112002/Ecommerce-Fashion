@@ -89,7 +89,7 @@ spring:
       fail-on-empty-beans: false
 
 server:
-  port: ${PORT_SERVER}
+  port: ${PORT_SERVER:8888}
 
 vnpay:
   url: ${VNPAY_URL}

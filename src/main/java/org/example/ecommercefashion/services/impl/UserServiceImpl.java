@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
 
     entityManager.persist(user);
 
-    cartService.create(new CartRequest(user.getId(), new ArrayList<>()));
+//    cartService.create(new CartRequest(user.getId(), new ArrayList<>()));
 
     return mapEntityToResponse(user);
   }

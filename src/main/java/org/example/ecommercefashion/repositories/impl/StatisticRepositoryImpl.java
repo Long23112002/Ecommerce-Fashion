@@ -31,8 +31,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                     FROM
                         all_days
                     LEFT JOIN
-                        orders.order o
-                        ON CAST(o.success_at AS DATE) = all_days.day
+                        orders.orders_vn_time o
+                        ON CAST(o.vn_success_at AS DATE) = all_days.day
                         AND o.status = 'SUCCESS'
                         AND o.deleted = false
                     GROUP BY
@@ -79,34 +79,33 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     @Override
     public List<Object[]> getMonthRevenueData(int year, int month) {
         String query_string = """
-                    WITH selected_month AS (
-                        SELECT
-                            TO_DATE(:year || '-' || :month || '-01', 'YYYY-MM-DD') AS first_day,
-                            TO_DATE(:year || '-' || :month || '-01', 'YYYY-MM-DD') + INTERVAL '1 month' - INTERVAL '1 day' AS last_day
-                    ),
-                    all_days AS (
-                        SELECT GENERATE_SERIES(
-                            (SELECT first_day FROM selected_month),
-                            (SELECT last_day FROM selected_month),
-                            INTERVAL '1 day'
-                        ) AS day
-                    )
+                WITH selected_month AS (
                     SELECT
-                        TO_CHAR(all_days.day, 'FMDD') AS day, 
-                        COALESCE(SUM(o.total_money - o.discount_amount), 0) AS revenue 
-                    FROM
-                        all_days
-                    LEFT JOIN
-                        orders.order o
-                        ON DATE(o.success_at) = all_days.day
-                        AND DATE_PART('year', o.success_at) = :year
-                        AND DATE_PART('month', o.success_at) = :month
-                        AND o.status = 'SUCCESS'
-                        AND o.deleted = false
-                    GROUP BY
-                        all_days.day
-                    ORDER BY
-                        all_days.day
+                        TO_DATE(:year || '-' || :month || '-01', 'YYYY-MM-DD') AS first_day,
+                        TO_DATE(:year || '-' || :month || '-01', 'YYYY-MM-DD') + INTERVAL '1 month' - INTERVAL '1 day' AS last_day
+                ),
+                all_days AS (
+                    SELECT GENERATE_SERIES(
+                        (SELECT first_day FROM selected_month),
+                        (SELECT last_day FROM selected_month),
+                        INTERVAL '1 day'
+                    ) AS day
+                )
+                SELECT
+                    TO_CHAR(all_days.day, 'FMDD') AS day,
+                    COALESCE(SUM(o.total_money - o.discount_amount), 0) AS revenue
+                FROM
+                    all_days
+                LEFT JOIN orders.orders_vn_time o
+                ON DATE(o.vn_success_at) = all_days.day
+                   AND DATE_PART('year', o.vn_success_at) = :year
+                   AND DATE_PART('month', o.vn_success_at) = :month
+                   AND o.status = 'SUCCESS'
+                   AND o.deleted = false
+                GROUP BY
+                    all_days.day
+                ORDER BY
+                    all_days.day;
                 """;
         Query query = entityManager.createNativeQuery(query_string);
         query.setParameter("month", month);
@@ -131,13 +130,13 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                             ON pd2.id_color = c.id
                         JOIN products.size s 
                             ON pd2.id_size = s.id
-                        JOIN orders.order o2 
+                        JOIN orders.orders_vn_time o2 
                             ON o2.id = od2.order_id
                         WHERE
                             o2.status = 'SUCCESS'
                             AND o2.deleted = false
-                            AND EXTRACT(MONTH FROM o2.success_at) = :month
-                            AND EXTRACT(YEAR FROM o2.success_at) = :year
+                            AND EXTRACT(MONTH FROM o2.vn_success_at) = :month
+                            AND EXTRACT(YEAR FROM o2.vn_success_at) = :year
                         GROUP BY
                             pd2.id, s.name, c.name
                     )
@@ -153,7 +152,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                                 'sold', pd_details.sold
                             )
                         ) AS TEXT) AS product_details
-                    FROM orders.order o
+                    FROM orders.orders_vn_time o
                     JOIN orders.order_detail od
                         ON o.id = od.order_id
                         AND od.deleted = false
@@ -166,8 +165,8 @@ public class StatisticRepositoryImpl implements StatisticRepository {
                     WHERE
                         o.status = 'SUCCESS'
                         AND o.deleted = false
-                        AND EXTRACT(MONTH FROM o.success_at) = :month
-                        AND EXTRACT(YEAR FROM o.success_at) = :year
+                        AND EXTRACT(MONTH FROM o.vn_success_at) = :month
+                        AND EXTRACT(YEAR FROM o.vn_success_at) = :year
                     GROUP BY
                         p.id
                     ORDER BY

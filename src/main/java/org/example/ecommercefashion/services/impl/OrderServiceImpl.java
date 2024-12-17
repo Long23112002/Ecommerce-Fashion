@@ -60,6 +60,7 @@ import org.example.ecommercefashion.services.ProductDetailService;
 import org.example.ecommercefashion.strategies.TransactionDTO;
 import org.example.ecommercefashion.strategies.TransactionRequest;
 import org.example.ecommercefashion.strategies.TransactionStrategy;
+import org.example.ecommercefashion.utils.TimeUtils;
 import org.quartz.JobExecutionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
@@ -238,7 +239,7 @@ public class OrderServiceImpl implements OrderService {
             order.setPaymentMethod(dto.getPaymentMethod());
         }
         if (order.getStatus() == OrderStatus.SUCCESS) {
-            order.setSuccessAt(Timestamp.from(Instant.now()));
+            order.setSuccessAt(TimeUtils.getCurrentVnTime());
         }
 
         orderLogService.create(OrderLog.builder()
@@ -395,11 +396,11 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING_AT_STORE);
         order.setStaffId(user.getId());
         order.setFullName("Khách lẻ");
-//        ZonedDateTime gmtPlus7Time = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
-//        order.setCreatedAt(Timestamp.valueOf(gmtPlus7Time.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        order.setOrderDetails(new ArrayList<>());
         order.setPaymentMethod(PaymentMethodEnum.CASH);
+        System.out.println(order.getCreatedAt());
         order = orderRepository.save(order);
-
+        System.out.println(order.getCreatedAt());
         return toDto(order);
     }
 
@@ -625,13 +626,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderResponse toDto(Order entity) {
-        UserResponse user = FnCommon.copyNonNullProperties(UserResponse.class, entity.getUser());
         OrderResponse response = FnCommon.copyProperties(OrderResponse.class, entity);
         double payAmount = (entity.getTotalMoney() - entity.getDiscountAmount()) + entity.getMoneyShip();
-        if(entity.getOrderDetails().size() == 0 || payAmount<0) {
+        if(entity.getUser()!=null) {
+            UserResponse user = FnCommon.copyNonNullProperties(UserResponse.class, entity.getUser());
+            response.setUser(user);
+        }
+        if(entity.getOrderDetails() == null || entity.getOrderDetails().size() == 0 || payAmount<0) {
             payAmount = 0;
         }
-        response.setUser(user);
         response.setPayAmount(payAmount);
         response.setRevenueAmount(entity.getTotalMoney() - entity.getDiscountAmount());
         return response;

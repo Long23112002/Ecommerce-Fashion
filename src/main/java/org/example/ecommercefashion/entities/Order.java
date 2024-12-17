@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import lombok.*;
 import org.example.ecommercefashion.annotations.ValidPhoneNumber;
@@ -105,6 +106,7 @@ public class  Order implements Serializable , Cloneable {
   private Long staffId;
 
   @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+  @OrderBy("id ASC")
   @JsonManagedReference
   private List<OrderDetail> orderDetails;
 

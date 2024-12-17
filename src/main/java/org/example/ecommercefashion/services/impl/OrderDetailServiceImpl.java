@@ -141,6 +141,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .mapToDouble(OrderDetail::getTotalMoney) // Lấy tổng tiền từ mỗi OrderDetail
                 .sum();
         order.setTotalMoney(totalMoney); // Cập nhật lại tổng tiền
+        if (order.getDiscountId() != null) {
+            Discount discount = discountRepository.findById(order.getDiscountId()).orElse(null);
+            if (discount != null) {
+                if (totalMoney <= 0 || (discount.getType() == TypeDiscount.FIXED_AMOUNT && totalMoney<discount.getValue())) {
+                    removeDiscount(order);
+                }
+            } else {
+                removeDiscount(order);
+            }
+        }
         orderRepository.save(order);
     }
 
@@ -173,8 +183,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             }
         }
 
-        detail.setDeleted(true);
-        repository.save(detail);
+        repository.delete(detail);
         orderRepository.save(order);
         return toDto(order);
     }

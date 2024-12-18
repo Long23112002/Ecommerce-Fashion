@@ -666,43 +666,41 @@ public class ProductServiceImpl implements ProductService {
     String sizeName = ExcelCommon.convertCell("size", String.class, row.getCell(8));
     String colorName = ExcelCommon.convertCell("color", String.class, row.getCell(9));
 
-    // 1. Validate sản phẩm chính
-    if (productName == null || productName.isEmpty()) {
-      errorMessages.add("Lỗi: Tên sản phẩm không được để trống.");
-    } else if (productRepository.existsByName(productName)) {
-      errorMessages.add("Lỗi: Tên sản phẩm đã tồn tại.");
-    }
+    if (categoryName != null || brandName != null || materialName != null || originName != null) {
 
-    // 2. Validate các thuộc tính liên quan đến sản phẩm
-    if (productName != null && !productName.isEmpty()) {
+      if (productName == null || productName.isEmpty()) {
+        errorMessages.add("Lỗi: Tên sản phẩm không được để trống.\n");
+      }
+    }
+    if (productName != null) {
       if (categoryName == null || categoryName.isEmpty()) {
-        errorMessages.add("Lỗi: Danh mục không được để trống.");
+        errorMessages.add("Lỗi: Danh mục không được để trống.\n");
       }
       if (brandName == null || brandName.isEmpty()) {
-        errorMessages.add("Lỗi: Thương hiệu không được để trống.");
+        errorMessages.add("Lỗi: Thương hiệu không được để trống.\n");
       }
       if (materialName == null || materialName.isEmpty()) {
-        errorMessages.add("Lỗi: Chất liệu không được để trống.");
+        errorMessages.add("Lỗi: Chất liệu không được để trống.\n");
       }
       if (originName == null || originName.isEmpty()) {
-        errorMessages.add("Lỗi: Xuất xứ không được để trống.");
+        errorMessages.add("Lỗi: Xuất xứ không được để trống.\n");
       }
+    } else if (productRepository.existsByName(productName)) {
+      errorMessages.add("Lỗi: Tên sản phẩm đã tồn tại.\n");
     }
 
-    // 3. Validate chi tiết sản phẩm
     if (price == null || price <= 0) {
-      errorMessages.add("Lỗi: Giá phải lớn hơn 0.");
+      errorMessages.add("Lỗi: Giá phải lớn hơn 0.\n");
     }
     if (quantity == null || quantity <= 0) {
-      errorMessages.add("Lỗi: Số lượng phải lớn hơn 0.");
+      errorMessages.add("Lỗi: Số lượng phải lớn hơn 0.\n");
     }
     if (sizeName == null || sizeName.isEmpty()) {
-      errorMessages.add("Lỗi: Kích thước không được để trống.");
+      errorMessages.add("Lỗi: Kích thước không được để trống.\n");
     }
     if (colorName == null || colorName.isEmpty()) {
-      errorMessages.add("Lỗi: Màu sắc không được để trống.");
+      errorMessages.add("Lỗi: Màu sắc không được để trống.\n");
     }
-
     // 4. Ghi kết quả vào ô thứ 10 (cột K)
     Cell resultCell = row.createCell(10, CellType.STRING);
     if (!errorMessages.isEmpty()) {

@@ -42,6 +42,7 @@ public class QRCodeGeneratorServiceImpl implements QRCodeGeneratorService {
       document.close();
       return pdfStream.toByteArray();
     } catch (Exception e) {
+      e.printStackTrace();
       throw new RuntimeException("Failed to generate QR code", e);
     }
   }

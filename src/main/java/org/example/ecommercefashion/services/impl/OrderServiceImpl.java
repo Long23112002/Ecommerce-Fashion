@@ -515,9 +515,9 @@ public class OrderServiceImpl implements OrderService {
 
       int index = 1;
       double totalWithoutDiscount = 0.0;
+      OrderResponse od = toDto(order);
       for (var detail : order.getOrderDetails()) {
         double lineTotal = detail.getPrice() * detail.getQuantity();
-        totalWithoutDiscount += lineTotal;
 
         table.addCell(
             new Cell()
@@ -539,10 +539,10 @@ public class OrderServiceImpl implements OrderService {
       document.add(table);
 
       double discount = order.getDiscountAmount() != null ? order.getDiscountAmount() : 0.0;
-      double totalWithDiscount = totalWithoutDiscount - discount;
+      double totalWithDiscount = od.getPayAmount();
 
       document.add(
-          new Paragraph("Tổng tiền hoá đơn: " + String.format("%,.0f VNĐ", totalWithoutDiscount))
+          new Paragraph("Tổng tiền hoá đơn: " + String.format("%,.0f VNĐ", order.getTotalMoney()))
               .setTextAlignment(TextAlignment.RIGHT)
               .setBold()
               .setMarginTop(10));
@@ -552,6 +552,12 @@ public class OrderServiceImpl implements OrderService {
                 .setTextAlignment(TextAlignment.RIGHT)
                 .setBold());
       }
+      document
+          .add(
+              new Paragraph("Phí giao hàng: " + String.format("%,.0f VNĐ", order.getMoneyShip()))
+                  .setTextAlignment(TextAlignment.RIGHT)
+                  .setBold())
+          .setTopMargin(10);
       document
           .add(
               new Paragraph("Số tiền thanh toán: " + String.format("%,.0f VNĐ", totalWithDiscount))

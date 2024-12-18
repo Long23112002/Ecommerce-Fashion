@@ -8,6 +8,8 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.longnh.exceptions.ExceptionHandle;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.repositories.ProductDetailRepository;
 import org.example.ecommercefashion.services.QRCodeGeneratorService;
@@ -33,22 +35,29 @@ public class QRCodeGeneratorServiceImpl implements QRCodeGeneratorService {
       PdfWriter.getInstance(document, pdfStream);
       document.open();
 
-      Image logo = loadLogoImage("src/main/resources/msttcorefonts/logo.png");
+      Image logo = loadLogoImage();
 
       generateQRCodes(document, productDetail, qty, logo);
 
       document.close();
       return pdfStream.toByteArray();
     } catch (Exception e) {
-      e.printStackTrace();
       throw new RuntimeException("Failed to generate QR code", e);
     }
   }
 
-  private Image loadLogoImage(String path) throws Exception {
-    Image logo = Image.getInstance(path);
-    logo.scaleToFit(30, 30);
-    return logo;
+  private Image loadLogoImage() throws Exception {
+    try (InputStream logoStream =
+        getClass().getClassLoader().getResourceAsStream("msttcorefonts/logo.png")) {
+
+      if (logoStream == null) {
+        throw new FileNotFoundException("Logo file not found in classpath!");
+      }
+      Image logo = Image.getInstance(logoStream.toString());
+      logo.scaleToFit(30, 30);
+
+      return logo;
+    }
   }
 
   private void generateQRCodes(Document document, ProductDetail productDetail, Long qty, Image logo)

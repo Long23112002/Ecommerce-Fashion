@@ -8,7 +8,7 @@ import java.io.UnsupportedEncodingException;
 
 public interface VNPayService {
 
-  String createPayment(HttpServletRequest request, long amountRequest, long orderId)
+  String createPayment(long amountRequest, long orderId)
       throws UnsupportedEncodingException;
 
   ResponseEntity<?> paymentSuccess(String status);

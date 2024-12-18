@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.repositories;
 
 import org.example.ecommercefashion.dtos.filter.PromotionParam;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Promotion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,27 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
             "(:startDate BETWEEN p.startDate AND p.endDate OR " +
             ":endDate BETWEEN p.startDate AND p.endDate OR " +
             "p.startDate BETWEEN :startDate AND :endDate)")
-    List<Promotion> findOverlappingPromotions(@Param("startDate") Timestamp startDate, @Param("endDate") Timestamp endDate);
+    List<Promotion> findOverlappingPromotions(
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate
+    );
 
+    @Query("SELECT p FROM Promotion p WHERE p.id <> :currentId AND "
+            + "((:startDate BETWEEN p.startDate AND p.endDate) "
+            + "OR (:endDate BETWEEN p.startDate AND p.endDate) "
+            + "OR (p.startDate BETWEEN :startDate AND :endDate))")
+    List<Promotion> findOverlappingPromotionsExceptCurrent(
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate,
+            @Param("currentId") Long currentId);
+
+    @Query("SELECT p FROM Promotion p JOIN p.productDetailList pd WHERE pd.id = :productDetailId AND p.deleted = false")
+    List<Promotion> findAllByProductDetailId(Long productDetailId);
+
+    @Query("""
+            SELECT COUNT(p.id) > 0
+            FROM Promotion p
+            WHERE statusPromotionEnum = 'ACTIVE'
+            """)
+    boolean isAnyActive();
 }

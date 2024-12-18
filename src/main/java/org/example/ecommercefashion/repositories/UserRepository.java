@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.repositories;
 
+import java.util.List;
 import org.example.ecommercefashion.dtos.filter.UserParam;
 import org.example.ecommercefashion.entities.User;
 import org.springframework.data.domain.Page;
@@ -9,9 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -24,7 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
           + "(:#{#param.email} IS NULL OR u.slugEmail LIKE %:#{#param.email}%) AND "
           + "(:#{#param.phone} IS NULL OR u.phoneNumber LIKE %:#{#param.phone}%) AND "
           + "(:#{#param.fullName} IS NULL OR u.slugFullName LIKE %:#{#param.fullName}%) AND "
-          + "(:#{#param.gender} IS NULL OR u.gender = :#{#param.gender})")
+          + "(:#{#param.gender} IS NULL OR u.gender = :#{#param.gender}) "
+          + "GROUP BY u.id, u.slugEmail, u.phoneNumber, u.slugFullName, u.gender "
+          + "ORDER BY u.id DESC")
   Page<User> filterUser(UserParam param, Pageable pageable);
 
   @Query(
@@ -42,8 +42,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
               + "where u.id = :id "
               + "and p.name like :permission",
       nativeQuery = true)
-  boolean isUserHasPermission(@Param("id") Long id,
-                              @Param("permission") String permission);
+  boolean isUserHasPermission(@Param("id") Long id, @Param("permission") String permission);
 
   @Query(
       value =
@@ -62,8 +61,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
       nativeQuery = true)
   List<User> findAllUserByPermission(String permission);
 
-  boolean existsByEmailAndDeleted(String email , boolean deleted);
+  boolean existsByEmailAndDeleted(String email, boolean deleted);
 
-  boolean existsByPhoneNumberAndDeleted(String phoneNumber , boolean deleted);
-
+  boolean existsByPhoneNumberAndDeleted(String phoneNumber, boolean deleted);
 }

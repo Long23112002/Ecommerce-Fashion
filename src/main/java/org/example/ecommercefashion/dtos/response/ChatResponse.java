@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -18,6 +19,8 @@ public class ChatResponse {
   private String idRoom;
 
   private String content;
+
+  private String image;
 
   private Boolean seen;
 

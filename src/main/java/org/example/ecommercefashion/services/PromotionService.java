@@ -4,6 +4,7 @@ import org.example.ecommercefashion.dtos.filter.PromotionParam;
 import org.example.ecommercefashion.dtos.request.PromotionRequest;
 import org.example.ecommercefashion.dtos.response.PromotionResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
+import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Promotion;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +22,8 @@ public interface PromotionService {
     String deletePromotion(Long id, String token);
 
     PromotionResponse addProductDetailsToPromotion(Long promotionId, List<Long> productDetailIds, String token);
+
+    List<ProductDetail> getOverlappingProductDetails(Long promotionId);
+
+    boolean isAnyActive();
 }

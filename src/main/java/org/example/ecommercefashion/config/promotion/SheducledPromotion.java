@@ -28,7 +28,7 @@ public class SheducledPromotion {
 
     private final ProductDetailRepository productDetailRepository;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "*/10 * * * * *")
     @Transactional
     public synchronized void updatePromotionStatuses() {
         int promotionPageNumber = 0;

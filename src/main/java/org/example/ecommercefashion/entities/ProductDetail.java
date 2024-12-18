@@ -27,7 +27,7 @@ import org.hibernate.annotations.Where;
 @Table(name = "product_detail", schema = "products")
 @Where(clause = "deleted = false")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class ProductDetail {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,37 +70,40 @@ public class ProductDetail {
   private Boolean deleted = false;
 
   @ManyToOne(
-          cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
-          fetch = FetchType.LAZY)
+      cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
+      fetch = FetchType.LAZY)
   @JsonIgnoreProperties({"productDetails"})
-//  @JsonBackReference
+  //  @JsonBackReference
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_product")
   private Product product;
 
   @ManyToOne(
-          cascade = {
-                  CascadeType.DETACH, CascadeType.MERGE,
-                  CascadeType.PERSIST, CascadeType.REFRESH
-          },
-          fetch = FetchType.LAZY)
+      cascade = {
+        CascadeType.DETACH, CascadeType.MERGE,
+        CascadeType.PERSIST, CascadeType.REFRESH
+      },
+      fetch = FetchType.LAZY)
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_size")
   private Size size;
 
   @ManyToOne(
-          cascade = {
-                  CascadeType.DETACH, CascadeType.MERGE,
-                  CascadeType.PERSIST, CascadeType.REFRESH
-          },
-          fetch = FetchType.LAZY)
+      cascade = {
+        CascadeType.DETACH, CascadeType.MERGE,
+        CascadeType.PERSIST, CascadeType.REFRESH
+      },
+      fetch = FetchType.LAZY)
   @Fetch(FetchMode.JOIN)
   @JoinColumn(name = "id_color")
   private Color color;
 
   @ManyToMany(mappedBy = "productDetailList", fetch = FetchType.LAZY)
-  @JsonIgnore
   @BatchSize(size = 100)
+  @JsonBackReference
   private List<Promotion> promotionList;
 
+  @Transient
+  @JsonIgnoreProperties("productDetailList")
+  private Promotion promotion;
 }

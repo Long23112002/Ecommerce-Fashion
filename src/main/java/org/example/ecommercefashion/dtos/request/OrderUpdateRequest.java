@@ -2,6 +2,7 @@ package org.example.ecommercefashion.dtos.request;
 
 import lombok.Data;
 import org.example.ecommercefashion.annotations.ValidPhoneNumber;
+import org.example.ecommercefashion.enums.PaymentMethodEnum;
 
 import javax.validation.constraints.NotBlank;
 
@@ -18,4 +19,6 @@ public class OrderUpdateRequest {
     private String specificAddress;
 
     private String note;
+
+    private PaymentMethodEnum paymentMethod;
 }

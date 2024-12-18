@@ -1,6 +1,7 @@
 package org.example.ecommercefashion.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLEnumType;
 import java.io.Serializable;
 import java.util.Collection;
@@ -31,6 +32,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @Where(clause = "deleted = false")
 @TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User implements UserDetails, Serializable {
 
   @Id

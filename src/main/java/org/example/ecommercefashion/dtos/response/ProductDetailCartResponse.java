@@ -2,6 +2,7 @@ package org.example.ecommercefashion.dtos.response;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.ecommercefashion.entities.Color;
@@ -12,6 +13,7 @@ import org.example.ecommercefashion.entities.Size;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ProductDetailCartResponse {
 
   private Long id;

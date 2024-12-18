@@ -3,7 +3,11 @@ package org.example.ecommercefashion.exceptions;
 import com.longnh.exceptions.BaseErrorMessage;
 
 public enum ErrorMessage implements BaseErrorMessage {
-  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 100"),
+  DISCOUNT_HAS_BEEN_USED("Mã giảm giá này đã được người dùng sử dụng"),
+  DISCOUNT_VALUE_EXCEEDS_LIMIT("Giá Trị Giảm Giá không được vượt quá 50% giá trị đơn hàng"),
+  PRODUCT_DETAILS_NOT_FOUND("Sản Phẩm Chi Tiết không Tìm Thấy"),
+  DISCOUNT_ALREADY_USED("Giảm Giá đã được sử dụng"),
+  DISCOUNT_PERCENTAGE_WRONG_FORMAT("phần trăm phải nằm trong khoảng từ 0 đến 50"),
   DISCOUNT_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
   DISCOUNT_NAME_EXISTED("Tên Phiếu Giảm Giá Đã Tồn Tại"),
   DISCOUNT_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
@@ -51,15 +55,17 @@ public enum ErrorMessage implements BaseErrorMessage {
   OTP_EXPIRED("OTP đã hết hạn"),
   PROMOTION_NOT_FOUND("Không tìm thấy khuyến mãi"),
   PROMOTION_PERCENTAGE_WRONG_FORMAT("Giá trị khuyến mãi phần trăm phải nằm trong khoảng từ 0 đến 100"),
-  PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000"),
+  PROMOTION_AMOUNT_WRONG_FORMAT("Giá trị khuyến mãi số tiền phải lớn hơn 1.000 và nhỏ hơn 10 tỉ"),
   PROMOTION_START_DATE_OR_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày bắt đầu"),
   PRODUCT_NAME_EXISTED("Tên Sản Phẩm Đã Tồn Tại"),
   PRODUCT_NOT_FOUND("Không tìm thấy Sản Phẩm"),
   PRODUCT_WAS_DISABLE("Sản Phẩm bị ẩn "),
   SECURE_NOT_MATCH("VNPAY secure không hợp lệ "),
+  INVALID_PAY_AMOUNT("Số tiền thanh toán không hợp lệ "),
   PAYMENT_FAILED("Giao dịch thất bại"),
   INVALID_ADDRESS("Địa chỉ không được trống"),
-  ORDER_NOT_IN_DRAFT("Đơn hàng không thể thay đổi khi không ở trạng thái nháp"),
+  ORDER_NOT_IN_DRAFT("Đơn hàng không còn trạng thái nháp"),
+  ORDER_DETAIL_NOT_FOUND("Không tìm thấy hóa đơn chi tiết"),
   ERROR_WHEN_CREATE("Lỗi khi tạo"),
   COLOR_HAS_PRODUCT_DETAIL("Màu sắc đang thuộc về 1 chi tiết sản phẩm"),
   SIZE_HAS_PRODUCT_DETAIL("Size đang thuộc về 1 chi tiết sản phẩm"),
@@ -75,6 +81,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   PRODUCT_NOT_ENOUGH("Số lượng sản phẩm không đủ"),
   EXPORT_EXCEL_ERROR("Lỗi khi xuất file excel"),
   PRODUCT_HAS_PRODUCT_DETAIL("Sản phẩm đang có từ một chi tiết sản phẩm"),
+  PROMOTION_END_DATE_WRONG("Ngày kết thúc không được nhỏ hơn ngày hiện tại"),
 
   ;
 

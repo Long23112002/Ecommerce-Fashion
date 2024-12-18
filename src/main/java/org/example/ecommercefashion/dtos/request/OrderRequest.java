@@ -37,7 +37,6 @@ public class OrderRequest {
 
   @NotNull private Double totalMoney;
 
-  @NotEmpty
   @Size(min = 1, message = "Đơn hàng của bạn ít nhất phải có 1 sản phẩm")
   private List<OrderDetailValue> orderDetails;
 }

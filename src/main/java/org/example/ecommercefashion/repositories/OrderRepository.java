@@ -24,8 +24,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "AND (:#{#param.day} IS NULL OR EXTRACT('DAY' FROM (p.success_at + INTERVAL '7 hour')) = :#{#param.dayDefault}) " +
             "AND (:#{#param.month} IS NULL OR EXTRACT('MONTH' FROM (p.success_at + INTERVAL '7 hour')) = :#{#param.monthDefault}) " +
             "AND (:#{#param.year} IS NULL OR EXTRACT('YEAR' FROM (p.success_at + INTERVAL '7 hour')) = :#{#param.yearDefault}) " +
-            "AND p.deleted = FALSE " +
-            "ORDER BY p.updated_at DESC, p.created_at DESC", nativeQuery = true)
+            "AND p.deleted = FALSE ", nativeQuery = true) // TODO: Query order update và create
     Page<Order> filter(OrderParam param, Pageable pageable);
 
     @Query("SELECT COUNT(*) " +

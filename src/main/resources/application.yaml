@@ -11,9 +11,9 @@ facebook:
   redirect-uri: ${FACEBOOK_REDIRECT_URI:env.FB_REDIRECT_URI}
 
 google:
-  client-id: ${GOOGLE_CLIENT_ID:env.GG_CLIENT_ID}
-  client-secret: ${GOOGLE_CLIENT_SECRET:env.GG_CLIENT_SECRET}
-  redirect-uri: ${GOOGLE_REDIRECT_URI:env.GG_REDIRECT_URI}
+  client-id: ${GOOGLE_CLIENT_ID}
+  client-secret: ${GOOGLE_CLIENT_SECRET}
+  redirect-uri: ${GOOGLE_REDIRECT_URI}
 
 
 spring:
@@ -103,7 +103,6 @@ vnpay:
     url: ${VNPAY_API_URL}
   version: ${VNPAY_VERSION}
   command: ${COMMAND}
-
 
 
 

@@ -179,6 +179,7 @@ public class ProductServiceImpl implements ProductService {
       productCreate.setCategory(category);
       productCreate.setMaterial(material);
       productCreate.setOrigin(origin);
+      productCreate.setProductDetails(new ArrayList<>());
 
       productCreate.setCreateByUser(getInfoUserValue(jwtResponse.getUserId()));
       productRepository.save(productCreate);
@@ -943,7 +944,7 @@ public class ProductServiceImpl implements ProductService {
       product.setUpdateByUser(getInfoUserValue(product.getUpdateBy()));
     }
     List<ProductDetail> productDetails = product.getProductDetails();
-    if (productDetails.size() > 0) {
+    if (productDetails!= null && productDetails.size() > 0) {
       productDetails = product.getProductDetails().stream().map(this::toProductDetailDto).toList();
       product.setProductDetails(productDetails);
       ProductDetail firstProudctDetail = productDetails.get(0);

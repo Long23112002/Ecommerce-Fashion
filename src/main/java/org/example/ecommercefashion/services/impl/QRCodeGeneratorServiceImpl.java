@@ -54,7 +54,12 @@ public class QRCodeGeneratorServiceImpl implements QRCodeGeneratorService {
       if (logoStream == null) {
         throw new FileNotFoundException("Logo file not found in classpath!");
       }
-      Image logo = Image.getInstance(logoStream.toString());
+
+      // Convert InputStream to byte array
+      byte[] logoBytes = logoStream.readAllBytes();
+
+      // Pass the byte array to Image.getInstance()
+      Image logo = Image.getInstance(logoBytes);
       logo.scaleToFit(30, 30);
 
       return logo;

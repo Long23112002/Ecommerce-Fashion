@@ -444,7 +444,8 @@ public class OrderServiceImpl implements OrderService {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     try {
-      String fontPath = "src/main/resources/msttcorefonts/Times_New_Roman.ttf";
+      String fontPath =
+          getClass().getClassLoader().getResource("msttcorefonts/Times_New_Roman.ttf").getPath();
       PdfFont font = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H);
 
       PdfWriter writer = new PdfWriter(out);
@@ -455,8 +456,9 @@ public class OrderServiceImpl implements OrderService {
       document.setFont(font);
       document.setFontSize(8);
 
-      String logoPath = "src/main/resources/msttcorefonts/logo.png";
+      String logoPath = getClass().getClassLoader().getResource("msttcorefonts/logo.png").getPath();
       ImageData imageData = ImageDataFactory.create(logoPath);
+
       Image logo = new Image(imageData);
       logo.setHorizontalAlignment(HorizontalAlignment.CENTER);
       logo.setWidth(50);

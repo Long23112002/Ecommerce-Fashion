@@ -88,10 +88,10 @@ public class ProductServiceImpl implements ProductService {
 
   private UserValue getInfoUserValue(Long id) {
     User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(
-                () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+            userRepository
+                    .findById(id)
+                    .orElseThrow(
+                            () -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
     UserValue userValue = new UserValue();
     FnCommon.copyNonNullProperties(userValue, user);
     return userValue;
@@ -99,9 +99,9 @@ public class ProductServiceImpl implements ProductService {
 
   private Product findById(Long id) {
     return productRepository
-        .findById(id)
-        .orElseThrow(
-            () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
+            .findById(id)
+            .orElseThrow(
+                    () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
   }
 
   @Override
@@ -124,7 +124,7 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public ResponsePage<Product, Product> hotProducts(Pageable pageable) {
     List<Product> hotProducts =
-        productRepository.findHotProducts(pageable).stream().map(this::toDto).toList();
+            productRepository.findHotProducts(pageable).stream().map(this::toDto).toList();
     Page<Product> responses = new PageImpl<>(hotProducts);
 
     return new ResponsePage<>(responses);
@@ -148,28 +148,28 @@ public class ProductServiceImpl implements ProductService {
       }
 
       Brand brand =
-          brandRepository
-              .findById(request.getIdBrand())
-              .orElseThrow(
-                  () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND));
+              brandRepository
+                      .findById(request.getIdBrand())
+                      .orElseThrow(
+                              () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND));
       Category category =
-          categoryRepository
-              .findById(request.getIdCategory())
-              .orElseThrow(
-                  () ->
-                      new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NOT_FOUND));
+              categoryRepository
+                      .findById(request.getIdCategory())
+                      .orElseThrow(
+                              () ->
+                                      new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NOT_FOUND));
       Material material =
-          materialRepository
-              .findById(request.getIdMaterial())
-              .orElseThrow(
-                  () ->
-                      new ExceptionHandle(
-                          HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NOT_FOUND));
+              materialRepository
+                      .findById(request.getIdMaterial())
+                      .orElseThrow(
+                              () ->
+                                      new ExceptionHandle(
+                                              HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NOT_FOUND));
       Origin origin =
-          originRepository
-              .findById(request.getIdOrigin())
-              .orElseThrow(
-                  () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NOT_FOUND));
+              originRepository
+                      .findById(request.getIdOrigin())
+                      .orElseThrow(
+                              () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NOT_FOUND));
 
       Product productCreate = new Product();
       FnCommon.copyNonNullProperties(productCreate, request);
@@ -194,11 +194,11 @@ public class ProductServiceImpl implements ProductService {
     if (token != null) {
       JwtResponse jwtResponse = jwtService.decodeToken(token);
       Product product =
-          productRepository
-              .findById(id)
-              .orElseThrow(
-                  () ->
-                      new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
+              productRepository
+                      .findById(id)
+                      .orElseThrow(
+                              () ->
+                                      new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
 
       String normalizedProductName;
       try {
@@ -211,28 +211,28 @@ public class ProductServiceImpl implements ProductService {
       }
 
       Brand brand =
-          brandRepository
-              .findById(request.getIdBrand())
-              .orElseThrow(
-                  () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND));
+              brandRepository
+                      .findById(request.getIdBrand())
+                      .orElseThrow(
+                              () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.BRAND_NOT_FOUND));
       Category category =
-          categoryRepository
-              .findById(request.getIdCategory())
-              .orElseThrow(
-                  () ->
-                      new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NOT_FOUND));
+              categoryRepository
+                      .findById(request.getIdCategory())
+                      .orElseThrow(
+                              () ->
+                                      new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.CATEGORY_NOT_FOUND));
       Material material =
-          materialRepository
-              .findById(request.getIdMaterial())
-              .orElseThrow(
-                  () ->
-                      new ExceptionHandle(
-                          HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NOT_FOUND));
+              materialRepository
+                      .findById(request.getIdMaterial())
+                      .orElseThrow(
+                              () ->
+                                      new ExceptionHandle(
+                                              HttpStatus.BAD_REQUEST, AttributeErrorMessage.MATERIAL_NOT_FOUND));
       Origin origin =
-          originRepository
-              .findById(request.getIdOrigin())
-              .orElseThrow(
-                  () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NOT_FOUND));
+              originRepository
+                      .findById(request.getIdOrigin())
+                      .orElseThrow(
+                              () -> new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.ORIGIN_NOT_FOUND));
 
       FnCommon.copyNonNullProperties(product, request);
       product.setDescription(request.getDescription());
@@ -299,19 +299,19 @@ public class ProductServiceImpl implements ProductService {
     setupDataValidation(sheet, colorNames.toArray(new String[0]), 1, 100, 9, 9);
 
     createSampleData(
-        sheet, categoryNames, brandNames, materialNames, originNames, sizeNames, colorNames);
+            sheet, categoryNames, brandNames, materialNames, originNames, sizeNames, colorNames);
 
     return writeWorkbookToByteArray(workbook);
   }
 
   private void createSampleData(
-      Sheet sheet,
-      List<String> categoryNames,
-      List<String> brandNames,
-      List<String> materialNames,
-      List<String> originNames,
-      List<String> sizeNames,
-      List<String> colorNames) {
+          Sheet sheet,
+          List<String> categoryNames,
+          List<String> brandNames,
+          List<String> materialNames,
+          List<String> originNames,
+          List<String> sizeNames,
+          List<String> colorNames) {
     Row row = sheet.createRow(1);
 
     row.createCell(0).setCellValue("Sản phẩm mẫu");
@@ -337,16 +337,16 @@ public class ProductServiceImpl implements ProductService {
   private void createHeaderRow(Sheet sheet) {
     Row headerRow = sheet.createRow(0);
     String[] columns = {
-      "Tên sản phẩm *",
-      "Danh mục *",
-      "Thương hiệu *",
-      "Chất liệu *",
-      "Xuất xứ *",
-      "Mô tả sản phẩm",
-      "Giá tiền *",
-      "Số lượng *",
-      "Kích thước *",
-      "Màu sắc *",
+            "Tên sản phẩm *",
+            "Danh mục *",
+            "Thương hiệu *",
+            "Chất liệu *",
+            "Xuất xứ *",
+            "Mô tả sản phẩm",
+            "Giá tiền *",
+            "Số lượng *",
+            "Kích thước *",
+            "Màu sắc *",
     };
 
     CellStyle headerStyle = sheet.getWorkbook().createCellStyle();
@@ -404,23 +404,23 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private void setupDataValidation(
-      Sheet sheet, String[] values, int firstRow, int lastRow, int firstCol, int lastCol) {
+          Sheet sheet, String[] values, int firstRow, int lastRow, int firstCol, int lastCol) {
     DataValidationHelper validationHelper = sheet.getDataValidationHelper();
     DataValidationConstraint constraint = validationHelper.createExplicitListConstraint(values);
     CellRangeAddressList addressList =
-        new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol);
+            new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol);
     DataValidation validation = validationHelper.createValidation(constraint, addressList);
     validation.setShowErrorBox(true);
     sheet.addValidationData(validation);
   }
 
   public <T extends Identifiable> List<String> loadEntityNamesByPage(
-      int pageNumber, JpaRepository<T, Long> repository, Function<T, String> nameMapper) {
+          int pageNumber, JpaRepository<T, Long> repository, Function<T, String> nameMapper) {
     Pageable pageable = PageRequest.of(pageNumber, 100);
     Page<T> entityPage = repository.findAll(pageable);
     return entityPage.stream()
-        .map(entity -> entity.getId() + " - " + nameMapper.apply(entity))
-        .collect(Collectors.toList());
+            .map(entity -> entity.getId() + " - " + nameMapper.apply(entity))
+            .collect(Collectors.toList());
   }
 
   private Page<Product> buildQuery(ProductParam param, Pageable pageable) {
@@ -448,12 +448,12 @@ public class ProductServiceImpl implements ProductService {
     if (param.getKeyword() != null && !param.getKeyword().isEmpty()) {
       String keywordPattern = "%" + param.getKeyword().toLowerCase() + "%";
       predicates.add(
-          cb.or(
-              cb.like(cb.lower(product.get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("brand").get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("material").get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("category").get("name")), keywordPattern),
-              cb.like(cb.lower(product.get("origin").get("name")), keywordPattern)));
+              cb.or(
+                      cb.like(cb.lower(product.get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("brand").get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("material").get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("category").get("name")), keywordPattern),
+                      cb.like(cb.lower(product.get("origin").get("name")), keywordPattern)));
     }
     if (param.getCode() != null && !param.getCode().isEmpty()) {
       String codePattern = "%" + param.getCode().toLowerCase() + "%";
@@ -469,16 +469,16 @@ public class ProductServiceImpl implements ProductService {
       Subquery<Long> colorSubquery = query.subquery(Long.class);
       Root<ProductDetail> productDetail = colorSubquery.from(ProductDetail.class);
       colorSubquery
-          .select(productDetail.get("product").get("id"))
-          .where(productDetail.get("color").get("id").in(param.getIdColors()));
+              .select(productDetail.get("product").get("id"))
+              .where(productDetail.get("color").get("id").in(param.getIdColors()));
       predicates.add(product.get("id").in(colorSubquery));
     }
     if (param.getIdSizes() != null && !param.getIdSizes().isEmpty()) {
       Subquery<Long> sizeSubquery = query.subquery(Long.class);
       Root<ProductDetail> productDetail = sizeSubquery.from(ProductDetail.class);
       sizeSubquery
-          .select(productDetail.get("product").get("id"))
-          .where(productDetail.get("size").get("id").in(param.getIdSizes()));
+              .select(productDetail.get("product").get("id"))
+              .where(productDetail.get("size").get("id").in(param.getIdSizes()));
       predicates.add(product.get("id").in(sizeSubquery));
     }
 
@@ -486,16 +486,16 @@ public class ProductServiceImpl implements ProductService {
 
     List<Order> orders = new ArrayList<>();
     pageable
-        .getSort()
-        .forEach(
-            order -> {
-              String property = order.getProperty();
-              if (order.isAscending()) {
-                orders.add(cb.asc(product.get(property)));
-              } else {
-                orders.add(cb.desc(product.get(property)));
-              }
-            });
+            .getSort()
+            .forEach(
+                    order -> {
+                      String property = order.getProperty();
+                      if (order.isAscending()) {
+                        orders.add(cb.asc(product.get(property)));
+                      } else {
+                        orders.add(cb.desc(product.get(property)));
+                      }
+                    });
 
     if (orders.isEmpty()) {
       orders.add(cb.desc(product.get("id")));
@@ -504,11 +504,11 @@ public class ProductServiceImpl implements ProductService {
     query.orderBy(orders);
 
     List<Product> products =
-        entityManager
-            .createQuery(query)
-            .setFirstResult((int) pageable.getOffset())
-            .setMaxResults(pageable.getPageSize())
-            .getResultList();
+            entityManager
+                    .createQuery(query)
+                    .setFirstResult((int) pageable.getOffset())
+                    .setMaxResults(pageable.getPageSize())
+                    .getResultList();
 
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<Product> countRoot = countQuery.from(Product.class);
@@ -564,7 +564,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         boolean isNewProduct =
-            row.getCell(0) != null && !row.getCell(0).getStringCellValue().isEmpty();
+                row.getCell(0) != null && !row.getCell(0).getStringCellValue().isEmpty();
 
         if (isNewProduct) {
           String productName = ExcelCommon.convertCell("name", String.class, row.getCell(0));
@@ -575,14 +575,14 @@ public class ProductServiceImpl implements ProductService {
           String description = ExcelCommon.convertCell("description", String.class, row.getCell(5));
 
           Product product =
-              buildProduct(
-                  productName,
-                  categoryName,
-                  brandName,
-                  materialName,
-                  originName,
-                  description,
-                  jwtResponse);
+                  buildProduct(
+                          productName,
+                          categoryName,
+                          brandName,
+                          materialName,
+                          originName,
+                          description,
+                          jwtResponse);
           currentProductId = product.getId();
           savedProductCount++;
         }
@@ -622,8 +622,8 @@ public class ProductServiceImpl implements ProductService {
       Row row = sheet.getRow(i);
       Cell resultCell = row.getCell(10);
       if (hasError
-          && resultCell != null
-          && resultCell.getStringCellValue().contains("Thành công")) {
+              && resultCell != null
+              && resultCell.getStringCellValue().contains("Thành công")) {
         resultCell.setCellValue("Thành công nhưng chưa được lưu vào hệ thống");
         resultCell.setCellStyle(errorStyle);
       }
@@ -640,27 +640,27 @@ public class ProductServiceImpl implements ProductService {
     outputStream.close();
 
     MultipartFile fileResult =
-        new InMemoryMultipartFile(
-            "fileResult",
-            "result.xlsx",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            byteArray);
+            new InMemoryMultipartFile(
+                    "fileResult",
+                    "result.xlsx",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    byteArray);
 
     User user = getUserId(jwtResponse.getUserId());
     sendExcelData(
-        "http://ecommerce-fashion.site:9099/api/v1/files/upload",
-        ExcelDto.builder()
-            .count(totalRows)
-            .success(savedProductCount)
-            .error(failedProductCount)
-            .file(file)
-            .fileResult(fileResult)
-            .process(100L)
-            .objectName("EXCEL_IMPORT_PRODUCT")
-            .typeFile(failedProductCount > 0 ? "ERROR" : "SUCCESS")
-            .userInfo(
-                new UserInfo(user.getId(), user.getEmail(), user.getFullName(), user.getAvatar()))
-            .build());
+            "http://ecommerce-fashion.site:9099/api/v1/files/upload",
+            ExcelDto.builder()
+                    .count(totalRows)
+                    .success(savedProductCount)
+                    .error(failedProductCount)
+                    .file(file)
+                    .fileResult(fileResult)
+                    .process(100L)
+                    .objectName("EXCEL_IMPORT_PRODUCT")
+                    .typeFile(failedProductCount > 0 ? "ERROR" : "SUCCESS")
+                    .userInfo(
+                            new UserInfo(user.getId(), user.getEmail(), user.getFullName(), user.getAvatar()))
+                    .build());
   }
 
   @Override
@@ -681,19 +681,19 @@ public class ProductServiceImpl implements ProductService {
         if (isFirstDetailRow) {
           row.createCell(0).setCellValue(formatWithIdAndName(product.getId(), product.getName()));
           row.createCell(1)
-              .setCellValue(
-                  formatWithIdAndName(
-                      product.getCategory().getId(), product.getCategory().getName()));
+                  .setCellValue(
+                          formatWithIdAndName(
+                                  product.getCategory().getId(), product.getCategory().getName()));
           row.createCell(2)
-              .setCellValue(
-                  formatWithIdAndName(product.getBrand().getId(), product.getBrand().getName()));
+                  .setCellValue(
+                          formatWithIdAndName(product.getBrand().getId(), product.getBrand().getName()));
           row.createCell(3)
-              .setCellValue(
-                  formatWithIdAndName(
-                      product.getMaterial().getId(), product.getMaterial().getName()));
+                  .setCellValue(
+                          formatWithIdAndName(
+                                  product.getMaterial().getId(), product.getMaterial().getName()));
           row.createCell(4)
-              .setCellValue(
-                  formatWithIdAndName(product.getOrigin().getId(), product.getOrigin().getName()));
+                  .setCellValue(
+                          formatWithIdAndName(product.getOrigin().getId(), product.getOrigin().getName()));
           row.createCell(5).setCellValue(product.getDescription());
 
           isFirstDetailRow = false;
@@ -702,11 +702,11 @@ public class ProductServiceImpl implements ProductService {
         row.createCell(6).setCellValue(detail.getPrice());
         row.createCell(7).setCellValue(detail.getQuantity());
         row.createCell(8)
-            .setCellValue(
-                formatWithIdAndName(detail.getSize().getId(), detail.getSize().getName()));
+                .setCellValue(
+                        formatWithIdAndName(detail.getSize().getId(), detail.getSize().getName()));
         row.createCell(9)
-            .setCellValue(
-                formatWithIdAndName(detail.getColor().getId(), detail.getColor().getName()));
+                .setCellValue(
+                        formatWithIdAndName(detail.getColor().getId(), detail.getColor().getName()));
       }
     }
 
@@ -720,13 +720,13 @@ public class ProductServiceImpl implements ProductService {
 
   @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
   public Product buildProduct(
-      String productName,
-      String categoryName,
-      String brandName,
-      String materialName,
-      String originName,
-      String description,
-      JwtResponse jwtResponse) {
+          String productName,
+          String categoryName,
+          String brandName,
+          String materialName,
+          String originName,
+          String description,
+          JwtResponse jwtResponse) {
     Product product = new Product();
     product.setName(productName);
     product.setDescription(description);
@@ -741,12 +741,12 @@ public class ProductServiceImpl implements ProductService {
 
   @Transactional(rollbackFor = Exception.class, propagation = Propagation.MANDATORY)
   public void buildProductDetail(
-      Double price,
-      Integer quantity,
-      String sizeName,
-      String colorName,
-      Long currentProductId,
-      JwtResponse jwtResponse) {
+          Double price,
+          Integer quantity,
+          String sizeName,
+          String colorName,
+          Long currentProductId,
+          JwtResponse jwtResponse) {
     ProductDetail productDetail = new ProductDetail();
     productDetail.setPrice(price);
     productDetail.setQuantity(quantity);
@@ -762,15 +762,15 @@ public class ProductServiceImpl implements ProductService {
     List<ProductDetail> productDetails = productDetailRepository.getDetailByIdProduct(productId);
 
     Double minPrice =
-        productDetails.stream().map(ProductDetail::getPrice).min(Double::compare).orElse(null);
+            productDetails.stream().map(ProductDetail::getPrice).min(Double::compare).orElse(null);
 
     Double maxPrice =
-        productDetails.stream().map(ProductDetail::getPrice).max(Double::compare).orElse(null);
+            productDetails.stream().map(ProductDetail::getPrice).max(Double::compare).orElse(null);
 
     Product product =
-        productRepository
-            .findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            productRepository
+                    .findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
     product.setMinPrice(minPrice != null ? minPrice.longValue() : null);
     product.setMaxPrice(maxPrice != null ? maxPrice.longValue() : null);
     productRepository.save(product);
@@ -789,7 +789,7 @@ public class ProductServiceImpl implements ProductService {
 
     try {
       ResponseEntity<String> response =
-          restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
+              restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
 
       if (response.getStatusCode() == HttpStatus.OK) {
         System.out.println("File uploaded successfully: " + response.getBody());
@@ -802,29 +802,29 @@ public class ProductServiceImpl implements ProductService {
   }
 
   private static MultiValueMap<String, Object> getStringObjectMultiValueMap(ExcelDto excelDto)
-      throws IOException {
+          throws IOException {
     MultipartFile multipartFile = excelDto.getFile();
     MultipartFile multipartFileResult = excelDto.getFileResult();
 
     MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 
     body.add(
-        "file",
-        new ByteArrayResource(multipartFile.getBytes()) {
-          @Override
-          public String getFilename() {
-            return multipartFile.getOriginalFilename();
-          }
-        });
+            "file",
+            new ByteArrayResource(multipartFile.getBytes()) {
+              @Override
+              public String getFilename() {
+                return multipartFile.getOriginalFilename();
+              }
+            });
 
     body.add(
-        "fileResult",
-        new ByteArrayResource(multipartFileResult.getBytes()) {
-          @Override
-          public String getFilename() {
-            return multipartFileResult.getOriginalFilename();
-          }
-        });
+            "fileResult",
+            new ByteArrayResource(multipartFileResult.getBytes()) {
+              @Override
+              public String getFilename() {
+                return multipartFileResult.getOriginalFilename();
+              }
+            });
 
     body.add("objectName", excelDto.getObjectName());
     body.add("count", excelDto.getCount());
@@ -842,8 +842,8 @@ public class ProductServiceImpl implements ProductService {
 
   private User getUserId(Long id) {
     return userRepository
-        .findById(id)
-        .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+            .findById(id)
+            .orElseThrow(() -> new ExceptionHandle(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
   }
 
   private Long parseIdFromInfo(String info) {
@@ -909,24 +909,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     List<String> expectedHeaders =
-        Arrays.asList(
-            "Tên sản phẩm *",
-            "Danh mục *",
-            "Thương hiệu *",
-            "Chất liệu *",
-            "Xuất xứ *",
-            "Mô tả sản phẩm",
-            "Giá tiền *",
-            "Số lượng *",
-            "Kích thước *",
-            "Màu sắc *");
+            Arrays.asList(
+                    "Tên sản phẩm *",
+                    "Danh mục *",
+                    "Thương hiệu *",
+                    "Chất liệu *",
+                    "Xuất xứ *",
+                    "Mô tả sản phẩm",
+                    "Giá tiền *",
+                    "Số lượng *",
+                    "Kích thước *",
+                    "Màu sắc *");
 
     for (int i = 0; i < expectedHeaders.size(); i++) {
       Cell cell = headerRow.getCell(i);
       if (cell == null || !cell.getStringCellValue().equals(expectedHeaders.get(i))) {
         throw new ExceptionHandle(
-            HttpStatus.BAD_REQUEST,
-            "Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
+                HttpStatus.BAD_REQUEST,
+                "Vui lòng kiểm tra lại file import chưa đúng định dạng file mẫu");
       }
     }
   }
@@ -948,9 +948,9 @@ public class ProductServiceImpl implements ProductService {
       product.setProductDetails(productDetails);
       ProductDetail firstProudctDetail = productDetails.get(0);
       Double min =
-          firstProudctDetail.getOriginPrice() == null
-              ? firstProudctDetail.getPrice()
-              : firstProudctDetail.getOriginPrice();
+              firstProudctDetail.getOriginPrice() == null
+                      ? firstProudctDetail.getPrice()
+                      : firstProudctDetail.getOriginPrice();
       product.setPromotion(firstProudctDetail.getPromotion());
       product.setMinPrice(min.longValue());
       for (ProductDetail pd : productDetails) {
@@ -974,9 +974,9 @@ public class ProductServiceImpl implements ProductService {
     }
     List<Promotion> promotions = productDetail.getPromotionList();
     Optional<Promotion> optionalPromotion =
-        promotions.stream()
-            .filter(p -> p.getStatusPromotionEnum() == StatusPromotionEnum.ACTIVE)
-            .findFirst();
+            promotions.stream()
+                    .filter(p -> p.getStatusPromotionEnum() == StatusPromotionEnum.ACTIVE)
+                    .findFirst();
     if (optionalPromotion.isPresent()) {
       Promotion promotion = optionalPromotion.get();
       productDetail.setPromotion(promotion);

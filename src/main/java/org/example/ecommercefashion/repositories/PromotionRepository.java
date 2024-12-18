@@ -50,7 +50,8 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     @Query("""
             SELECT COUNT(p.id) > 0
             FROM Promotion p
-            WHERE statusPromotionEnum = 'ACTIVE'
+            WHERE p.statusPromotionEnum = 'ACTIVE'
+            AND SIZE(p.productDetailList) > 0
             """)
     boolean isAnyActive();
 }

@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.services.impl;
 
+import com.itextpdf.io.font.FontProgramFactory;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -19,6 +20,8 @@ import com.itextpdf.layout.properties.UnitValue;
 import com.longnh.exceptions.ExceptionHandle;
 import com.longnh.utils.FnCommon;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -444,9 +447,16 @@ public class OrderServiceImpl implements OrderService {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     try {
-      String fontPath =
-          getClass().getClassLoader().getResource("msttcorefonts/Times_New_Roman.ttf").getPath();
-      PdfFont font = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H);
+
+      InputStream fontStream =
+          getClass().getClassLoader().getResourceAsStream("msttcorefonts/Times_New_Roman.ttf");
+      if (fontStream == null) {
+        throw new FileNotFoundException("Font file not found in classpath!");
+      }
+
+      byte[] fontBytes = fontStream.readAllBytes();
+      var fontProgram = FontProgramFactory.createFont(fontBytes);
+      PdfFont font = PdfFontFactory.createFont(fontProgram, PdfEncodings.IDENTITY_H);
 
       PdfWriter writer = new PdfWriter(out);
       PdfDocument pdf = new PdfDocument(writer);
@@ -456,8 +466,15 @@ public class OrderServiceImpl implements OrderService {
       document.setFont(font);
       document.setFontSize(8);
 
-      String logoPath = getClass().getClassLoader().getResource("msttcorefonts/logo.png").getPath();
-      ImageData imageData = ImageDataFactory.create(logoPath);
+      InputStream logoStream =
+          getClass().getClassLoader().getResourceAsStream("msttcorefonts/logo.png");
+      if (logoStream == null) {
+        throw new FileNotFoundException("Logo file not found in classpath!");
+      }
+
+      byte[] logoBytes = logoStream.readAllBytes();
+
+      ImageData imageData = ImageDataFactory.create(logoBytes);
 
       Image logo = new Image(imageData);
       logo.setHorizontalAlignment(HorizontalAlignment.CENTER);

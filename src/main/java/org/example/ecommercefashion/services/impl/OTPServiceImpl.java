@@ -28,7 +28,7 @@ public class OTPServiceImpl implements OTPService {
   private final Map<String, User> temporaryUserStorage = new HashMap<>();
   private final ExecutorService executorService = Executors.newCachedThreadPool();
   private final int LENGTH_OTP = 6;
-  private final String NUMBERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  private final String NUMBERS = "0123456789";
 
   @Value("${spring.cache.redis.time-to-live}")
   private int expireTime;

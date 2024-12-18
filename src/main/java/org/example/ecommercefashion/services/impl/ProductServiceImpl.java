@@ -951,22 +951,22 @@ public class ProductServiceImpl implements ProductService {
         if (product.getUpdateBy() != null) {
             product.setUpdateByUser(getInfoUserValue(product.getUpdateBy()));
         }
-        List<ProductDetail> productDetails = product.getProductDetails();
+        List<ProductDetail> productDetails = product.getProductDetails().stream()
+                .map(this::toProductDetailDto)
+                .toList();
         if (productDetails.size() > 0) {
-            productDetails = product.getProductDetails().stream()
-                    .map(this::toProductDetailDto)
-                    .toList();
             product.setProductDetails(productDetails);
             ProductDetail firstProudctDetail = productDetails.get(0);
-            Double min = firstProudctDetail.getOriginPrice() == null ? firstProudctDetail.getPrice() : firstProudctDetail.getOriginPrice();
-            product.setPromotion(firstProudctDetail.getPromotion());
-            product.setMinPrice(min.longValue());
+            Double min = firstProudctDetail.getPrice();
             for (ProductDetail pd : productDetails) {
-                Double price = pd.getOriginPrice() == null ? pd.getPrice() : pd.getOriginPrice();
-                if (min > price) {
+                Double price = pd.getPrice();
+                if (min >= price) {
                     min = price;
-                    product.setMinPrice(min.longValue());
-                    product.setPromotion(pd.getPromotion());
+                    Double minPrice = pd.getOriginPrice() == null ? pd.getPrice() : pd.getOriginPrice();
+                    product.setMinPrice(minPrice.longValue());
+                    if(pd.getPromotion()!=null){
+                        product.setPromotion(pd.getPromotion());
+                    }
                 }
             }
         }

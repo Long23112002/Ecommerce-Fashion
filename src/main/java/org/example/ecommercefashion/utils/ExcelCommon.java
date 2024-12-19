@@ -26,12 +26,19 @@ public class ExcelCommon {
 
   private static Integer getIntegerValue(Cell cell) {
     if (cell.getCellType() == CellType.STRING) {
-      return Integer.parseInt(cell.getStringCellValue());
+      try {
+        // Try parsing the string value to a Double and then convert it to an Integer
+        Double doubleValue = Double.valueOf(cell.getStringCellValue());
+        return doubleValue.intValue(); // Convert the double to int (removes decimal part)
+      } catch (NumberFormatException e) {
+        throw new RuntimeException(
+            String.format(
+                "Dữ liệu dòng %d cột %d không đúng định dạng.",
+                cell.getRowIndex() + 1, cell.getColumnIndex() + 1));
+      }
     }
-    throw new RuntimeException(
-        String.format(
-            "Dữ liệu dòng %o cột %o không dúng định dạng.",
-            cell.getRowIndex() + 1, cell.getColumnIndex() + 1));
+
+    return (int) cell.getNumericCellValue();
   }
 
   private static String getStringValue(Cell cell) {

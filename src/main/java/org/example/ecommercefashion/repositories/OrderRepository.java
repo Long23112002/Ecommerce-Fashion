@@ -13,20 +13,19 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @Query(
-            "SELECT p FROM Order p LEFT JOIN p.user u "
-                    + "WHERE p.status <> 'DRAFT' "
-                    + "AND (:#{#param.userId} IS NULL OR p.user.id = :#{#param.userId}) "
-                    + "AND (:#{#param.status} IS NULL OR p.status = :#{#param.status}) "
-                    + "AND (:#{#param.keyword} IS NULL OR p.phoneNumber = cast( :#{#param.phoneNumber} as string ) ) "
-                    + "AND (:#{#param.keyword} IS NULL OR LOWER(p.user.fullName) LIKE CONCAT('%', LOWER(CAST(:#{#param.keyword} AS string)), '%'))"
-                    + "AND (:#{#param.day} IS NULL OR FUNCTION('DAY', p.updatedAt) = :#{#param.day}) "
-                    + "AND (:#{#param.month} IS NULL OR FUNCTION('MONTH', p.updatedAt) = :#{#param.month}) "
-                    + "AND (:#{#param.year} IS NULL OR FUNCTION('YEAR', p.updatedAt) = :#{#param.year}) "
-                    + "GROUP BY p.id, p.updatedAt, p.createdAt, p.user.fullName, p.phoneNumber, p.status "
-                    + "ORDER BY p.updatedAt DESC, p.createdAt DESC")
+    @Query(value = "SELECT p.* " +
+            "FROM orders.order p " +
+            "LEFT JOIN users.user u ON p.user_id = u.id " +
+            "WHERE p.status <> 'DRAFT' " +
+            "AND (:#{#param.userId} IS NULL OR p.user_id = CAST(:#{#param.userIdDefault} AS BIGINT)) " +
+            "AND (:#{#param.status} IS NULL OR p.status = CAST(:#{#param.statusDefault.name()} AS VARCHAR)) " +
+            "AND (:#{#param.phoneNumber} IS NULL OR p.phone_number = :#{#param.phoneNumberDefault}) " +
+            "AND (:#{#param.keyword} IS NULL OR LOWER(u.full_name) LIKE CONCAT('%', LOWER(:#{#param.keywordDefault}), '%')) " +
+            "AND (:#{#param.day} IS NULL OR EXTRACT('DAY' FROM (p.success_at + INTERVAL '7 hour')) = :#{#param.dayDefault}) " +
+            "AND (:#{#param.month} IS NULL OR EXTRACT('MONTH' FROM (p.success_at + INTERVAL '7 hour')) = :#{#param.monthDefault}) " +
+            "AND (:#{#param.year} IS NULL OR EXTRACT('YEAR' FROM (p.success_at + INTERVAL '7 hour')) = :#{#param.yearDefault}) " +
+            "AND p.deleted = FALSE ", nativeQuery = true) // TODO: Query order update và create
     Page<Order> filter(OrderParam param, Pageable pageable);
-
 
     @Query("SELECT COUNT(*) " +
             "FROM Order o " +

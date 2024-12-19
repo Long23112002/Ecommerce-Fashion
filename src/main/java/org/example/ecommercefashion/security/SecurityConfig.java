@@ -1,5 +1,6 @@
 package org.example.ecommercefashion.security;
 
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfiguration;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -34,10 +33,14 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
-            request -> request
-                    .antMatchers("/api/v1/auth/**").permitAll()
-                    .antMatchers("/ws/**").permitAll()
-                    .anyRequest().permitAll())
+            request ->
+                request
+                    .antMatchers("/api/v1/auth/**")
+                    .permitAll()
+                    .antMatchers("/ws/**")
+                    .permitAll()
+                    .anyRequest()
+                    .permitAll())
         .sessionManagement(
             manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider)
@@ -47,7 +50,7 @@ public class SecurityConfig {
                 cors.configurationSource(
                     request -> {
                       CorsConfiguration corsConfig = new CorsConfiguration();
-                      corsConfig.addAllowedOrigin("http://localhost:5173");
+                      corsConfig.addAllowedOrigin("http://ecommerce-fashion:5173");
                       corsConfig.addAllowedOrigin("http://ecommerce-fashion.site");
                       corsConfig.setAllowedMethods(
                           Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
@@ -61,7 +64,6 @@ public class SecurityConfig {
         .logoutSuccessHandler(
             (request, response, authentication) -> SecurityContextHolder.clearContext());
 
-    ;
     return http.build();
   }
 }

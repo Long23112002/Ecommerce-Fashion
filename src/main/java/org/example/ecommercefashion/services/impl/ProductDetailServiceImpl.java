@@ -12,6 +12,7 @@ import org.example.ecommercefashion.dtos.response.ProductResponse;
 import org.example.ecommercefashion.dtos.response.ResponsePage;
 import org.example.ecommercefashion.dtos.response.UserResponse;
 import org.example.ecommercefashion.entities.Color;
+import org.example.ecommercefashion.entities.File;
 import org.example.ecommercefashion.entities.Product;
 import org.example.ecommercefashion.entities.ProductDetail;
 import org.example.ecommercefashion.entities.Promotion;
@@ -137,6 +138,15 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             detail.setColor(color);
             detail.setCreateBy(jwtResponse.getUserId());
             detail.setCreateByUser(getInfoUserValue(jwtResponse.getUserId()));
+            if (request.getImages().isEmpty()) {
+                File file = new File();
+                file.setUrl(product.getImage());
+                List<File> fileList = new ArrayList<>();
+                fileList.add(file);
+                detail.setImages(fileList);
+            } else {
+                detail.setImages(request.getImages());
+            }
             detail = productDetailRepository.save(detail);
 
             return detail;
@@ -188,12 +198,12 @@ public class ProductDetailServiceImpl implements ProductDetailService {
             ProductDetail detail = findById(id);
             FnCommon.copyNonNullProperties(detail, request);
 
-            Product product =
-                    productRepository
-                            .findById(request.getIdProduct())
-                            .orElseThrow(
-                                    () ->
-                                            new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
+//            Product product =
+//                    productRepository
+//                            .findById(request.getIdProduct())
+//                            .orElseThrow(
+//                                    () ->
+//                                            new ExceptionHandle(HttpStatus.BAD_REQUEST, ErrorMessage.PRODUCT_NOT_FOUND));
             Size size =
                     sizeRepository
                             .findById(request.getIdSize())
@@ -209,7 +219,12 @@ public class ProductDetailServiceImpl implements ProductDetailService {
                                             new ExceptionHandle(
                                                     HttpStatus.BAD_REQUEST, AttributeErrorMessage.COLOR_NOT_FOUND));
 
-            detail.setProduct(product);
+//            detail.setProduct(product);
+            if (request.getImages().isEmpty()) {
+                detail.setImages(detail.getImages());
+            } else {
+                detail.setImages(request.getImages());
+            }
             detail.setSize(size);
             detail.setColor(color);
             detail.setImages(request.getImages());
@@ -286,7 +301,11 @@ public class ProductDetailServiceImpl implements ProductDetailService {
                     cb.function("TRIM", String.class, cb.lower(root.get("product").get("name"))),
                     keyword
             );
-            predicates.add(cb.or(sizePredicate, colorPredicate, productPredicate));
+            Predicate productCodePredicate = cb.like(
+                    cb.function("TRIM", String.class, cb.lower(root.get("product").get("code"))),
+                    keyword
+            );
+            predicates.add(cb.or(sizePredicate, colorPredicate, productPredicate, productCodePredicate));
         }
 
         if (!param.isAllowZero()) {
